@@ -1,0 +1,19 @@
+<div id="sidebar">
+  <div class="controls">
+    Chat controls
+  </div>
+</div>
+<div id="content">
+  <div class="header" (click)="goHome()">
+    <div class="brand">
+      <img src="assets/img/connect4_512x512bb.png" width="32" height="32" alt="Board game"> Connect four
+    </div>
+    <div class="profile">
+      <i class="fas fa-user"></i> {{user.username}}
+    </div>
+  </div>
+  <main>
+    <router-outlet></router-outlet>
+    <app-panel-join-game [username]="user.username"></app-panel-join-game>
+  </main>
+</div>

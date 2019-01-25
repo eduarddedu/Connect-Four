@@ -1,0 +1,42 @@
+.container {
+    display: flex;
+    justify-content: center;
+    padding-top: 4em;
+}
+.transparent-panel {
+    width: 600px;
+    border-radius: 5px;
+    border: .5px solid #777;
+}
+p {
+    margin: 0;
+    padding: 10px;
+}
+table {
+    width: 100%;
+}
+tr {
+    padding: 0 10px;
+    display: block;
+    cursor: pointer;
+}
+tr:hover {
+    background-color: rgba(0, 0, 0, .03);
+}
+td {
+    min-height: 35px;
+    line-height: 35px;
+    vertical-align: middle;
+    font-size: 15px;
+    color: inherit;
+}
+td:nth-child(1) {
+    width: 245px;
+} 
+td:nth-child(2) {
+    width: 200px;
+}
+td:nth-child(3) {
+    width: 135px;
+    text-align: right;
+} 

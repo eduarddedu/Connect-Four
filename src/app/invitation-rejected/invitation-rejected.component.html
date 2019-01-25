@@ -1,0 +1,12 @@
+<div class="modal-header">
+    <h4 class="modal-title">Game invitation</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.close('')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><b>{{username}}</b> has rejected your invitation. Damn!</p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-success" (click)="activeModal.close('')" ngbAutofocus>OK</button>
+  </div>

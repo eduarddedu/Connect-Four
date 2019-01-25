@@ -1,0 +1,21 @@
+<div id="game-area">
+  <form>
+    <div id="board">
+      <div id="field">
+        <div class="grid">
+          <ng-container *ngFor="let i of columns">
+            <div class="column">
+              <ng-container *ngFor="let j of rows">
+                <input type="radio" name="{{j * 10 + i}}" tabindex="-1" required (click)="onClick($event.target.name)">
+                <div class="disc" id="{{j * 10 + i}}"></div>
+              </ng-container>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div id="front"></div>
+    </div>
+    <br>
+    <button type="reset" class="btn btn-danger" (click)="reset()">New Game</button>
+  </form>
+</div>

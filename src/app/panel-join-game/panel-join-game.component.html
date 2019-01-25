@@ -1,0 +1,22 @@
+<div class="container" *ngIf="visible">
+  <div class="transparent-panel">
+    <h6 class="card-header text-center">Join({{listPlayers.length}})</h6>
+    <p *ngIf="listPlayers.length == 0">No one is online</p>
+    <table>
+      <tbody>
+        <tr *ngFor="let user of listPlayers" (click)="onClick(user)" [ngStyle]="{'color' : user.status === 'Invited' || user.status === 'In game' ? '#333' : '#000'}">
+          <td>{{user.status}}</td>
+          <td>
+            <span><i class="fas fa-user-circle"></i></span> {{user.username}}
+          </td>
+          <td>
+            <i class="fas" [ngClass]="{'fa-arrow-alt-circle-right' : user.status === 'Online', 
+                         'fa-question-circle' : user.status === 'Invited', 
+                         'fa-arrow-alt-circle-down' : user.status === 'In game'}">
+            </i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+---
+- hosts: myke
+  remote_user: root 
+  vars:
+    app_home: /var/www/html/games
+    artifact: app.tar
+  tasks: 
+    - name: Build project 
+      command: webpack
+      delegate_to: 127.0.0.1
+    - name: Create distribution artifact {{ artifact }}
+      command: tar -cvf app.tar index.html css img js/bundle.js 
+      delegate_to: 127.0.0.1
+    - name: Delete existing remote directory {{ app_home }} and its contents
+      file:
+        path={{ app_home }}
+        state=absent
+    - name: Create new remote directory {{ app_home }} 
+      file:
+        path={{ app_home }}
+        state=directory
+    - name: Unpack distribution file {{ artifact }} into remote directory {{ app_home }}
+      unarchive: 
+        dest={{ app_home }}
+        src={{ artifact }} 
+    - name: Delete local artifact
+      command: rm app.tar
+      delegate_to: 127.0.0.1
+...
