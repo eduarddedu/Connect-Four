@@ -3,14 +3,16 @@
     justify-content: center;
     padding-top: 4em;
 }
-.transparent-panel {
+.panel {
     width: 600px;
     border-radius: 5px;
-    border: .5px solid #777;
+    background-color: white;
+    color: #444;
 }
 p {
     margin: 0;
-    padding: 10px;
+    padding: 7.5px 10px;
+    user-select: none;
 }
 table {
     width: 100%;
@@ -28,7 +30,10 @@ td {
     line-height: 35px;
     vertical-align: middle;
     font-size: 15px;
-    color: inherit;
+}
+td:nth-child(1) > span {
+    font-size: 80%;
+    line-height: normal;
 }
 td:nth-child(1) {
     width: 245px;

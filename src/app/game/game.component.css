@@ -1,8 +1,8 @@
-.container {
-    display: flex;
-    flex-flow: column nowrap;
-    justify-content: center;
-    align-items: center;
-    min-width: 500px;
-    padding-top: 4em;
-}
+.box {
+    min-width: 560px;
+    padding: 2em 2em 1em 2em;
+    background-color: var(--gray-dark);
+    border-radius: 3px;
+} 
+
+

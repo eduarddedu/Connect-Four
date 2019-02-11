@@ -1,27 +1,28 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Subscription } from 'rxjs';
 
 import { DeepstreamClientManager } from '../deepstream-client-manager.service';
 import { InvitationJoinGameComponent } from '../invitation-join-game/invitation-join-game.component';
 import { InvitationRejectedComponent } from '../invitation-rejected/invitation-rejected.component';
-import { UtilService } from '../util.service';
 
 @Component({
   selector: 'app-panel-join-game',
   templateUrl: './panel-join-game.component.html',
   styleUrls: ['./panel-join-game.component.css']
 })
-export class PanelJoinGameComponent implements OnInit {
+export class PanelJoinGameComponent implements OnInit, OnDestroy {
   @Input() username: string;
   private client: any;
   private listPlayers: { username: string, status: string }[] = [];
+  private subscription: Subscription;
   visible = true;
 
   constructor(private router: Router,
+    private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
-    private clientManager: DeepstreamClientManager,
-    private util: UtilService) {
+    private clientManager: DeepstreamClientManager) {
   }
 
   ngOnInit() {
@@ -53,16 +54,18 @@ export class PanelJoinGameComponent implements OnInit {
   }
 
   private removePlayer(username: any) {
-    const list = this.listPlayers.filter((u: any) => u.username !== username);
-    this.util.tick_then(() => this.listPlayers = list);
+    this.listPlayers = this.listPlayers.filter((u: any) => u.username !== username);
+    this.cdr.detectChanges();
   }
 
   onClick(user: any) {
-    if (user.status === 'Online') {
+    if (user.status === 'Online' && this.client.record.getRecord(this.username).get('status') === 'Online') {
       this.client.event.emit(`invitations/${user.username}`, { from: this.username });
       user.status = 'Invited';
-    } else if (user.status === 'In game') {
-      this.client.record.getRecord(user.username).subscribe('gameId', this.navigateToGame.bind(this), true);
+      this.cdr.detectChanges();
+    }
+    if (user.status === 'In game') {
+      this.joinGame(this.client.record.getRecord(user.username).get('gameId'));
     }
   }
 
@@ -72,7 +75,7 @@ export class PanelJoinGameComponent implements OnInit {
       this.respondToInvitation(sender);
     } else {
       if (data.response === 'Accept') {
-        this.client.record.getRecord(this.username).subscribe('gameId', this.navigateToGame.bind(this), true);
+        this.client.record.getRecord(this.username).subscribe('gameId', this.joinGame.bind(this), true);
       } else {
         const modalRef = this.modalService.open(InvitationRejectedComponent);
         modalRef.componentInstance.username = sender;
@@ -80,7 +83,7 @@ export class PanelJoinGameComponent implements OnInit {
     }
   }
 
-  private navigateToGame(gameId: string) {
+  private joinGame(gameId: string) {
     if (gameId) {
       this.router.navigate([`/game/${gameId}`]);
       this.visible = false;
@@ -94,7 +97,7 @@ export class PanelJoinGameComponent implements OnInit {
       if (response === 'Accept' && this.getUserStatus(sender) === 'Online') {
         const gameId = this.client.getUid();
         this.setupNewGame(sender, gameId);
-        this.navigateToGame(gameId);
+        this.joinGame(gameId);
       }
       this.client.event.emit(`invitations/${sender}`, { from: this.username, response: response });
     });
@@ -107,15 +110,29 @@ export class PanelJoinGameComponent implements OnInit {
 
   private setupNewGame(opponent: string, gameId: string) {
     this.client.record.getRecord(gameId).set({
-      details: {
-        redPlayer: this.username,
-        yellowPlayer: opponent,
-        moves: []
-      }
+      players: {
+        red: {
+          color: '#ff010b',
+          username: this.username,
+          points: 0
+        },
+        yellow: {
+          color: '#ffd918',
+          username: opponent,
+          points: 0
+        }
+      },
+      moves: []
     });
     this.client.record.getRecord(this.username).set('status', 'In game');
     this.client.record.getRecord(this.username).set('gameId', gameId);
     this.client.record.getRecord(opponent).set('status', 'In game');
     this.client.record.getRecord(opponent).set('gameId', gameId);
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 }

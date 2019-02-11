@@ -11,26 +11,30 @@
 }
 #content {
     margin-left: 250px;
-    padding: 0 100px 40px 100px;
+    padding: 0 30px 40px 30px;
     background: linear-gradient(to right bottom, #006994, #fff);;
     min-height: 100vh;
+}
+.centered-box {
+    max-width: 720px;
+    margin: auto;
 }
 .header {
     display: flex;
     justify-content: space-between;
-    padding: 20px 0;
-} 
+    padding: 2em 0 4em;
+    font-weight: lighter;
+    line-height: normal;
+    color: #eee;
+}
 .header > .brand {
     cursor: pointer;
-    color: #eee;
-    font-weight: lighter;
 }
-.header > .brand img {
+.header > .brand > img {
     vertical-align: bottom;
 } 
 .header > .profile {
-    color: #333;
-    padding-top: .5em;
+   padding-top: 12px;
 }
 
 

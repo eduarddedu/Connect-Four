@@ -1,19 +1,22 @@
 <div class="container" *ngIf="visible">
-  <div class="transparent-panel">
+  <div class="panel">
     <h6 class="card-header text-center">Join({{listPlayers.length}})</h6>
     <p *ngIf="listPlayers.length == 0">No one is online</p>
     <table>
       <tbody>
-        <tr *ngFor="let user of listPlayers" (click)="onClick(user)" [ngStyle]="{'color' : user.status === 'Invited' || user.status === 'In game' ? '#333' : '#000'}">
-          <td>{{user.status}}</td>
+        <tr *ngFor="let user of listPlayers" (click)="onClick(user)">
           <td>
-            <span><i class="fas fa-user-circle"></i></span> {{user.username}}
+            {{user.status}} 
           </td>
+
+          <td><span><i class="fas fa-user-circle"></i></span> {{user.username}}
+          </td>
+
           <td>
-            <i class="fas" [ngClass]="{'fa-arrow-alt-circle-right' : user.status === 'Online', 
-                         'fa-question-circle' : user.status === 'Invited', 
-                         'fa-arrow-alt-circle-down' : user.status === 'In game'}">
+            <i *ngIf="user.status !== 'Invited'" 
+               class="fas" [ngClass]="{'fa-arrow-alt-circle-right' : user.status === 'Online', 'fa-arrow-alt-circle-down' : user.status === 'In game'}">
             </i>
+            <app-timer [active]="user.status === 'Invited'"></app-timer>
           </td>
         </tr>
       </tbody>

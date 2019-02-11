@@ -1,0 +1,40 @@
+<div class="game-info">
+  <div class="widget player">
+    <div>{{red.username}}</div>
+    <div>{{red.points}}</div>
+  </div>
+  <div class="widget turn">
+    <div>
+      <div class="bullet"></div>
+      <span *ngIf="this.activePlayer.username === this.username">&nbsp;Your turn</span>
+      <span *ngIf="this.activePlayer.username !== this.username">&nbsp;{{activePlayer.username}}'s turn</span>
+    </div>
+    <app-timer [active]="this.activePlayer.username === this.username"></app-timer>
+    <app-timer [active]="this.activePlayer.username !== this.username"></app-timer>
+  </div>
+  <div class="widget player right">
+    <div>{{yellow.points}}</div>
+    <div>{{yellow.username}} </div>
+  </div>
+</div>
+<div id="game-area">
+  <form>
+    <div id="board">
+      <div id="field">
+        <div class="grid">
+          <ng-container *ngFor="let i of columns">
+            <div class="column">
+              <ng-container *ngFor="let j of rows">
+                <input type="radio" name="{{j * 10 + i}}" tabindex="-1" (click)="onClick($event)">
+                <div class="disc" id="{{j * 10 + i}}"></div>
+              </ng-container>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+      <div id="front"></div>
+    </div>
+    <br>
+    <button type="reset" (click)="reset()" style="display:none">New game</button>
+  </form>
+</div>
