@@ -1,8 +1,15 @@
-.box {
-    min-width: 560px;
-    padding: 2em 2em 1em 2em;
+.header {
+    height: 60px;
+    line-height: 2;
+    margin-bottom: 1em;
+  }
+
+  .widget {
+    padding-top: 1em;
+    border-radius: 5px;
+    color: #eee;
     background-color: var(--gray-dark);
-    border-radius: 3px;
-} 
+    font-weight: lighter;
+  }
 
 

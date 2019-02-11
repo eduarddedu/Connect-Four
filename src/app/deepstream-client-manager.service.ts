@@ -46,7 +46,7 @@ export class DeepstreamClientManager {
       if (!this.userRegisteredInAnotherWindowOrDevice(list)) {
         this.client.record.getRecord(this.user.username).set('status', 'Online');
         list.addEntry(this.user.username);
-        console.log('Deepstream: authenticated as ' + this.user.username);
+        console.log(`Deepstream: ${this.user.username} signed in`);
       }
     });
   }

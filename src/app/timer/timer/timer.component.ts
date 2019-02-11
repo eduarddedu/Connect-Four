@@ -3,11 +3,14 @@ import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="active"><i class="far fa-clock"></i>&nbsp;{{timeSinceStart}}</span>`,
+  template: `<span *ngIf="active"><i class="far fa-clock"></i>&nbsp;{{hh_mm_ss}}</span>`,
   styles: [
     `span {
+      display: inline-block;
+      width: 75px;
       font-size: 13px;
       line-height: normal;
+      text-align: left;
     }`
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -15,38 +18,32 @@ import { Observable, Subscription } from 'rxjs';
 export class TimerComponent implements OnChanges, OnDestroy {
   @Input() active: boolean;
   @Input() displayOnInit: boolean;
-  private textUpdate: Observable<string>;
+  private updates: Observable<string>;
   private subscription: Subscription;
-  private timeSinceStart = 'seconds ago';
+  private hh_mm_ss = '00:00:00';
 
   constructor(private cdr: ChangeDetectorRef) {
-    this.textUpdate = new Observable(function subscribe(subscriber) {
-      let minutesAgo = 0;
-      let time: string;
+    this.updates = new Observable(function subscribe(subscriber) {
+      const start = new Date(Date.now());
       const pushUpdate = setInterval(() => {
-        minutesAgo++;
-        if (minutesAgo < 60) {
-          time = minutesAgo < 2 ? `1 min` : `${minutesAgo} mins`;
-        } else if (minutesAgo < 60 * 24) {
-          const hoursAgo = Math.floor(minutesAgo / 60);
-          time = hoursAgo < 2 ? '1 hr ago' : `${hoursAgo} hrs ago`;
-        } else {
-          const daysAgo = Math.floor(minutesAgo / 1440);
-          time = daysAgo < 2 ? '1 day ago' : `${daysAgo} days ago`;
-        }
-        subscriber.next(time);
-      }, 60000);
+        const elapsed = new Date(Date.now() - start.getTime());
+        elapsed.setHours(elapsed.getHours() - Math.abs(elapsed.getTimezoneOffset() / 60));
+        const time = elapsed.toTimeString();
+        const hhmmss = time.substr(0, time.indexOf(' '));
+        subscriber.next(hhmmss);
+      }, 1000);
 
       return function unsubscribe() {
         clearInterval(pushUpdate);
       };
     });
+
   }
 
   ngOnChanges() {
     if (this.active) {
-      this.subscription = this.textUpdate.subscribe(text => {
-        this.timeSinceStart = text;
+      this.subscription = this.updates.subscribe(text => {
+        this.hh_mm_ss = text;
         this.cdr.detectChanges();
       });
     } else {

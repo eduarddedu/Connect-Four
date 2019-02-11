@@ -1,8 +1,7 @@
-#game-area {
+form {
   display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
   justify-content: center;
+  margin-bottom: 3em;
 }
 
 #board {
@@ -137,39 +136,9 @@ input:hover+.disc:nth-of-type(6) {
   top: -375px;
 }
 
-.game-info {
-  display: flex;
-  justify-content: space-between;
-  padding: 1em 0;
-}
-
-.game-info>.turn {
-  width: 250px;
-  margin: 0 1em;
-  display: flex;
-  justify-content: space-between;
-}
-
-.game-info>.player {
-  width: 180px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.game-info>.widget {
-  box-sizing: border-box;
-  height: 60px;
-  padding: 1em;
-  background-color: var(--gray);
-  border-radius: 5px;
-  line-height: 2;
-  font-weight: lighter;
-  color: #eee;
-}
-
 .bullet {
   position: relative;
-  top: 9px;
+  top: 5px;
   float: left;
   width: 15px;
   height: 15px;

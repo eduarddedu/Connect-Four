@@ -18,6 +18,7 @@ table {
     width: 100%;
 }
 tr {
+    box-sizing: border-box;
     padding: 0 10px;
     display: block;
     cursor: pointer;

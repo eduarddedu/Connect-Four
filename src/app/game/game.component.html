@@ -1,8 +1,21 @@
 <p *ngIf="showAlert">
-    <ngb-alert type="danger" (close)="showAlert = false">
-      {{alertText}}
-    </ngb-alert>
-  </p>
-<div class="box" *ngIf="dataLoaded">
-  <app-board [username]="username" [red]="red" [yellow]="yellow" [gameRecord]="gameRecord"></app-board>  
+  <ngb-alert type="danger" (close)="showAlert = false">
+    {{alertText}}
+  </ngb-alert>
+</p>
+<div *ngIf="dataLoaded" class="container-fluid widget header">
+  <div class="row">
+    <div class="col-sm-5">
+      <p>{{red.username}}</p>
+    </div>
+    <div class="col-sm-2">
+      <p style="text-align: center">{{red.points}} - {{yellow.points}}</p>
+    </div>
+    <div class="col-sm-5">
+      <p style="float:right">{{yellow.username}}</p>
+    </div>
+  </div>
+</div>
+<div *ngIf="dataLoaded" class="container-fluid widget">
+    <app-board [username]="username" [red]="red" [yellow]="yellow" [gameRecord]="gameRecord"></app-board>
 </div>

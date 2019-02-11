@@ -1,11 +1,11 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
-export class BoardComponent implements OnInit {
+export class BoardComponent implements OnInit, AfterViewInit {
   @Input() red: any;
   @Input() yellow: any;
   @Input() username: string;
@@ -13,23 +13,18 @@ export class BoardComponent implements OnInit {
   private activePlayer: any;
   private rows = [1, 2, 3, 4, 5, 6];
   private columns = [1, 2, 3, 4, 5, 6, 7];
+  private indexLastUpdate = 0;
 
   ngOnInit() {
     this.activePlayer = this.red;
-    this.reset();
-    this.gameRecord.subscribe('moves', (moves: string[]) => {
-      if (moves.length > 0) {
-        const id = moves[moves.length - 1];
-        this.reactToMove(id);
-      }
-    });
   }
 
-  reset() {
-    this.setHoveringDiskColor();
+  ngAfterViewInit() {
+    this.toggleHoverDisk();
+    this.gameRecord.subscribe('moves', this.onMovesUpdate.bind(this), true);
   }
 
-  private setHoveringDiskColor() {
+  private toggleHoverDisk() {
     const root = <any>document.querySelector(':root');
     root.style.setProperty('--hover-disk-color', this.activePlayer.color);
     if (this.activePlayer.username === this.username) {
@@ -41,31 +36,31 @@ export class BoardComponent implements OnInit {
 
   onClick(event: any) {
     if (this.activePlayer.username === this.username) {
-      this.move(event.target.name);
-      this.pushMove(event.target.name);
+      this.updateMovesRecord(event.target.name);
     } else {
       event.preventDefault();
     }
   }
 
   private move(id: string) {
-    const diskDiv = document.getElementById(id);
-    diskDiv.style.color = this.activePlayer.color;
+    const input = <any>document.querySelector(`input[name="${id}"]`);
+    input.checked = true; // if it wasn't already checked it means we replay opponent's move
+    const dropDisk = document.getElementById(id);
+    dropDisk.style.color = this.activePlayer.color;
     this.toggleActivePlayer();
-    this.setHoveringDiskColor();
+    this.toggleHoverDisk();
   }
 
-  private pushMove(id: string) {
+  private updateMovesRecord(id: string) {
     const moves = this.gameRecord.get('moves');
     moves.push(id);
     this.gameRecord.set('moves', moves);
   }
 
-  private reactToMove(id: string) {
-    const input = <any>document.querySelector(`input[name="${id}"]`);
-    if (this.username !== this.activePlayer.username && !input.checked) { // remote player moved
-      input.checked = true;
-      this.move(id);
+  private onMovesUpdate(moves: string[] = []) {
+    for (let i = this.indexLastUpdate; i < moves.length; i++) {
+      this.move(moves[i]);
+      this.indexLastUpdate++;
     }
   }
 
