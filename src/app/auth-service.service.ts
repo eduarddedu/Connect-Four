@@ -1,21 +1,20 @@
 import { Injectable } from '@angular/core';
+import { CookieService } from './cookie.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  static defaultUser = {
-    username: 'No one',
-    password: 'default'
-  };
 
-  private _user: any;
+  private _user: {username: string};
 
-  constructor() { }
+  constructor(private cookieService: CookieService) { }
 
   get user() {
-    if (!this._user) {
-      return AuthService.defaultUser;
+    const cvalue = this.cookieService.getCookie('auth');
+    if (cvalue) {
+      const username = new RegExp(/^username:([^:]+)/).exec(cvalue)[1];
+      this._user = { username: username };
     }
     return this._user;
   }
@@ -25,7 +24,8 @@ export class AuthService {
    */
 
   authenticate(user: { username: string, password: string }): boolean {
-    this._user = user;
+    const cvalue = `username:${user.username}`;
+    this.cookieService.setCookie('auth', cvalue, 365);
     return true;
   }
 }

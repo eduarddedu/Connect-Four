@@ -14,12 +14,14 @@ export class HomeComponent implements OnInit {
   @ViewChild(PanelJoinGameComponent) panelJoin: PanelJoinGameComponent;
 
   constructor(authService: AuthService, private router: Router) {
-    if ((this.user = authService.user) === AuthService.defaultUser) {
+    this.user = authService.user;
+  }
+
+  ngOnInit() {
+    if (!this.user) {
       this.router.navigate(['/login']);
     }
   }
-
-  ngOnInit() {}
 
   goHome() {
     this.router.navigate(['/']);

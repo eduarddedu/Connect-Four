@@ -44,7 +44,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
 
   private move(id: string) {
     const input = <any>document.querySelector(`input[name="${id}"]`);
-    input.checked = true; // if it wasn't already checked it means we replay opponent's move
+    input.checked = true; // make sure we replay opponent's click
     const dropDisk = document.getElementById(id);
     dropDisk.style.color = this.activePlayer.color;
     this.toggleActivePlayer();

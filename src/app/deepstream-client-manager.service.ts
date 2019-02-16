@@ -27,18 +27,19 @@ export class DeepstreamClientManager {
 
   private init() {
     this.user = this.authService.user;
-    if (this.user === AuthService.defaultUser) {
-      return null;
+    if (!this.user) {
+      this.client = null;
+    } else {
+      this.client = deepstream(environment.DEEPSTREAM_URL).login(this.user, (success: any, data: any) => {
+        if (success) {
+          this.registerUser();
+          this.unregisterUserOnWindowClose();
+        } else {
+          throw new Error('Deepstream: authentication failed for ' + this.user.username);
+        }
+      });
+      this.handleErrors();
     }
-    this.client = deepstream(environment.DEEPSTREAM_URL).login(this.user, (success: any, data: any) => {
-      if (success) {
-        this.registerUser();
-        this.unregisterUserOnWindowClose();
-      } else {
-        throw new Error('Deepstream: authentication failed for ' + this.user.username);
-      }
-    });
-    this.handleErrors();
   }
 
   private registerUser() {
@@ -64,7 +65,7 @@ export class DeepstreamClientManager {
 
   private handleErrors() {
     this.client.on('error', (error: any, event: any) => {
-       console.log(error, event);
+      console.log(error, event);
     });
   }
 }
