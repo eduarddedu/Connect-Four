@@ -1,29 +1,32 @@
 ---
 - hosts: myke
-  remote_user: root 
+  remote_user: root
   vars:
-    app_home: /var/www/html/games
+    remote_app_root: /var/www/html/connectfour/
     artifact: app.tar
-  tasks: 
+  tasks:
     - name: Build project 
-      command: webpack
+      command: ng build --prod --base-href=https://codecritique.org/connectfour/ 
       delegate_to: 127.0.0.1
     - name: Create distribution artifact {{ artifact }}
-      command: tar -cvf app.tar index.html css img js/bundle.js 
+      command: tar -cvf ../app.tar .
+        chdir=dist
       delegate_to: 127.0.0.1
-    - name: Delete existing remote directory {{ app_home }} and its contents
+    - name: Delete remote deploy directory 
       file:
-        path={{ app_home }}
-        state=absent
-    - name: Create new remote directory {{ app_home }} 
+        path: '{{ remote_app_root }}'
+        state: absent
+    - name: Create new remote deploy directory {{ remote_app_root }}
       file:
-        path={{ app_home }}
-        state=directory
-    - name: Unpack distribution file {{ artifact }} into remote directory {{ app_home }}
-      unarchive: 
-        dest={{ app_home }}
-        src={{ artifact }} 
-    - name: Delete local artifact
-      command: rm app.tar
+        path: '{{ remote_app_root }}'
+        state: directory
+    - name: Unpack {{ artifact }} into remote directory {{ remote_app_root }}
+      unarchive:
+        src: '{{ artifact }}'
+        dest: '{{ remote_app_root }}'
+    - name: Delete {{ artifact }}
+      file:
+        path: '{{ artifact }}'
+        state: absent
       delegate_to: 127.0.0.1
 ...

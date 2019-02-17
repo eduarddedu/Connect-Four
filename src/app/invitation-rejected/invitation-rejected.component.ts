@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -6,13 +6,9 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './invitation-rejected.component.html',
   styleUrls: ['./invitation-rejected.component.css']
 })
-export class InvitationRejectedComponent implements OnInit {
+export class InvitationRejectedComponent {
+  username = '';
 
-  constructor(public activeModal: NgbActiveModal) {
-
-  }
-
-  ngOnInit() {
-  }
+  constructor(public activeModal: NgbActiveModal) { }
 
 }

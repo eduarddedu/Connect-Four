@@ -10,9 +10,9 @@ export class BoardComponent implements OnInit, AfterViewInit {
   @Input() yellow: any;
   @Input() username: string;
   @Input() gameRecord: any;
-  private activePlayer: any;
-  private rows = [1, 2, 3, 4, 5, 6];
-  private columns = [1, 2, 3, 4, 5, 6, 7];
+  activePlayer: any;
+  rows = [1, 2, 3, 4, 5, 6];
+  columns = [1, 2, 3, 4, 5, 6, 7];
   private indexLastUpdate = 0;
 
   ngOnInit() {

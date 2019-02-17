@@ -10,7 +10,7 @@ import { PanelJoinGameComponent } from '../panel-join-game/panel-join-game.compo
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  private user: any;
+  user: any;
   @ViewChild(PanelJoinGameComponent) panelJoin: PanelJoinGameComponent;
 
   constructor(authService: AuthService, private router: Router) {

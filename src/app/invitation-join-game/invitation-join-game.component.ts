@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -6,14 +6,9 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   templateUrl: './invitation-join-game.component.html',
   styleUrls: ['./invitation-join-game.component.css']
 })
-export class InvitationJoinGameComponent implements OnInit {
-  @Input() username: string;
+export class InvitationJoinGameComponent {
+  username = '';
 
-  constructor(public activeModal: NgbActiveModal) {
-
-  }
-
-  ngOnInit() {
-  }
+  constructor(public activeModal: NgbActiveModal) {}
 
 }

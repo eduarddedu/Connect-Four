@@ -5,8 +5,7 @@ import { CookieService } from './cookie.service';
   providedIn: 'root'
 })
 export class AuthService {
-
-  private _user: {username: string};
+  private _user: { username: string };
 
   constructor(private cookieService: CookieService) { }
 
