@@ -1,14 +1,12 @@
 form {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 3em;
+  width: 450px;
+  height: 450px;
+  margin: 0 auto 1em;
 }
 
 #board {
   position: relative;
   box-sizing: border-box;
-  width: 450px;
-  height: 450px;
 }
 
 #front {
@@ -41,7 +39,6 @@ form {
   flex-flow: column wrap;
   min-width: 420px;
   height: 360px;
-  background-color: #fff;
 }
 
 .column {
@@ -145,3 +142,10 @@ input:hover+.disc:nth-of-type(6) {
   background-color: var(--hover-disk-color);
   border-radius: 7.5px;
 }
+
+.turn {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+

@@ -1,48 +1,54 @@
-.container {
-    display: flex;
-    justify-content: center;
-    padding-top: 4em;
-}
 .panel {
-    width: 600px;
+    width: 100%;
     border-radius: 5px;
     background-color: white;
-    color: #444;
+    color: #666;
 }
+
 p {
     margin: 0;
     padding: 7.5px 10px;
     user-select: none;
 }
+
 table {
     width: 100%;
 }
+
 tr {
     box-sizing: border-box;
     padding: 0 10px;
     display: block;
     cursor: pointer;
 }
+
 tr:hover {
     background-color: rgba(0, 0, 0, .03);
 }
+
 td {
     min-height: 35px;
     line-height: 35px;
     vertical-align: middle;
     font-size: 15px;
+    display: inline-block;
 }
-td:nth-child(1) > span {
+
+td:nth-child(1)>span {
     font-size: 80%;
     line-height: normal;
 }
+
 td:nth-child(1) {
-    width: 245px;
-} 
-td:nth-child(2) {
-    width: 200px;
+    width: 20%;
 }
+
+td:nth-child(2) {
+    width: 60%;
+    text-align: center;
+}
+
 td:nth-child(3) {
-    width: 135px;
+    width: 20%;
     text-align: right;
-} 
+}

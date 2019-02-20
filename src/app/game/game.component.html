@@ -3,19 +3,13 @@
     {{alertText}}
   </ngb-alert>
 </p>
-<div *ngIf="dataLoaded" class="container-fluid widget header">
-  <div class="row">
-    <div class="col-sm-5">
-      <p>{{red.username}}</p>
+<div *ngIf="dataLoaded" class="card-dark">
+    <div class="header">
+        <div>{{red.username}}</div>
+        <div>{{red.points}} - {{yellow.points}}</div>
+        <div>{{yellow.username}}</div>
     </div>
-    <div class="col-sm-2">
-      <p style="text-align: center">{{red.points}} - {{yellow.points}}</p>
-    </div>
-    <div class="col-sm-5">
-      <p style="float:right">{{yellow.username}}</p>
-    </div>
-  </div>
 </div>
-<div *ngIf="dataLoaded" class="container-fluid widget">
+<div *ngIf="dataLoaded" class="card-dark">
     <app-board [username]="username" [red]="red" [yellow]="yellow" [gameRecord]="gameRecord"></app-board>
 </div>

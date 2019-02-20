@@ -1,15 +1,26 @@
-.header {
-    height: 60px;
-    line-height: 2;
-    margin-bottom: 1em;
-  }
+.card-dark {
+  padding: 1em;
+  margin-bottom: 1em;
+  border-radius: 5px;
+  background-color: var(--gray-dark);
+  font-weight: lighter;
+  color: #eee;
+}
 
-  .widget {
-    padding-top: 1em;
-    border-radius: 5px;
-    color: #eee;
-    background-color: var(--gray-dark);
-    font-weight: lighter;
-  }
+.header>div {
+    display: inline-block;
+}
 
+.header>div:nth-child(1) {
+    width: 45%;
+}
 
+.header>div:nth-child(2) {
+    width: 10%;
+    text-align: center;
+}
+
+.header>div:nth-child(3) {
+    width: 45%;
+    text-align: right;
+}

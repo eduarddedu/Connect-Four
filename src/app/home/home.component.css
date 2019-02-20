@@ -1,41 +1,51 @@
 #sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    width: 250px;
-    background-color: #eee;
+    display: none;
 }
-#sidebar > .controls {
-    background-color: #ddd;
-    padding: 10px;
-}
+
 #content {
-    margin-left: 250px;
-    padding: 0 30px 40px 30px;
-    background: linear-gradient(to right bottom, #006994, #fff);;
+    margin: 0;
+    background: linear-gradient(to right bottom, #006994, #fff);
+    min-width: 550px;
     min-height: 100vh;
+    padding: 16px;
 }
-.centered-box {
-    max-width: 720px;
-    margin: auto;
-}
+
 .header {
     display: flex;
     justify-content: space-between;
-    padding: 2em 0 4em;
     font-weight: lighter;
     line-height: normal;
     color: #eee;
 }
-.header > .brand {
+.header, main {
+    padding: 1em 0;
+}
+
+.header>.brand {
     cursor: pointer;
 }
-.header > .brand > img {
-    vertical-align: bottom;
-} 
-.header > .profile {
-   padding-top: 12px;
+
+@media (min-width: 768px) {
+    #sidebar {
+        display: block;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: 250px;
+        background-color: #eee;
+    }
+    #sidebar>.controls {
+        background-color: #ddd;
+        padding: 10px;
+    }
+    #content {
+        position: relative;
+        left: 250px;
+        width: calc(100% - 250px);
+        padding: 0 30px 40px 30px;
+    }
+    .content-wrapper {
+        max-width: 720px;
+        margin: 0 auto;
+    }
 }
-
-
-

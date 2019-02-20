@@ -1,37 +1,32 @@
-<div class="row">
-  <div class="col-sm-8">
+<div class="turn">
+  <div>
     <div class="bullet"></div>
     <span *ngIf="this.activePlayer.username === this.username">&nbsp;Your turn</span>
     <span *ngIf="this.activePlayer.username !== this.username">&nbsp;{{activePlayer.username}}'s turn</span>
   </div>
-  <div class="col-sm-4">
-    <div style="float:right">
+  <div>
+    <div>
       <app-timer [active]="this.activePlayer.username === this.username"></app-timer>
       <app-timer [active]="this.activePlayer.username !== this.username"></app-timer>
     </div>
   </div>
 </div>
 
-<div class="row">
-  <div class="col-sm-12">
-    <form>
-      <div id="board">
-        <div id="field">
-          <div class="grid">
-            <ng-container *ngFor="let i of columns">
-              <div class="column">
-                <ng-container *ngFor="let j of rows">
-                  <input type="radio" name="{{j * 10 + i}}" tabindex="-1" (click)="onClick($event)">
-                  <div class="disc" id="{{j * 10 + i}}"></div>
-                </ng-container>
-              </div>
+<form>
+  <div id="board">
+    <div id="field">
+      <div class="grid">
+        <ng-container *ngFor="let i of columns">
+          <div class="column">
+            <ng-container *ngFor="let j of rows">
+              <input type="radio" name="{{j * 10 + i}}" tabindex="-1" (click)="onClick($event)">
+              <div class="disc" id="{{j * 10 + i}}"></div>
             </ng-container>
           </div>
-        </div>
-        <div id="front"></div>
+        </ng-container>
       </div>
-      <br>
-      <button type="reset" style="display:none">New game</button>
-    </form>
+    </div>
+    <div id="front"></div>
   </div>
-</div>
+  <button type="reset" style="display:none">New game</button>
+</form>
