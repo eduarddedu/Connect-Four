@@ -17,7 +17,9 @@
     line-height: normal;
     color: #eee;
 }
-.header, main {
+
+.header,
+main {
     padding: 1em 0;
 }
 
