@@ -3,11 +3,9 @@
 }
 
 #content {
-    margin: 0;
-    background: linear-gradient(to right bottom, #006994, #fff);
     min-width: 550px;
     min-height: 100vh;
-    padding: 16px;
+    color: #bbb;
 }
 
 .header {
@@ -15,12 +13,12 @@
     justify-content: space-between;
     font-weight: lighter;
     line-height: normal;
-    color: #eee;
+    user-select: none;
 }
 
 .header,
 main {
-    padding: 1em 0;
+    padding: 10px;
 }
 
 .header>.brand {
@@ -44,10 +42,18 @@ main {
         position: relative;
         left: 250px;
         width: calc(100% - 250px);
-        padding: 0 30px 40px 30px;
+        padding: 0 30px 40px;
+        background: linear-gradient(to right bottom, #006994, #fff);
+        color: #eee;
     }
-    .content-wrapper {
+    .content-box {
         max-width: 720px;
         margin: 0 auto;
+    }
+    .header {
+        padding: 30px 10px;
+    }
+    main {
+        padding: 30px 10px 0;
     }
 }

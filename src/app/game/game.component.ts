@@ -11,8 +11,10 @@ import { AuthService } from '../auth-service.service';
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
-  dataLoaded = false;
-  showAlert = false;
+  private dataLoaded = false;
+  private showAlert = false;
+  private alertType: string;
+  private alertText: string;
   private username: string;
   private opponent: string;
   private red: any;
@@ -22,7 +24,6 @@ export class GameComponent implements OnInit {
   private gameId: string;
   private isObserver: boolean;
   private gameRecord: any;
-  private alertText: string;
   @ViewChild(BoardComponent) boardComponent: BoardComponent;
 
 
@@ -58,6 +59,7 @@ export class GameComponent implements OnInit {
 
   private userOffline(username: string) {
     if (username === this.opponent) {
+      this.alertType = 'danger';
       this.alertText = `Oh shucks! ${username} has left the game.`;
       this.showAlert = true;
       this.gameRecord.delete();

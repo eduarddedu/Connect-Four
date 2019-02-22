@@ -1,5 +1,4 @@
 .panel {
-    width: 100%;
     border-radius: 5px;
     background-color: white;
     color: #666;
@@ -27,8 +26,8 @@ tr:hover {
 }
 
 td {
-    min-height: 35px;
-    line-height: 35px;
+    min-height: 50px;
+    line-height: 50px;
     vertical-align: middle;
     font-size: 15px;
     display: inline-block;
@@ -51,4 +50,11 @@ td:nth-child(2) {
 td:nth-child(3) {
     width: 20%;
     text-align: right;
+}
+
+@media(min-width:768px) {
+    td {
+        min-height: 35px;
+        line-height: 35px;
+    }
 }
