@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-board',
@@ -9,24 +9,33 @@ export class BoardComponent implements OnInit, AfterViewInit {
   @Input() red: any;
   @Input() yellow: any;
   @Input() username: string;
+  @Input() isObserver: boolean;
   @Input() gameRecord: any;
   activePlayer: any;
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
   private indexLastUpdate = 0;
 
+  constructor(private cdr: ChangeDetectorRef) { }
+
   ngOnInit() {
     this.activePlayer = this.red;
   }
 
   ngAfterViewInit() {
-    this.toggleHoverDisk();
+    this.setHoverDiskColor();
     this.gameRecord.subscribe('moves', this.onMovesUpdate.bind(this), true);
   }
 
-  private toggleHoverDisk() {
+  private setHoverDiskColor() {
     const root = <any>document.querySelector(':root');
-    root.style.setProperty('--hover-disk-color', this.activePlayer.color);
+    const color = this.username === this.red.username ? this.red.color : this.yellow.color;
+    root.style.setProperty('--hover-disk-color', color);
+    this.setHoverDiskVisibility();
+  }
+
+  private setHoverDiskVisibility() {
+    const root = <any>document.querySelector(':root');
     if (this.activePlayer.username === this.username) {
       root.style.setProperty('--hover-disk-opacity', '1');
     } else {
@@ -52,22 +61,24 @@ export class BoardComponent implements OnInit, AfterViewInit {
     const dropDisk = document.getElementById(id);
     dropDisk.style.color = this.activePlayer.color;
     this.toggleActivePlayer();
-    this.toggleHoverDisk();
   }
+
+  /*
+    Create the dropping disc effect when the opponent makes a move.
+   */
 
   private replayMove(id: string) {
     const input = <any>document.querySelector(`input[name="${id}"]`);
     const dropDisk = document.getElementById(id);
     dropDisk.style.color = this.activePlayer.color;
     const pixels = 15 + Math.floor(+id / 10) * 60;
-    dropDisk.style.setProperty('opacity', '1');
     dropDisk.style.setProperty('top', `-${pixels}px`);
+    dropDisk.style.setProperty('opacity', '1');
     setTimeout(() => {
       dropDisk.style.setProperty('top', `0`);
       input.checked = true;
       this.toggleActivePlayer();
-      this.toggleHoverDisk();
-    }, 200);
+    }, 100);
   }
 
   private updateMovesRecord(id: string) {
@@ -77,28 +88,28 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   private onMovesUpdate(moves: string[]) {
-    if (!moves) {
-      return;
-    }
-    const weAreOneMoveBehind = moves.length - this.indexLastUpdate === 1;
-    if (weAreOneMoveBehind) {
-      const id = moves[moves.length - 1];
-      if (this.ourTurn) {
-        this.move(id);
+    if (moves && moves.length !== 0) {
+      if (this.indexLastUpdate === 0) {
+        for (let i = 0; i < moves.length; i++) {
+          const id = moves[i];
+          this.move(id);
+        }
+        this.indexLastUpdate = moves.length;
       } else {
-        this.replayMove(id);
-      }
-    } else {
-      for (let i = this.indexLastUpdate; i < moves.length; i++) {
-        const id = moves[i];
-        this.move(id);
+        const idLastMove = moves[moves.length - 1];
+        if (this.ourTurn) {
+          this.move(idLastMove);
+        } else {
+          this.replayMove(idLastMove);
+        }
       }
     }
-    this.indexLastUpdate = moves.length;
   }
 
   private toggleActivePlayer() {
     this.activePlayer = this.activePlayer === this.red ? this.yellow : this.red;
+    this.setHoverDiskVisibility();
+    this.cdr.detectChanges();
   }
 
 }

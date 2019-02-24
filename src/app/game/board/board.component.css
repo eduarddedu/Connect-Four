@@ -139,7 +139,6 @@ input:hover+.disc:nth-of-type(6) {
   float: left;
   width: 15px;
   height: 15px;
-  background-color: var(--hover-disk-color);
   border-radius: 7.5px;
 }
 

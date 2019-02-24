@@ -1,6 +1,6 @@
 <div class="turn">
   <div>
-    <div class="bullet"></div>
+    <div class="bullet" [ngStyle]="{'background-color' : this.activePlayer.color}"></div>
     <span *ngIf="this.activePlayer.username === this.username">&nbsp;Your turn</span>
     <span *ngIf="this.activePlayer.username !== this.username">&nbsp;{{activePlayer.username}}'s turn</span>
   </div>

@@ -18,10 +18,9 @@ export class GameComponent implements OnInit {
   private opponent: string;
   private red: any;
   private yellow: any;
-  private activePlayer: any;
+  private isObserver = false;
   private client: any;
   private gameId: string;
-  private isObserver: boolean;
   private gameRecord: any;
   @ViewChild(BoardComponent) boardComponent: BoardComponent;
 
@@ -39,7 +38,6 @@ export class GameComponent implements OnInit {
         if (players) {
           this.red = players.red;
           this.yellow = players.yellow;
-          this.activePlayer = this.red;
           if (this.username === players.red.username) {
             this.opponent = players.yellow.username;
           } else if (this.username === players.yellow.username) {
