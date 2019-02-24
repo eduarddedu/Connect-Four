@@ -35,20 +35,39 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   onClick(event: any) {
-    if (this.activePlayer.username === this.username) {
+    if (this.ourTurn) {
       this.updateMovesRecord(event.target.name);
     } else {
       event.preventDefault();
     }
   }
 
+  private get ourTurn() {
+    return this.activePlayer.username === this.username;
+  }
+
   private move(id: string) {
     const input = <any>document.querySelector(`input[name="${id}"]`);
-    input.checked = true; // make sure we replay opponent's click
+    input.checked = true;
     const dropDisk = document.getElementById(id);
     dropDisk.style.color = this.activePlayer.color;
     this.toggleActivePlayer();
     this.toggleHoverDisk();
+  }
+
+  private replayMove(id: string) {
+    const input = <any>document.querySelector(`input[name="${id}"]`);
+    const dropDisk = document.getElementById(id);
+    dropDisk.style.color = this.activePlayer.color;
+    const pixels = 15 + Math.floor(+id / 10) * 60;
+    dropDisk.style.setProperty('opacity', '1');
+    dropDisk.style.setProperty('top', `-${pixels}px`);
+    setTimeout(() => {
+      dropDisk.style.setProperty('top', `0`);
+      input.checked = true;
+      this.toggleActivePlayer();
+      this.toggleHoverDisk();
+    }, 200);
   }
 
   private updateMovesRecord(id: string) {
@@ -57,11 +76,25 @@ export class BoardComponent implements OnInit, AfterViewInit {
     this.gameRecord.set('moves', moves);
   }
 
-  private onMovesUpdate(moves: string[] = []) {
-    for (let i = this.indexLastUpdate; i < moves.length; i++) {
-      this.move(moves[i]);
-      this.indexLastUpdate++;
+  private onMovesUpdate(moves: string[]) {
+    if (!moves) {
+      return;
     }
+    const weAreOneMoveBehind = moves.length - this.indexLastUpdate === 1;
+    if (weAreOneMoveBehind) {
+      const id = moves[moves.length - 1];
+      if (this.ourTurn) {
+        this.move(id);
+      } else {
+        this.replayMove(id);
+      }
+    } else {
+      for (let i = this.indexLastUpdate; i < moves.length; i++) {
+        const id = moves[i];
+        this.move(id);
+      }
+    }
+    this.indexLastUpdate = moves.length;
   }
 
   private toggleActivePlayer() {

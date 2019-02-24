@@ -99,7 +99,7 @@ input:checked+.disc:nth-of-type(5) {
   transition: top 0.29s cubic-bezier(0.56, 0, 1, 1);
 }
 
-input:checked+.disc:nth-of-type(6n) {
+input:checked+.disc:nth-of-type(6) {
   transition: top 0.32s cubic-bezier(0.56, 0, 1, 1);
 }
 

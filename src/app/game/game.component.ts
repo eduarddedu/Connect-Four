@@ -13,7 +13,6 @@ import { AuthService } from '../auth-service.service';
 export class GameComponent implements OnInit {
   private dataLoaded = false;
   private showAlert = false;
-  private alertType: string;
   private alertText: string;
   private username: string;
   private opponent: string;
@@ -59,7 +58,6 @@ export class GameComponent implements OnInit {
 
   private userOffline(username: string) {
     if (username === this.opponent) {
-      this.alertType = 'danger';
       this.alertText = `Oh shucks! ${username} has left the game.`;
       this.showAlert = true;
       this.gameRecord.delete();
