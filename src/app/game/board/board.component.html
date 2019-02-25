@@ -1,4 +1,4 @@
-<div class="turn">
+<div class="card-row" *ngIf="game.state === 'in progress'">
   <div>
     <div class="bullet" [ngStyle]="{'background-color' : this.activePlayer.color}"></div>
     <span *ngIf="this.activePlayer.username === this.username">&nbsp;Your turn</span>
@@ -11,7 +11,15 @@
     </div>
   </div>
 </div>
-
+<div class="card-row" *ngIf="game.state === 'completed'">
+  <div>
+      <div class="bullet" [ngStyle]="{'background-color' : game.winner.color}"></div>
+      <span>&nbsp;{{game.winner.username}} wins!</span>
+  </div>
+  <div style="clear:both">
+      <button type="button" class="btn btn-primary">New game</button>
+    </div>
+</div>
 <form>
   <div id="board">
     <div id="field">
@@ -28,5 +36,5 @@
     </div>
     <div id="front"></div>
   </div>
-  <button type="reset" style="display:none">New game</button>
+  <button type="reset" style="display:none">Reset board</button>
 </form>

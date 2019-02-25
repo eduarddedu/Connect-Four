@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { BoardComponent } from './board/board.component';
@@ -15,17 +15,19 @@ export class GameComponent implements OnInit {
   private showAlert = false;
   private alertText: string;
   private username: string;
-  private opponent: string;
   private red: any;
   private yellow: any;
-  private isObserver = false;
   private client: any;
   private gameId: string;
   private gameRecord: any;
   @ViewChild(BoardComponent) boardComponent: BoardComponent;
 
 
-  constructor(private route: ActivatedRoute, private authService: AuthService, private clientManager: DeepstreamClientManager) {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private clientManager: DeepstreamClientManager) {
     this.username = this.authService.user.username;
     this.client = this.clientManager.getInstance();
   }
@@ -38,14 +40,8 @@ export class GameComponent implements OnInit {
         if (players) {
           this.red = players.red;
           this.yellow = players.yellow;
-          if (this.username === players.red.username) {
-            this.opponent = players.yellow.username;
-          } else if (this.username === players.yellow.username) {
-            this.opponent = players.red.username;
-          } else {
-            this.isObserver = true;
-          }
           this.dataLoaded = true;
+          this.cdr.detectChanges();
         }
       }, true);
     });
@@ -55,12 +51,10 @@ export class GameComponent implements OnInit {
   }
 
   private userOffline(username: string) {
-    if (username === this.opponent) {
-      this.alertText = `Oh shucks! ${username} has left the game.`;
-      this.showAlert = true;
-      this.gameRecord.delete();
-      this.client.record.getRecord(this.username).set('status', 'Online');
-    }
+    this.alertText = `${username} has left the game.`;
+    this.showAlert = true;
+    this.gameRecord.delete();
+    this.client.record.getRecord(this.username).set('status', 'Online');
   }
 
 }

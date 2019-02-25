@@ -122,7 +122,8 @@ export class PanelJoinGameComponent implements OnInit, OnDestroy {
           points: 0
         }
       },
-      moves: []
+      moves: [],
+      game: { state: 'in progress' }
     });
     this.client.record.getRecord(this.username).set('status', 'In game');
     this.client.record.getRecord(this.username).set('gameId', gameId);

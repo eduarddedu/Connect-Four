@@ -142,9 +142,11 @@ input:hover+.disc:nth-of-type(6) {
   border-radius: 7.5px;
 }
 
-.turn {
+.card-row {
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
+  align-items: center;
+  min-height: 2.5em;
 }
 
