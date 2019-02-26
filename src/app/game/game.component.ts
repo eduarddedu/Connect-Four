@@ -11,10 +11,11 @@ import { AuthService } from '../auth-service.service';
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit {
-  private dataLoaded = false;
-  private showAlert = false;
+  dataLoaded = false;
+  showAlert = false;
   private alertText: string;
   private username: string;
+  private opponent: string;
   private red: any;
   private yellow: any;
   private client: any;
@@ -40,6 +41,8 @@ export class GameComponent implements OnInit {
         if (players) {
           this.red = players.red;
           this.yellow = players.yellow;
+          this.opponent = this.username === this.red.username ? this.yellow.username
+            : this.username === this.yellow.username ? this.red.username : null;
           this.dataLoaded = true;
           this.cdr.detectChanges();
         }

@@ -31,7 +31,7 @@ export class DeepstreamClientManager {
       this.client = null;
     } else {
       this.client = deepstream(environment.DEEPSTREAM_URL,
-        { maxReconnectAttempts: 0 }).login(this.user, (success: any, data: any) => {
+        { maxReconnectAttempts: 5 }).login(this.user, (success: any, data: any) => {
           if (success) {
             this.registerUser();
             this.unregisterUserOnWindowClose();
