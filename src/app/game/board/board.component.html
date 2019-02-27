@@ -1,26 +1,26 @@
 <div class="card-row" *ngIf="game.state === 'in progress'">
   <div>
     <div class="bullet" [ngStyle]="{'background-color' : activePlayer.color}"></div>
-    <span *ngIf="activePlayer.username === username">&nbsp;Your turn</span>
-    <span *ngIf="activePlayer.username !== username">&nbsp;{{activePlayer.username}}'s turn</span>
+    <span *ngIf="activePlayer === player">&nbsp;Your turn</span>
+    <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.username}}'s turn</span>
   </div>
   <div>
     <div>
-      <app-timer [active]="activePlayer.username === username"></app-timer>
-      <app-timer [active]="activePlayer.username !== username"></app-timer>
+      <app-timer [active]="activePlayer === players.red"></app-timer>
+      <app-timer [active]="activePlayer === players.yellow"></app-timer>
     </div>
   </div>
 </div>
-<div class="card-row" *ngIf="game.state === 'over' || game.state === 'on hold' && !boardEmpty">
+<div class="card-row" *ngIf="game.state === 'over' || game.state === 'on hold' && !isEmpty">
   <div>
     <div class="bullet" [ngStyle]="{'background-color' : game.winner.color}"></div>
-    <span *ngIf="game.winner.username === this.username">&nbsp;You win!</span>
-    <span *ngIf="game.winner.username !== this.username">&nbsp;{{game.winner.username}} wins</span>
+    <span *ngIf="game.winner.username === player.username">&nbsp;You win!</span>
+    <span *ngIf="game.winner.username !== player.username">&nbsp;{{game.winner.username}} wins</span>
   </div>
   <button class="btn btn-primary" (click)="onClickNewGame()">New game</button>
 </div>
-<div class="card-row" *ngIf="game.state === 'on hold' && boardEmpty">
-  <div>Waiting for {{opponent}}...</div>
+<div class="card-row" *ngIf="game.state === 'on hold' && isEmpty">
+  <div>Waiting for {{opponent.username}}...</div>
   <app-timer [active]="true"></app-timer>
 </div>
 <form id="gameboard">

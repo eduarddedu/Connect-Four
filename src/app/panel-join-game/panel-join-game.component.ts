@@ -113,17 +113,15 @@ export class PanelJoinGameComponent implements OnInit, OnDestroy {
       players: {
         red: {
           color: '#ff010b',
-          username: this.username,
-          points: 0
+          username: this.username
         },
         yellow: {
           color: '#ffd918',
-          username: opponent,
-          points: 0
+          username: opponent
         }
       },
       moves: [],
-      game: { state: 'in progress' }
+      points: { red: 0, yellow: 0 }
     });
     this.client.record.getRecord(this.username).set('status', 'In game');
     this.client.record.getRecord(this.username).set('gameId', gameId);

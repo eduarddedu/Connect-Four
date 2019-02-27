@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, Output, AfterViewInit, ChangeDetectorRef, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-board',
@@ -6,27 +6,23 @@ import { Component, OnInit, Input, AfterViewInit, ChangeDetectorRef } from '@ang
   styleUrls: ['./board.component.css']
 })
 export class BoardComponent implements OnInit, AfterViewInit {
-  @Input() red: any;
-  @Input() yellow: any;
-  @Input() username: string;
-  @Input() opponent: string;
-  @Input() gameRecord: any;
-  @Input() client: any;
-  activePlayer: any;
+  @Input() players: any;
+  @Input() activePlayer: any;
+  @Input() player: any;
+  @Input() opponent: any;
+  @Input() game: { state: 'in progress' | 'on hold' | 'over' };
+  @Output() move: EventEmitter<string> = new EventEmitter();
+  @Output() newGame: EventEmitter<any> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-  game = { state: 'in progress' };
-  boardEmpty = true;
+  isEmpty = true;
 
   constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
-    this.activePlayer = this.red;
   }
 
   ngAfterViewInit() {
-    this.gameRecord.subscribe('moves', this.onMovesUpdate.bind(this), true);
-    this.gameRecord.subscribe('game', this.onGameUpdate.bind(this), true);
     const inputs = [].slice.call(document.querySelectorAll('input'));
     inputs.forEach((input: any) => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
     inputs.forEach((input: any) => input.addEventListener('touchend', this.onTouchend.bind(this)));
@@ -46,10 +42,8 @@ export class BoardComponent implements OnInit, AfterViewInit {
 
   onClickInput(event: any) {
     if (this.ourTurn) {
+      this.move.emit(event.target.name);
       this.dropDisc(event.target.name);
-      this.updateGame(event.target.name);
-      this.updateMoves(event.target.name);
-      this.toggleActivePlayer();
     } else {
       event.preventDefault();
     }
@@ -92,10 +86,10 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   private get ourTurn() {
-    return this.activePlayer.username === this.username && this.game.state === 'in progress';
+    return this.activePlayer === this.player && this.game.state === 'in progress';
   }
 
-  private renderOpponentMove(id: string) {
+  replayMove(id: string) {
     const input = <any>document.querySelector(`input[name="${id}"]`);
     if (!input.checked) {
       input.checked = true;
@@ -103,65 +97,24 @@ export class BoardComponent implements OnInit, AfterViewInit {
       this.hoistDisc(id, row);
       setTimeout(() => {
         this.dropDisc(id);
-        this.toggleActivePlayer();
       }, 100);
     }
   }
 
-  private replayGame(moves: string[]) {
+  replayGame(moves: string[]) {
     for (let i = 0; i < moves.length; i++) {
       const id = moves[i];
       const input = <any>document.querySelector(`input[name="${id}"]`);
       input.checked = true;
       const disc: any = document.getElementById(id);
-      disc.style.color = this.activePlayer.color;
+      disc.style.color = i % 2 === 0 ? this.players.red.color : this.players.yellow.color;
       disc.style.opacity = 1;
-      this.toggleActivePlayer();
-    }
-  }
-
-  private updateMoves(id: string) {
-    const moves = this.gameRecord.get('moves');
-    moves.push(id);
-    this.gameRecord.set('moves', moves);
-  }
-
-  private onMovesUpdate(moves: string[]) {
-    if (moves && moves.length > 0) {
-      if (this.boardEmpty && moves.length > 1) {
-        this.replayGame(moves);
-      } else {
-        const id = moves[moves.length - 1];
-        this.renderOpponentMove(id);
-      }
-      this.boardEmpty = false;
     }
   }
 
   onClickNewGame() {
     this.resetBoard();
-    if (this.game.state === 'on hold') {
-      this.gameRecord.set('moves', []);
-      this.activePlayer = this.username === this.red.username ? this.red : this.yellow;
-      this.gameRecord.set('game.state', 'in progress');
-    } else {
-      this.gameRecord.set('game.state', 'on hold');
-      this.activePlayer = this.opponent === this.red.username ? this.red : this.yellow;
-    }
-  }
-
-  private onGameUpdate(game: any) {
-    if (game) {
-      this.game = game;
-    }
-  }
-
-  private updateGame(id: string) {
-    if (this.gameover(id)) {
-      this.activePlayer.points = this.activePlayer.points + 1;
-      this.gameRecord.set('players', { red: this.red, yellow: this.yellow });
-      this.gameRecord.set('game', { state: 'over', winner: this.activePlayer });
-    }
+    this.newGame.emit();
   }
 
   private resetBoard() {
@@ -172,20 +125,11 @@ export class BoardComponent implements OnInit, AfterViewInit {
       disc.style.top = 0;
       disc.style.opacity = 0;
     });
-    this.boardEmpty = true;
-  }
-
-  private toggleActivePlayer() {
-    this.activePlayer = this.activePlayer === this.red ? this.yellow : this.red;
-    this.cdr.detectChanges();
+    this.isEmpty = true;
   }
 
   private inputChecked(inputName: string) {
     return (<any>document.querySelector(`input[name="${inputName}"]`)).checked;
-  }
-
-  private gameover(id: string) {
-    return id === '62';
   }
 
 }

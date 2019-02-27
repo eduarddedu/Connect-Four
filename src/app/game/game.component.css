@@ -10,6 +10,9 @@
 .header>div {
     display: inline-block;
 }
+.header>span {
+    font-size: 80%;
+}
 
 .header>div:nth-child(1) {
     width: 45%;
