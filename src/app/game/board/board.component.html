@@ -11,15 +11,15 @@
     </div>
   </div>
 </div>
-<div class="card-row" *ngIf="game.state === 'over' || game.state === 'on hold' && !isEmpty">
+<div class="card-row" *ngIf="game.state === 'over' || game.state === 'on hold' && !waitingForOpponent">
   <div>
     <div class="bullet" [ngStyle]="{'background-color' : game.winner.color}"></div>
     <span *ngIf="game.winner.username === player.username">&nbsp;You win!</span>
-    <span *ngIf="game.winner.username !== player.username">&nbsp;{{game.winner.username}} wins</span>
+    <span *ngIf="game.winner.username !== player.username">&nbsp;{{game.winner.username}} wins!</span>
   </div>
   <button class="btn btn-primary" (click)="onClickNewGame()">New game</button>
 </div>
-<div class="card-row" *ngIf="game.state === 'on hold' && isEmpty">
+<div class="card-row" *ngIf="game.state === 'on hold' && waitingForOpponent">
   <div>Waiting for {{opponent.username}}...</div>
   <app-timer [active]="true"></app-timer>
 </div>

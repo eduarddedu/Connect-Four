@@ -11,7 +11,6 @@
     </div>
 </div>
 <div *ngIf="dataLoaded" class="card-dark">
-    <app-board [players]="players" [activePlayer]="activePlayer" 
-    [player]="player" [opponent]="opponent" [game]="game"
+    <app-board [players]="players" [player]="player" [opponent]="opponent"
     (move)="onMove($event)" (newGame)="onNewGame()"></app-board>
 </div>
