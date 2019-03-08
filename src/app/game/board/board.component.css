@@ -53,7 +53,6 @@
   background: radial-gradient(circle, currentcolor 12px, #666 13px, currentcolor 14px, currentcolor 21px, #666 22px, transparent 23px, transparent) center/60px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s top 0s 0.2s color 0s 0.2s;
 }
 
 input {
@@ -69,10 +68,6 @@ input {
 
 input:indeterminate {
   display: initial;
-}
-
-input:checked {
-  display: none;
 }
 
 .bullet {

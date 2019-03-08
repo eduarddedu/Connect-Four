@@ -52,23 +52,23 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   onTouchstart(event: any) {
-    if (!this.input(event.target.name).checked && this.ourTurn) {
-      const id = event.target.name;
+    const id = event.target.name;
+    if (!this.input(id).checked && this.ourTurn) {
       const row = Math.floor(+id / 10);
       this.hoistDisc(id, row);
     }
   }
 
   onTouchend(event: any) {
-    if (!this.input(event.target.name).checked && this.ourTurn) {
-      const id = event.target.name;
+    const id = event.target.name;
+    if (!this.input(id).checked && this.ourTurn) {
       this.dropDisc(id);
     }
   }
 
   replayLastMove() {
     const id = this.game.moves[this.game.moves.length - 1];
-    const input: any = this.input(id);
+    const input = this.input(id);
     if (!input.checked) {
       input.checked = true;
       const row = Math.floor(+id / 10);
@@ -84,7 +84,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
     this.setActivePlayer(0);
     for (let i = 0; i < this.game.moves.length; i++) {
       const id = this.game.moves[i];
-      const input: any = this.input(id);
+      const input = this.input(id);
       input.checked = true;
       const disc: any = document.getElementById(id);
       disc.style.color = this.activePlayer.color;
@@ -107,7 +107,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   private hoistDisc(id: string, row: number) {
-    const disc: any = document.getElementById(id);
+    const disc = this.disc(id);
     disc.style.color = this.activePlayer.color;
     const pixels = 15 + row * 60;
     disc.style.top = `-${pixels}px`;
@@ -116,15 +116,14 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   private dropDisc(id: string) {
-    const disc: any = document.getElementById(id);
+    const disc = this.disc(id);
     const seconds = 0.14 + 0.03 * Math.floor(+id / 10);
     disc.style.transition = `top ${seconds}s cubic-bezier(0.56, 0, 1, 1)`;
     disc.style.top = 0;
   }
 
   private hideDisc(id: string) {
-    const disc: any = document.getElementById(id);
-    disc.style.opacity = 0;
+    this.disc(id).style.opacity = 0;
   }
 
   private get ourTurn() {
@@ -143,6 +142,10 @@ export class BoardComponent implements OnInit, AfterViewInit {
 
   private input(name: string): any {
     return document.querySelector(`input[name="${name}"]`);
+  }
+
+  private disc(id: string): any {
+    return document.getElementById(id);
   }
 
 }

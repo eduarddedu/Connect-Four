@@ -45,6 +45,7 @@ export class PanelJoinGameComponent implements OnInit, OnDestroy {
         user.status = status;
       } else {
         this.listPlayers.push({ username: username, status: status });
+        this.cdr.detectChanges();
       }
     });
   }
