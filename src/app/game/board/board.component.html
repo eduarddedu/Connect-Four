@@ -32,9 +32,9 @@
             <ng-container *ngFor="let j of rows">
               <input type="radio" name="{{j * 10 + i}}" tabindex="-1" 
               (click)="onClickInput($event)" 
-              (mouseover)="onMouseoverInput($event.target.name, j)" 
+              (mouseover)="onMouseoverInput($event.target.name)" 
               (mouseleave)="onMouseleaveInput($event.target.name)">
-              <div class="disc" id="{{j * 10 + i}}"></div>
+              <div class="disc disc-initial" id="{{j * 10 + i}}"></div>
             </ng-container>
           </div>
         </ng-container>

@@ -23,16 +23,16 @@ export class BoardComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.activePlayer = this.players.red;
   }
-
+  /* Bind event handlers for mobile interaction */
   ngAfterViewInit() {
-    const inputs = [].slice.call(document.querySelectorAll('input'));
-    inputs.forEach((input: any) => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
-    inputs.forEach((input: any) => input.addEventListener('touchend', this.onTouchend.bind(this)));
+    const inputs: any[] = [].slice.call(document.querySelectorAll('input'));
+    inputs.forEach(input => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
+    inputs.forEach(input => input.addEventListener('touchend', this.onTouchend.bind(this)));
   }
 
-  onMouseoverInput(id: string, row: number) {
+  onMouseoverInput(id: string) {
     if (!this.input(id).checked && this.ourTurn) {
-      this.hoistDisc(id, row);
+      this.hoistDisc(id);
     }
   }
 
@@ -54,8 +54,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
   onTouchstart(event: any) {
     const id = event.target.name;
     if (!this.input(id).checked && this.ourTurn) {
-      const row = Math.floor(+id / 10);
-      this.hoistDisc(id, row);
+      this.hoistDisc(id);
     }
   }
 
@@ -71,8 +70,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
     const input = this.input(id);
     if (!input.checked) {
       input.checked = true;
-      const row = Math.floor(+id / 10);
-      this.hoistDisc(id, row);
+      this.hoistDisc(id);
       setTimeout(() => {
         this.dropDisc(id);
       }, 100);
@@ -86,9 +84,10 @@ export class BoardComponent implements OnInit, AfterViewInit {
       const id = this.game.moves[i];
       const input = this.input(id);
       input.checked = true;
-      const disc: any = document.getElementById(id);
+      const disc = this.disc(id);
+      disc.classList.remove('initial');
+      disc.classList.add('disc-down');
       disc.style.color = this.activePlayer.color;
-      disc.style.opacity = 1;
       this.setActivePlayer(i + 1);
     }
   }
@@ -106,24 +105,22 @@ export class BoardComponent implements OnInit, AfterViewInit {
     this.cdr.detectChanges();
   }
 
-  private hoistDisc(id: string, row: number) {
+  private hoistDisc(id: string) {
     const disc = this.disc(id);
+    disc.classList.remove('disc-initial');
+    disc.classList.add('disc-up');
     disc.style.color = this.activePlayer.color;
-    const pixels = 15 + row * 60;
-    disc.style.top = `-${pixels}px`;
-    disc.style.opacity = 1;
-    disc.style.transition = 'opacity 0.2s, top 0s';
   }
 
   private dropDisc(id: string) {
     const disc = this.disc(id);
-    const seconds = 0.14 + 0.03 * Math.floor(+id / 10);
-    disc.style.transition = `top ${seconds}s cubic-bezier(0.56, 0, 1, 1)`;
-    disc.style.top = 0;
+    disc.classList.remove('disc-up');
+    disc.classList.add('disc-drop');
   }
 
   private hideDisc(id: string) {
-    this.disc(id).style.opacity = 0;
+    this.disc(id).classList.remove('disc-up');
+    this.disc(id).classList.add('disc-initial');
   }
 
   private get ourTurn() {
@@ -131,10 +128,10 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   private resetBoard() {
-    const discs = [].slice.call(document.querySelectorAll('div.disc'));
-    discs.forEach((disc: any) => {
-      disc.style.top = 0;
-      disc.style.opacity = 0;
+    const discs: any[] = [].slice.call(document.querySelectorAll('div.disc'));
+    discs.forEach(disc => {
+      disc.classList.remove('disc-drop', 'disc-down');
+      disc.classList.add('disc-initial');
     });
     const inputs = [].slice.call(document.querySelectorAll('input'));
     inputs.forEach((input: any) => input.checked = false);

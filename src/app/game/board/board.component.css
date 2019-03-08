@@ -1,89 +1,163 @@
 #board {
-  width: 450px;
-  height: 450px;
-  margin: 0 auto 1em;
-  position: relative;
-  box-sizing: border-box;
+    width: 450px;
+    height: 450px;
+    margin: 0 auto 1em;
+    position: relative;
+    box-sizing: border-box;
 }
 
 #front {
-  position: absolute;
-  top: 60px;
-  border: 15px solid #007fff;
-  border-radius: 4px;
-  box-sizing: border-box;
-  width: 450px;
-  height: 390px;
-  pointer-events: none;
-  background: radial-gradient(circle, transparent, transparent 18px, #007fff 20px, #007fff 23px, #1f90ff 23px, #1f90ff 36px, #007fff) center top/60px 60px;
+    position: absolute;
+    top: 60px;
+    border: 15px solid #007fff;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 450px;
+    height: 390px;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent, transparent 18px, #007fff 20px, #007fff 23px, #1f90ff 23px, #1f90ff 36px, #007fff) center top/60px 60px;
 }
 
 #field {
-  position: absolute;
-  top: 0;
-  left: 15px;
-  padding: 75px 0 0 0;
-  box-sizing: border-box;
-  width: 420px;
-  height: 435px;
-  overflow: hidden;
-  cursor: not-allowed;
+    position: absolute;
+    top: 0;
+    left: 15px;
+    padding: 75px 0 0 0;
+    box-sizing: border-box;
+    width: 420px;
+    height: 435px;
+    overflow: hidden;
+    cursor: not-allowed;
 }
 
 .grid {
-  position: relative;
-  display: inline-flex;
-  flex-flow: column wrap;
-  min-width: 420px;
-  height: 360px;
+    position: relative;
+    display: inline-flex;
+    flex-flow: column wrap;
+    min-width: 420px;
+    height: 360px;
 }
 
 .column {
-  margin: 0;
-  display: inline-flex;
-  flex-flow: column wrap;
-  height: 360px;
+    margin: 0;
+    display: inline-flex;
+    flex-flow: column wrap;
+    height: 360px;
 }
 
 .disc {
-  position: relative;
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, currentcolor 12px, #666 13px, currentcolor 14px, currentcolor 21px, #666 22px, transparent 23px, transparent) center/60px;
+    pointer-events: none;
+}
+
+.disc-initial {
+    top: 0;
+    opacity: 0;
+}
+
+.disc-up {
+    opacity: 1;
+    transition: opacity 0.2s, top 0s;
+}
+
+.disc-up:nth-of-type(1) {
+    top: -75px;
+}
+
+.disc-up:nth-of-type(2) {
+    top: -135px;
+}
+
+.disc-up:nth-of-type(3) {
+    top: -195px;
+}
+
+.disc-up:nth-of-type(4) {
+    top: -255px;
+}
+
+.disc-up:nth-of-type(5) {
+    top: -315px;
+}
+
+.disc-up:nth-of-type(6) {
+    top: -375px;
+}
+
+.disc-drop {
+    top: 0;
+}
+
+.disc-drop:nth-of-type(1) {
+    transition: top 0.14s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-drop:nth-of-type(2) {
+    transition: top 0.19s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-drop:nth-of-type(3) {
+    transition: top 0.23s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-drop:nth-of-type(4) {
+    transition: top 0.26s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-drop:nth-of-type(5) {
+    transition: top 0.29s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-drop:nth-of-type(6n) {
+    transition: top 0.32s cubic-bezier(0.56, 0, 1, 1);
+}
+
+.disc-down {
   top: 0;
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle, currentcolor 12px, #666 13px, currentcolor 14px, currentcolor 21px, #666 22px, transparent 23px, transparent) center/60px;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1;
 }
 
 input {
-  display: none;
-  position: absolute;
-  top: -90px;
-  margin: 0;
-  width: 60px;
-  height: 450px;
-  cursor: pointer;
-  opacity: 0;
+    display: none;
+    position: absolute;
+    top: -90px;
+    margin: 0;
+    width: 60px;
+    height: 450px;
+    cursor: pointer;
+    opacity: 0;
 }
 
 input:indeterminate {
-  display: initial;
+    display: initial;
 }
 
 .bullet {
-  position: relative;
-  top: 5px;
-  float: left;
-  width: 15px;
-  height: 15px;
-  border-radius: 7.5px;
+    position: relative;
+    top: 5px;
+    float: left;
+    width: 15px;
+    height: 15px;
+    border-radius: 7.5px;
 }
 
 .card-row {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 2.5em;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 2.5em;
 }
 
+/* 
+TODO: remove 
+.red {
+    color: #ff010b;
+}
+.yellow {
+    color: #ffd918;
+}
+*/

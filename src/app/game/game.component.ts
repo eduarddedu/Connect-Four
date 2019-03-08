@@ -51,6 +51,7 @@ export class GameComponent implements OnInit, OnDestroy {
             this.player = players.yellow;
             this.opponent = players.red;
           }
+          this.gameRecord.unsubscribe('players');
           this.dataLoaded = true;
           this.cdr.detectChanges();
         }
@@ -64,7 +65,7 @@ export class GameComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (!this.gameRecordDestroyed) {
       this.gameRecord.unsubscribe('game');
-      this.gameRecord.unsubscribe('players');
+      this.gameRecord.unsubscribe('points');
     }
     this.usersList.unsubscribe(this.onUserOffline.bind(this));
   }
