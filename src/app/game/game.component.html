@@ -1,8 +1,3 @@
-<p *ngIf="showAlert">
-  <ngb-alert type="danger" (close)="showAlert = false">
-    {{alertText}}
-  </ngb-alert>
-</p>
 <div *ngIf="dataLoaded" class="card-dark">
     <div class="header">
         <div>{{players.red.username}}</div>
@@ -11,6 +6,6 @@
     </div>
 </div>
 <div *ngIf="dataLoaded" class="card-dark">
-    <app-board [players]="players" [player]="player" [opponent]="opponent"
-    (move)="onMove($event)" (newGame)="onNewGame()"></app-board>
+    <app-board [players]="players" [player]="player" [opponent]="opponent" [game]="game"
+    (move)="onMove($event)" (newGame)="onNewGame()" [recordDestroyed]="recordDestroyed"></app-board>
 </div>

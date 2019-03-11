@@ -1,27 +1,25 @@
-<div class="card-row" *ngIf="game.state === 'in progress'">
-  <div>
-    <div class="bullet" [ngStyle]="{'background-color' : activePlayer.color}"></div>
-    <span *ngIf="activePlayer === player">&nbsp;Your turn</span>
-    <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.username}}'s turn</span>
-  </div>
-  <div>
+<div id="gameInfo" *ngIf="!recordDestroyed">
+  <div class="card-row" *ngIf="game.state === 'in progress'">
     <div>
-      <app-timer [active]="activePlayer === players.red"></app-timer>
-      <app-timer [active]="activePlayer === players.yellow"></app-timer>
+      <div class="bullet" [ngStyle]="{'background-color' : activePlayer.color}"></div>
+      <span *ngIf="activePlayer === player">&nbsp;Your turn</span>
+      <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.username}}'s turn</span>
+    </div>
+    <div>
+      <div>
+        <app-timer [active]="activePlayer === players.red"></app-timer>
+        <app-timer [active]="activePlayer === players.yellow"></app-timer>
+      </div>
     </div>
   </div>
-</div>
-<div class="card-row" *ngIf="game.state === 'over' || game.state === 'on hold' && !waitingForOpponent">
-  <div>
-    <div class="bullet" [ngStyle]="{'background-color' : game.winner.color}"></div>
-    <span *ngIf="game.winner.username === player.username">&nbsp;You win!</span>
-    <span *ngIf="game.winner.username !== player.username">&nbsp;{{game.winner.username}} wins!</span>
+  <div style="text-align: center" *ngIf="showWinner()">
+    <span *ngIf="player && game.winner.username === player.username">&nbsp;You win!</span>
+    <span *ngIf="player && game.winner.username !== player.username">&nbsp;You loose...</span>
+    <span *ngIf="!player">&nbsp;{{game.winner.username}} wins!</span>
   </div>
-  <button class="btn btn-primary" (click)="onClickNewGame()">New game</button>
-</div>
-<div class="card-row" *ngIf="game.state === 'on hold' && waitingForOpponent">
-  <div>Waiting for {{opponent.username}}...</div>
-  <app-timer [active]="true"></app-timer>
+  <div class="card-row" *ngIf="showWaitingFor()">
+    <div>Waiting for {{opponent.username}}...</div>
+  </div>
 </div>
 <form id="gameboard">
   <div id="board">
@@ -30,10 +28,8 @@
         <ng-container *ngFor="let i of columns">
           <div class="column">
             <ng-container *ngFor="let j of rows">
-              <input type="radio" name="{{j * 10 + i}}" tabindex="-1" 
-              (click)="onClickInput($event)" 
-              (mouseover)="onMouseoverInput($event.target.name)" 
-              (mouseleave)="onMouseleaveInput($event.target.name)">
+              <input type="radio" name="{{j * 10 + i}}" tabindex="-1" (click)="onClickInput($event)"
+                (mouseover)="onMouseoverInput($event.target.name)" (mouseleave)="onMouseleaveInput($event.target.name)">
               <div class="disc disc-initial" id="{{j * 10 + i}}"></div>
             </ng-container>
           </div>
@@ -41,5 +37,8 @@
       </div>
     </div>
     <div id="front"></div>
+  </div>
+  <div [ngStyle]="{'visibility' : newGameButtonVisibility()}">
+    <button type="button" class="btn btn-primary" (click)="onClickNewGame()">New game</button>
   </div>
 </form>

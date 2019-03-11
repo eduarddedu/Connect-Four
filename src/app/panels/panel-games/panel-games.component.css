@@ -1,0 +1,11 @@
+tr {
+    display: grid;
+    grid-template-columns: 1fr max-content 1fr;
+}
+td:nth-of-type(2) {
+    text-align: center;
+}
+td:nth-of-type(3) {
+    text-align: right;
+}
+

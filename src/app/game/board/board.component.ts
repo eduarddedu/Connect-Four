@@ -9,12 +9,12 @@ export class BoardComponent implements OnInit, AfterViewInit {
   @Input() players: any;
   @Input() player: any;
   @Input() opponent: any;
+  @Input() game: any;
+  @Input() recordDestroyed: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
   @Output() newGame: EventEmitter<any> = new EventEmitter();
-  game: { state: string, moves: string[], winner?: any } = { state: 'in progress', moves: [] };
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-  waitingForOpponent = false;
   activePlayer: any;
   redMovesFirst = true;
 
@@ -23,8 +23,9 @@ export class BoardComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.activePlayer = this.players.red;
   }
-  /* Bind event handlers for mobile interaction */
+
   ngAfterViewInit() {
+    /* Bind event handlers for mobile interaction */
     const inputs: any[] = [].slice.call(document.querySelectorAll('input'));
     inputs.forEach(input => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
     inputs.forEach(input => input.addEventListener('touchend', this.onTouchend.bind(this)));
@@ -46,6 +47,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
     if (this.ourTurn) {
       this.move.emit(event.target.name);
       this.dropDisc(event.target.name);
+      this.toggleActivePlayer(this.game.moves.length);
     } else {
       event.preventDefault();
     }
@@ -66,20 +68,22 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   replayLastMove() {
-    const id = this.game.moves[this.game.moves.length - 1];
-    const input = this.input(id);
-    if (!input.checked) {
-      input.checked = true;
-      this.hoistDisc(id);
-      setTimeout(() => {
-        this.dropDisc(id);
-      }, 100);
+    if (this.game.moves.length !== 0) {
+      const id = this.game.moves[this.game.moves.length - 1];
+      const input = this.input(id);
+      if (!input.checked) {
+        input.checked = true;
+        this.hoistDisc(id);
+        setTimeout(() => {
+          this.dropDisc(id);
+          this.toggleActivePlayer(this.game.moves.length);
+        }, 100);
+      }
     }
-    this.setActivePlayer(this.game.moves.length);
   }
 
   replayGame() {
-    this.setActivePlayer(0);
+    this.toggleActivePlayer(0);
     for (let i = 0; i < this.game.moves.length; i++) {
       const id = this.game.moves[i];
       const input = this.input(id);
@@ -88,21 +92,48 @@ export class BoardComponent implements OnInit, AfterViewInit {
       disc.classList.remove('initial');
       disc.classList.add('disc-down');
       disc.style.color = this.activePlayer.color;
-      this.setActivePlayer(i + 1);
+      this.toggleActivePlayer(i + 1);
     }
   }
 
   onClickNewGame() {
-    this.resetBoard();
-    this.waitingForOpponent = true;
     this.newGame.emit();
   }
 
-  setActivePlayer(indexNextMove: number) {
+  toggleActivePlayer(indexNextMove: number) {
     this.activePlayer = indexNextMove % 2 === 0 ?
       this.redMovesFirst ? this.players.red : this.players.yellow :
       this.redMovesFirst ? this.players.yellow : this.players.red;
     this.cdr.detectChanges();
+  }
+
+  clearBoard() {
+    const discs: any[] = [].slice.call(document.querySelectorAll('div.disc'));
+    discs.forEach(disc => {
+      disc.classList.remove('disc-drop', 'disc-down', 'disc-up');
+      disc.classList.add('disc-initial');
+    });
+    const inputs = [].slice.call(document.querySelectorAll('input'));
+    inputs.forEach((input: any) => input.checked = false);
+  }
+
+  showWinner() {
+    return this.game.state === 'completed' ||
+      (!this.player && this.game.state.startsWith('waiting for') ||
+        this.player && this.game.state === `waiting for ${this.player.username}`);
+  }
+
+  showWaitingFor() {
+    return this.opponent && this.game.state === `waiting for ${this.opponent.username}`;
+  }
+
+  newGameButtonVisibility(): 'visible' | 'hidden' {
+    return this.player && (this.game.state === 'completed' || this.game.state === `waiting for ${this.player.username}`) ?
+      'visible' : 'hidden';
+  }
+
+  private get ourTurn() {
+    return this.activePlayer === this.player && this.game.state === 'in progress';
   }
 
   private hoistDisc(id: string) {
@@ -121,20 +152,6 @@ export class BoardComponent implements OnInit, AfterViewInit {
   private hideDisc(id: string) {
     this.disc(id).classList.remove('disc-up');
     this.disc(id).classList.add('disc-initial');
-  }
-
-  private get ourTurn() {
-    return this.activePlayer === this.player && this.game.state === 'in progress';
-  }
-
-  private resetBoard() {
-    const discs: any[] = [].slice.call(document.querySelectorAll('div.disc'));
-    discs.forEach(disc => {
-      disc.classList.remove('disc-drop', 'disc-down');
-      disc.classList.add('disc-initial');
-    });
-    const inputs = [].slice.call(document.querySelectorAll('input'));
-    inputs.forEach((input: any) => input.checked = false);
   }
 
   private input(name: string): any {

@@ -4,11 +4,11 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-invitation-rejected',
   templateUrl: './invitation-rejected.component.html',
-  styleUrls: ['./invitation-rejected.component.css']
+  styles: []
 })
 export class InvitationRejectedComponent {
-  username = '';
+  public username = '';
 
-  constructor(public activeModal: NgbActiveModal) { }
+  constructor(public activeModal: NgbActiveModal) {}
 
 }

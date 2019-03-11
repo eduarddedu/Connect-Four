@@ -1,3 +1,8 @@
+#gameboard {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
 #board {
     width: 450px;
     height: 450px;
@@ -148,16 +153,4 @@ input:indeterminate {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
-    align-items: center;
-    min-height: 2.5em;
 }
-
-/* 
-TODO: remove 
-.red {
-    color: #ff010b;
-}
-.yellow {
-    color: #ffd918;
-}
-*/

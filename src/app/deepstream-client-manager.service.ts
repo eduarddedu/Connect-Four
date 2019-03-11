@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth-service.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 /* import * as deepstream from 'deepstream.io-client-js';
  * Doesn't work, we get runtime error with message 'global is not defined'.
@@ -13,25 +12,34 @@ declare var deepstream: any;
   providedIn: 'root'
 })
 export class DeepstreamClientManager {
-  private client: any;
+  private deepstream: any;
   private user: any;
+  private games: Set<string> = new Set();
 
-  constructor(private authService: AuthService, private modalService: NgbModal) { }
+  constructor(private authService: AuthService) { }
 
   getInstance() {
-    if (!this.client) {
+    if (!this.deepstream) {
       this.init();
     }
-    return this.client;
+    return this.deepstream;
+  }
+
+  addGame(gameId: string) {
+    this.games.add(gameId);
+  }
+
+  getGames(): string[] {
+    return [].slice.call(this.games);
   }
 
   private init() {
     this.user = this.authService.user;
     if (!this.user) {
-      this.client = null;
+      this.deepstream = null;
     } else {
-      this.client = deepstream(environment.DEEPSTREAM_URL,
-        { maxReconnectAttempts: 5 }).login(this.user, (success: any, data: any) => {
+      this.deepstream = deepstream(environment.DEEPSTREAM_URL,
+        { maxReconnectAttempts: 0 }).login(this.user, (success: any, data: any) => {
           if (success) {
             this.registerUser();
             this.unregisterUserOnWindowClose();
@@ -44,11 +52,10 @@ export class DeepstreamClientManager {
   }
 
   private registerUser() {
-    this.client.record.getList('users').whenReady((list: any) => {
+    this.deepstream.record.getList('users').whenReady((list: any) => {
       if (!this.userRegisteredInAnotherWindowOrDevice(list)) {
-        this.client.record.getRecord(this.user.username).set('status', 'Online');
+        this.deepstream.record.getRecord(this.user.username).set('status', 'Online');
         list.addEntry(this.user.username);
-        console.log(`Deepstream: ${this.user.username} signed in`);
       }
     });
   }
@@ -59,13 +66,17 @@ export class DeepstreamClientManager {
 
   private unregisterUserOnWindowClose() {
     window.addEventListener('beforeunload', (event) => {
-      this.client.record.getRecord(this.user.username).delete();
-      this.client.record.getList('users').removeEntry(this.user.username);
+      this.deepstream.record.getRecord(this.user.username).delete();
+      this.deepstream.record.getList('users').removeEntry(this.user.username);
+      this.games.forEach(gameId => {
+        this.deepstream.record.getRecord(gameId).delete();
+        this.deepstream.record.getList('games').removeEntry(gameId);
+      });
     });
   }
 
   private handleErrors() {
-    this.client.on('error', (error: any, event: any) => {
+    this.deepstream.on('error', (error: any, event: any) => {
       console.log(error, event);
     });
   }

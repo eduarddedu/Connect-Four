@@ -1,8 +1,7 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from '../auth-service.service';
 import { Router } from '@angular/router';
-import { PanelJoinGameComponent } from '../panel-join-game/panel-join-game.component';
 
 @Component({
   selector: 'app-home',
@@ -11,7 +10,10 @@ import { PanelJoinGameComponent } from '../panel-join-game/panel-join-game.compo
 })
 export class HomeComponent implements OnInit {
   user: any;
-  @ViewChild(PanelJoinGameComponent) panelJoin: PanelJoinGameComponent;
+  private showAlert = false;
+  private alertMessage = '';
+  private alertType = '';
+  private panelsVisible = true;
 
   constructor(authService: AuthService, private router: Router) {
     this.user = authService.user;
@@ -23,9 +25,25 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  goHome() {
+  private goHome() {
     this.router.navigate(['/']);
-    this.panelJoin.visible = true;
+    this.panelsVisible = true;
+  }
+
+  private joinGame(data: { gameId: string, invitee?: string }) {
+    if (data.invitee) {
+      this.alertMessage = `${data.invitee} has accepted your invitation.`;
+      this.alertType = 'success';
+      this.showAlert = true;
+    }
+    this.panelsVisible = false;
+    this.router.navigate([`/game/${data.gameId}`]);
+  }
+
+  private onUserOffline(user: string) {
+    this.alertMessage = `${user} went offline.`;
+    this.alertType = 'warning';
+    this.showAlert = true;
   }
 
 }

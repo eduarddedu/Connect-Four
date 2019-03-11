@@ -1,17 +1,23 @@
 import { Component, ChangeDetectorRef, OnChanges, OnDestroy, ChangeDetectionStrategy, Input } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="active"><i class="far fa-clock"></i>&nbsp;{{hh_mm_ss}}</span>`,
+  template: `<span *ngIf="active"><i class="far fa-clock"></i>{{hh_mm_ss}}</span>`,
   styles: [
-    `span {
+    `
+    i {
+      vertical-align: middle;
+      padding: 3px;
+      vertical-align: 0.25px;
+    }
+    span {
       display: inline-block;
-      width: 75px;
-      font-size: 13px;
+      font-size: inherit;
+      width: 5.8em;
       line-height: normal;
       text-align: left;
-    }`
+    }
+    `
   ],
   changeDetection: ChangeDetectionStrategy.OnPush
 })

@@ -25,6 +25,12 @@ main {
     cursor: pointer;
 }
 
+#panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: .5em;
+}
+
 @media (min-width: 768px) {
     #sidebar {
         display: block;
@@ -55,5 +61,8 @@ main {
     }
     main {
         padding: 30px 10px 0;
+    }
+    #panels {
+        grid-gap: 1em;
     }
 }
