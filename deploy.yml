@@ -6,7 +6,7 @@
     artifact: app.tar
   tasks:
     - name: Build project 
-      command: ng build --prod --base-href=https://codecritique.org/connectfour/ 
+      command: ng build --prod --base-href=https://connectfour.codecritique.org
       delegate_to: 127.0.0.1
     - name: Create distribution artifact {{ artifact }}
       command: tar -cvf ../app.tar .
