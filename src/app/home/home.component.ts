@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from '../auth-service.service';
 import { Router } from '@angular/router';
@@ -12,8 +12,8 @@ import { DeepstreamClientManager } from '../deepstream-client-manager.service';
 export class HomeComponent implements OnInit {
   user: any;
   private showAlert = false;
-  private alertMessage = '';
-  private alertType = '';
+  private alertMessage: string;
+  private alertType: string;
   private panelsVisible = true;
 
   constructor(

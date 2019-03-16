@@ -32,9 +32,9 @@ export class GameComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private clientManager: DeepstreamClientManager) {
+    private dsc: DeepstreamClientManager) {
     this.username = this.authService.user.username;
-    this.deepstream = this.clientManager.getInstance();
+    this.deepstream = this.dsc.getInstance();
   }
 
   ngOnInit() {
@@ -122,7 +122,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   private onRecordUpdate(data: any) {
-    if (!this.dataLoaded) { // !this.players || this.refresh
+    if (!this.dataLoaded) {
       this.initBoard(data);
     } else {
       this.board.game = data.game;
