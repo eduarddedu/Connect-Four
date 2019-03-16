@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 
 import { AuthService } from '../auth-service.service';
 import { Router } from '@angular/router';
+import { DeepstreamClientManager } from '../deepstream-client-manager.service';
 
 @Component({
   selector: 'app-home',
@@ -15,13 +16,21 @@ export class HomeComponent implements OnInit {
   private alertType = '';
   private panelsVisible = true;
 
-  constructor(authService: AuthService, private router: Router) {
+  constructor(
+    private router: Router, private authService: AuthService, private dsc: DeepstreamClientManager) {
     this.user = authService.user;
   }
 
   ngOnInit() {
     if (!this.user) {
       this.router.navigate(['/login']);
+    } else {
+      const deepstream = this.dsc.getInstance();
+      deepstream.on('error', (error: any, event: any) => {
+        this.alertMessage = `Deepstream ${event}`;
+        this.alertType = 'danger';
+        this.showAlert = true;
+      });
     }
   }
 

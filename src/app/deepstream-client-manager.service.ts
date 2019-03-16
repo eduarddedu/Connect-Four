@@ -38,33 +38,21 @@ export class DeepstreamClientManager {
             throw new Error('Deepstream: authentication failed for ' + this.user.username);
           }
         });
-      this.handleErrors();
     }
   }
 
   private registerUser() {
-    this.deepstream.record.getList('users').whenReady((list: any) => {
-      if (!this.userRegisteredInAnotherWindowOrDevice(list)) {
-        this.deepstream.record.getRecord(this.user.username).set('status', 'Online');
-        list.addEntry(this.user.username);
+    this.deepstream.record.getList('users').whenReady((users: any) => {
+      if (!users.getEntries().includes(this.user.username)) {
+        users.addEntry(this.user.username);
       }
     });
-  }
-
-  private userRegisteredInAnotherWindowOrDevice(list: any) {
-    return list.getEntries().includes(this.user.username);
   }
 
   private unregisterUserOnWindowClose() {
     window.addEventListener('beforeunload', (event) => {
       this.deepstream.record.getRecord(this.user.username).delete();
       this.deepstream.record.getList('users').removeEntry(this.user.username);
-    });
-  }
-
-  private handleErrors() {
-    this.deepstream.on('error', (error: any, event: any) => {
-      console.log(error, event);
     });
   }
 }
