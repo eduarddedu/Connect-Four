@@ -17,28 +17,34 @@ export class PanelPlayersComponent implements OnInit {
   @Output() invitationAccepted: EventEmitter<{ gameId: string, invitee?: string }> = new EventEmitter();
   @Output() invitationSenderOffline: EventEmitter<string> = new EventEmitter();
   private deepstream: any;
-  private listPlayers: Player[] = [];
+  private players: Player[] = [];
+  private games: Set<string> = new Set();
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private modalService: NgbModal,
-    private clientManager: DeepstreamClientManager) {
+  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal, private dsc: DeepstreamClientManager) {
+    this.deepstream = dsc.getInstance();
+    window.addEventListener('beforeunload', this.removeGameRecords.bind(this));
   }
 
   ngOnInit() {
-    this.deepstream = this.clientManager.getInstance();
-    this.deepstream.record.getList('users').whenReady((list: any) => {
-      this.addPlayers(list.getEntries());
-      list.on('entry-added', this.addPlayer.bind(this));
-      list.on('entry-removed', this.removePlayer.bind(this));
+    this.deepstream.record.getList('users').whenReady((users: any) => {
+      this.addPlayers(users.getEntries());
+      users.on('entry-added', this.addPlayer.bind(this));
+      users.on('entry-removed', this.removePlayer.bind(this));
     });
     this.deepstream.event.subscribe(`invitations/${this.username}`, this.handleInvitationEvent.bind(this));
   }
 
-  private addPlayers(list: string[]) {
-    list.filter(username => username !== this.username).forEach(username => {
+  onClick(player: Player) {
+    if (player.status === 'Online') {
+      player.status = 'Invited';
+      this.deepstream.event.emit(`invitations/${player.username}`, <Invitation>{ sender: this.username });
+    }
+  }
+
+  private addPlayers(users: string[]) {
+    users.filter(username => username !== this.username).forEach(username => {
       const player: Player = { username: username, status: 'Online' };
-      this.listPlayers.push(player);
+      this.players.push(player);
     });
     this.cdr.detectChanges();
   }
@@ -46,22 +52,14 @@ export class PanelPlayersComponent implements OnInit {
   private addPlayer(username: string) {
     if (username !== this.username) {
       const newPlayer: Player = { username: username, status: 'Online' };
-      this.listPlayers.push(newPlayer);
+      this.players.push(newPlayer);
       this.cdr.detectChanges();
     }
   }
 
   private removePlayer(username: string) {
-    this.listPlayers = this.listPlayers.filter(player => player.username !== username);
+    this.players = this.players.filter(player => player.username !== username);
     this.cdr.detectChanges();
-  }
-
-  private onClick(player: Player) {
-    if (player.status === 'Online') {
-      player.status = 'Invited';
-      this.deepstream.event.emit(`invitations/${player.username}`, <Invitation>{ sender: this.username });
-      this.cdr.detectChanges();
-    }
   }
 
   handleInvitationEvent(invitation: Invitation) {
@@ -70,8 +68,8 @@ export class PanelPlayersComponent implements OnInit {
     } else {
       if (invitation.response === 'Accept') {
         this.invitationAccepted.emit({ gameId: invitation.gameId, invitee: invitation.sender });
-        this.clientManager.addGame(invitation.gameId);
-        this.listPlayers.find(p => p.username === invitation.sender).status = 'Playing';
+        this.games.add(invitation.gameId);
+        this.players.find(p => p.username === invitation.sender).status = 'Playing';
         this.cdr.detectChanges();
       } else if (invitation.response === 'Reject') {
         const modalRef = this.modalService.open(InvitationRejectedComponent);
@@ -85,9 +83,9 @@ export class PanelPlayersComponent implements OnInit {
     modalRef.componentInstance.username = sender;
     modalRef.result.then((option: any) => {
       if (option === 'Join Game') {
-        if (this.listPlayers.find(p => p.username === sender)) {
+        if (this.players.find(p => p.username === sender)) {
           this.createAndJoinGame(sender);
-          this.listPlayers.find(p => p.username === sender).status = 'Playing';
+          this.players.find(p => p.username === sender).status = 'Playing';
           this.cdr.detectChanges();
         } else {
           this.invitationSenderOffline.emit(sender);
@@ -98,33 +96,34 @@ export class PanelPlayersComponent implements OnInit {
     });
   }
 
+  /*
+  As the invited party, we create the game record. As a courtesy, we get to play red and move first.
+  */
+
   private createAndJoinGame(sender: string) {
-    const gameId = this.createGameRecord(sender);
+    const gameId = this.createGameRecord(this.username, sender);
     this.deepstream.event.emit(`invitations/${sender}`, {
       sender: this.username,
       response: 'Accept',
       gameId: gameId
     });
     this.invitationAccepted.emit({ gameId: gameId });
-    this.clientManager.addGame(gameId);
+    this.games.add(gameId);
   }
 
-  /*
-  The invited party creates the game record. As a courtesy, it gets to play red and move first.
-  */
-
-  private createGameRecord(opponent: string): string {
+  private createGameRecord(redPlayer: string, yellowPlayer: string): string {
     const gameId = this.deepstream.getUid();
+    this.deepstream.record.getList('games').addEntry(gameId);
     const record = this.deepstream.record.getRecord(gameId);
     record.set({
       players: {
         red: {
           color: '#ff010b',
-          username: this.username
+          username: redPlayer
         },
         yellow: {
           color: '#ffd918',
-          username: opponent
+          username: yellowPlayer
         }
       },
       game: {
@@ -134,8 +133,14 @@ export class PanelPlayersComponent implements OnInit {
       points: { red: 0, yellow: 0 },
       gameId: gameId
     });
-    this.deepstream.record.getList('games').addEntry(gameId);
     return gameId;
+  }
+
+  private removeGameRecords() {
+    this.games.forEach(gameId => {
+      this.deepstream.record.getRecord(gameId).delete();
+      this.deepstream.record.getList('games').removeEntry(gameId);
+    });
   }
 
 }

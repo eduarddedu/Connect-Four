@@ -1,9 +1,9 @@
 <div class="panel" *ngIf="panelVisible">
   <h6 class="card-header text-center">Invite</h6>
-  <p *ngIf="listPlayers.length == 0">No one is online</p>
+  <p *ngIf="players.length == 0">No one is online</p>
   <table>
     <tbody>
-      <tr *ngFor="let player of listPlayers" (click)="onClick(player)">
+      <tr *ngFor="let player of players" (click)="onClick(player)">
         <td>
           <img src="assets/img/user.png" alt="User icon"> {{player.username}}
         </td>

@@ -14,7 +14,6 @@ declare var deepstream: any;
 export class DeepstreamClientManager {
   private deepstream: any;
   private user: any;
-  private games: Set<string> = new Set();
 
   constructor(private authService: AuthService) { }
 
@@ -23,14 +22,6 @@ export class DeepstreamClientManager {
       this.init();
     }
     return this.deepstream;
-  }
-
-  addGame(gameId: string) {
-    this.games.add(gameId);
-  }
-
-  getGames(): string[] {
-    return [].slice.call(this.games);
   }
 
   private init() {
@@ -68,10 +59,6 @@ export class DeepstreamClientManager {
     window.addEventListener('beforeunload', (event) => {
       this.deepstream.record.getRecord(this.user.username).delete();
       this.deepstream.record.getList('users').removeEntry(this.user.username);
-      this.games.forEach(gameId => {
-        this.deepstream.record.getRecord(gameId).delete();
-        this.deepstream.record.getList('games').removeEntry(gameId);
-      });
     });
   }
 
