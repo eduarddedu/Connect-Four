@@ -20,10 +20,16 @@
       file:
         path: '{{ remote_app_root }}'
         state: directory
+        owner: apache
+        group: apache
+        mode: '700'
     - name: Unpack {{ artifact }} into remote directory {{ remote_app_root }}
       unarchive:
         src: '{{ artifact }}'
         dest: '{{ remote_app_root }}'
+        owner: apache
+        group: apache
+        mode: '700'
     - name: Delete {{ artifact }}
       file:
         path: '{{ artifact }}'
