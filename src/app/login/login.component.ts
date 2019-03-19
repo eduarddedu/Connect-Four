@@ -1,37 +1,35 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { AuthService } from '../auth-service.service';
+import { AuthService, User } from '../auth.service';
 
-
+declare const FB: any;
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent implements OnInit {
-  loginForm: FormGroup;
 
-  constructor(fb: FormBuilder, private router: Router, private authService: AuthService) {
-    this.loginForm = fb.group({
-      username: [null, Validators.required],
-      password: [null, Validators.required]
-    });
+export class LoginComponent implements OnInit {
+
+  constructor(private router: Router, private zone: NgZone, private authService: AuthService) {
+
   }
 
   ngOnInit() {
-  }
-
-  onSubmit() {
-    const user = {
-      username: this.loginForm.get('username').value,
-      password: this.loginForm.get('password').value
-    };
-    if (this.authService.authenticate(user)) {
-      this.router.navigate(['/']);
+    const navigateHome = () => this.zone.run(() => this.router.navigateByUrl('/'));
+    if (this.authService.user !== null) {
+      navigateHome();
     } else {
-      // TODO handle sign-in error
+      this.authService.userSignIn.subscribe(() => navigateHome());
     }
+    FB.Event.subscribe('xfbml.render', function () {
+      const spinner = document.getElementById('spinner');
+      if (spinner) {
+        spinner.removeAttribute('style');
+        spinner.removeChild(spinner.childNodes[0]);
+      }
+    });
   }
 }
+

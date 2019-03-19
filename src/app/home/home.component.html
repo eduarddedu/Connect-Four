@@ -3,21 +3,24 @@
     Chat controls
   </div>
 </div>
-<div id="content" *ngIf="user">
-  <div class="content-box">
-    <div class="header" (click)="goHome()">
-      <div class="brand">
-        <img src="assets/img/connect4_512x512bb.png" width="32" height="32" alt="Board game"> Connect Four
+<div class="content">
+  <div class="box">
+    <header>
+      <div class="brand" (click)="goHome()">
+        <img src="assets/img/connect4_512x512bb.png" width="40" height="40" alt="board" role="navigation"> Connect Four
       </div>
-      <div class="profile">
-        <span><i class="fas fa-user-circle"></i> {{user.username}}</span>
+      <div id="logout-btn">
+        <a href="#" (click)="logout()">Sign Out</a>
       </div>
-    </div>
+      <div class="profile" *ngIf="user">
+        <span> {{user.username}}</span> <img [src]="user.iconUrl" width="40" height="40" alt>
+      </div>
+    </header>
     <main>
       <p *ngIf="showAlert">
         <ngb-alert [type]="alertType" (close)="showAlert = false">{{alertMessage}}</ngb-alert>
       </p>
-      <section id="panels">
+      <section id="panels" *ngIf="user">
         <app-panel-players [username]="user.username" (invitationAccepted)="joinGame($event)"
           (invitationSenderOffline)="onUserOffline($event)" [panelVisible]="panelsVisible">
         </app-panel-players>

@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
-import { DeepstreamClientManager } from '../../deepstream-client-manager.service';
+import { DeepstreamService } from '../../deepstream.service';
 
 @Component({
   selector: 'app-panel-games',
@@ -16,11 +16,11 @@ export class PanelGamesComponent implements OnInit {
   private deepstream: any;
   listGames: any[] = [];
 
-  constructor(private cdr: ChangeDetectorRef, private clientManager: DeepstreamClientManager) {
+  constructor(private cdr: ChangeDetectorRef, private ds: DeepstreamService) {
   }
 
   ngOnInit() {
-    this.deepstream = this.clientManager.getInstance();
+    this.deepstream = this.ds.getInstance();
     this.deepstream.record.getList('games').whenReady((list: any) => {
       this.addGames(list.getEntries());
       list.on('entry-added', this.addGame.bind(this));

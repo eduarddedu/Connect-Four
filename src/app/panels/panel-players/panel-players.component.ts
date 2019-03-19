@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { DeepstreamClientManager } from '../../deepstream-client-manager.service';
+import { DeepstreamService } from '../../deepstream.service';
 import { GameInvitationComponent } from '../../invitations/game-invitation/game-invitation.component';
 import { InvitationRejectedComponent } from '../../invitations/invitation-rejected/invitation-rejected.component';
 
@@ -20,8 +20,8 @@ export class PanelPlayersComponent implements OnInit {
   private players: Player[] = [];
   private games: Set<string> = new Set();
 
-  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal, private dsc: DeepstreamClientManager) {
-    this.deepstream = dsc.getInstance();
+  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal, private ds: DeepstreamService) {
+    this.deepstream = ds.getInstance();
     window.addEventListener('beforeunload', this.removeGameRecords.bind(this));
   }
 

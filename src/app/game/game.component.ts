@@ -2,8 +2,8 @@ import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { BoardComponent } from './board/board.component';
-import { DeepstreamClientManager } from '../deepstream-client-manager.service';
-import { AuthService } from '../auth-service.service';
+import { DeepstreamService } from '../deepstream.service';
+import { AuthService, User } from '../auth.service';
 
 @Component({
   selector: 'app-game',
@@ -12,7 +12,7 @@ import { AuthService } from '../auth-service.service';
 })
 export class GameComponent implements OnInit, OnDestroy {
   dataLoaded = false;
-  private username: string;
+  private user: User;
   private players: any;
   private player: any;
   private opponent: any;
@@ -32,9 +32,9 @@ export class GameComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private dsc: DeepstreamClientManager) {
-    this.username = this.authService.user.username;
-    this.deepstream = this.dsc.getInstance();
+    private ds: DeepstreamService) {
+    this.deepstream = this.ds.getInstance();
+    this.user = this.authService.user;
   }
 
   ngOnInit() {
@@ -78,7 +78,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onNewGame() {
-    if (this.board.game.state === `waiting for ${this.username}`) {
+    if (this.board.game.state === `waiting for ${this.user.username}`) {
       this.record.set('game.state', 'in progress');
       this.record.set('game.moves', []);
       this.record.set('game.reset', true);
@@ -105,10 +105,10 @@ export class GameComponent implements OnInit, OnDestroy {
       this.players = data.players;
       this.points = data.points;
       this.game = data.game;
-      if (this.username === this.players.red.username) {
+      if (this.user.username === this.players.red.username) {
         this.player = this.players.red;
         this.opponent = this.players.yellow;
-      } else if (this.username === this.players.yellow.username) {
+      } else if (this.user.username === this.players.yellow.username) {
         this.player = this.players.yellow;
         this.opponent = this.players.red;
       }

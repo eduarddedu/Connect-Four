@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 
-import { AuthService } from '../auth-service.service';
+import { AuthService, User } from '../auth.service';
 import { Router } from '@angular/router';
-import { DeepstreamClientManager } from '../deepstream-client-manager.service';
+import { DeepstreamService } from '../deepstream.service';
+
+
+declare const gapi: any;
 
 @Component({
   selector: 'app-home',
@@ -10,36 +13,32 @@ import { DeepstreamClientManager } from '../deepstream-client-manager.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  user: any;
-  private showAlert = false;
+  user: User;
+  showAlert = false;
   private alertMessage: string;
   private alertType: string;
   private panelsVisible = true;
 
-  constructor(
-    private router: Router, private authService: AuthService, private dsc: DeepstreamClientManager) {
-    this.user = authService.user;
+  constructor(private zone: NgZone, private router: Router, private authService: AuthService, private ds: DeepstreamService) {
+
   }
 
   ngOnInit() {
-    if (!this.user) {
-      this.router.navigate(['/login']);
+    const user = this.authService.user;
+    if (user) {
+      this.user = user;
+      this.panelsVisible = true;
     } else {
-      const deepstream = this.dsc.getInstance();
-      deepstream.on('error', (error: any, event: any) => {
-        this.alertMessage = `Deepstream ${event}`;
-        this.alertType = 'danger';
-        this.showAlert = true;
-      });
+      this.router.navigateByUrl('/login');
     }
   }
 
-  private goHome() {
-    this.router.navigate(['/']);
+  goHome() {
+    this.router.navigateByUrl('/');
     this.panelsVisible = true;
   }
 
-  private joinGame(data: { gameId: string, invitee?: string }) {
+  joinGame(data: { gameId: string, invitee?: string }) {
     if (data.invitee) {
       this.alertMessage = `${data.invitee} has accepted your invitation.`;
       this.alertType = 'success';
@@ -49,10 +48,20 @@ export class HomeComponent implements OnInit {
     this.router.navigate([`/game/${data.gameId}`]);
   }
 
-  private onUserOffline(user: string) {
+  onUserOffline(user: string) {
     this.alertMessage = `${user} went offline.`;
     this.alertType = 'warning';
     this.showAlert = true;
+  }
+
+  logout() {
+    this.ds.signOut();
+    this.authService.signOut();
+    this.runOutsideAngular(() => this.router.navigateByUrl('/login'));
+  }
+
+  private runOutsideAngular(callback: () => {}) {
+    this.zone.runOutsideAngular(callback);
   }
 
 }

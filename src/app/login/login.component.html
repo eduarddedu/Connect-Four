@@ -1,20 +1,29 @@
 <div id="container">
-  <div class="card formbox">
-    <h5 class="card-header text-center">Sign in</h5>
-    <div class="card-body">
-      <form [formGroup]="loginForm" novalidate>
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" class="form-control" id="username" formControlName="username">
+  <header>
+    <h1>Connect Four</h1>
+  </header>
+  <main>
+    <img src="assets/img/connect4_512x512bb.png" alt="Board game" width="48" height="48">
+    <div id="login-buttons">
+      <div id="g-login-btn" class="g-signin2" data-longtitle="true" data-theme="light"
+        data-width="240" data-height="40">
+      </div>
+      <div id="spinner" style="
+        background: #4267b2;
+        border-radius: 5px;
+        color: white;
+        height: 40px;
+        text-align: center;
+        width: 250px;">
+        Loading
+        <div id="fb-login-btn" class="fb-login-button" data-size="large" data-width="240" data-height="50"
+          data-button-type="continue_with" data-auto-logout-link="false" data-use-continue-as="false">
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" class="form-control" id="password" formControlName="password">
-        </div>
-        <button type="submit" [disabled]="loginForm.invalid" class="btn btn-success btn-block" (click)="onSubmit()">
-          Sign in
-        </button>
-      </form>
+      </div>
     </div>
-  </div>
+    <div class="notice">
+      <p><i class="fas fa-info-circle">&nbsp;</i>To use the social login buttons on <b>Firefox,</b></p>
+      <p>please turn content blocking off for this website.</p>
+    </div>
+  </main>
 </div>
