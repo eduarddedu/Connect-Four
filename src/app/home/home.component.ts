@@ -19,7 +19,7 @@ export class HomeComponent implements OnInit {
   private alertType: string;
   private panelsVisible = true;
 
-  constructor(private zone: NgZone, private router: Router, private authService: AuthService, private ds: DeepstreamService) {
+  constructor(private router: Router, private authService: AuthService, private ds: DeepstreamService) {
 
   }
 
@@ -38,14 +38,14 @@ export class HomeComponent implements OnInit {
     this.panelsVisible = true;
   }
 
-  joinGame(data: { gameId: string, invitee?: string }) {
-    if (data.invitee) {
-      this.alertMessage = `${data.invitee} has accepted your invitation.`;
+  joinGame(invitation: { gameId: string, username?: string }) {
+    if (invitation.username) {
+      this.alertMessage = `${invitation.username} has accepted your invitation.`;
       this.alertType = 'success';
       this.showAlert = true;
     }
     this.panelsVisible = false;
-    this.router.navigate([`/game/${data.gameId}`]);
+    this.router.navigate([`/game/${invitation.gameId}`]);
   }
 
   onUserOffline(user: string) {
@@ -57,11 +57,6 @@ export class HomeComponent implements OnInit {
   logout() {
     this.ds.signOut();
     this.authService.signOut();
-    this.runOutsideAngular(() => this.router.navigateByUrl('/login'));
-  }
-
-  private runOutsideAngular(callback: () => {}) {
-    this.zone.runOutsideAngular(callback);
   }
 
 }

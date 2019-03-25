@@ -5,7 +5,7 @@
     <tbody>
       <tr *ngFor="let player of players" (click)="onClick(player)">
         <td>
-          <img src="assets/img/user.png" alt="User icon"> {{player.username}}
+          <img [src]="player.iconUrl" alt="User icon" width="30" height="30"> {{player.name}}
         </td>
         <td>
           {{player.status}}

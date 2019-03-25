@@ -1,21 +1,4 @@
-#container {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-    color: mintcream;
-    display: flex;
-    flex-flow: column nowrap;
-}
-
-header {
-    background: linear-gradient(to right, #006994, white);
-    padding: 32px 16px;
-    color: #111;
-}
-
 main {
-    width: 100%;
     flex-grow: 1;
     display: flex;
     flex-flow: column nowrap;
@@ -23,15 +6,17 @@ main {
     padding-top: 100px;
 }
 
-main>div,
-main>img {
+main>div {
     margin: 4px auto;
 }
 
-hr {
-    width: 14em;
-    margin: 0 0 .5em 0;
-    border-color: mintcream;
+#spinner {
+    background: #4267b2;
+    border-radius: 5px;
+    color: white;
+    height: 40px;
+    text-align: center;
+    width: 250px;
 }
 
 p {
@@ -43,12 +28,11 @@ p {
     margin: .3em 0;
     padding: 5px;
     border-radius: 3px;
-    border: .5px solid #ccc;
-    color: white;
-    opacity: 0.75;
+    color: #333;
+    border: .5px solid currentColor;
 }
 
-#login-buttons {
+.login {
     width: 500px;
     padding: 5px 0;
     display: flex;
@@ -58,15 +42,8 @@ p {
 }
 
 @media (min-width: 768px) {
-    header {
-        background: initial;
-        color: lightcoral;
-    }
     main {
         background: linear-gradient(to bottom, #006994, white);
-        padding-top: 200px;
-    }
-    .notice {
-        color: #333;
+        padding-top: 150px;
     }
 }

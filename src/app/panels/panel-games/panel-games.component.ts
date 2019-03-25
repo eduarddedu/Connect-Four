@@ -1,5 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
+import { User } from '../../auth.service';
 import { DeepstreamService } from '../../deepstream.service';
 
 @Component({
@@ -9,12 +10,12 @@ import { DeepstreamService } from '../../deepstream.service';
 })
 export class PanelGamesComponent implements OnInit {
 
-  @Input() username: string;
+  @Input() user: User;
   @Input() panelVisible = true;
   @Output() gameSelected: EventEmitter<{ gameId: string }> = new EventEmitter();
   @Output() gameAbandoned: EventEmitter<string> = new EventEmitter();
   private deepstream: any;
-  listGames: any[] = [];
+  private games: any[] = [];
 
   constructor(private cdr: ChangeDetectorRef, private ds: DeepstreamService) {
   }
@@ -36,12 +37,12 @@ export class PanelGamesComponent implements OnInit {
     const record = this.deepstream.record.getRecord(gameId);
     const pushGame = (game: any) => {
       if (game.gameId) {
-        this.listGames.push(game);
+        this.games.push(game);
         this.cdr.detectChanges();
         record.unsubscribe(pushGame); // don't duplicate entries
         record.subscribe('points', (points: any) => {
           if (points) {
-            this.listGames.find(g => g.gameId === gameId).points = points;
+            this.games.find(g => g.gameId === gameId).points = points;
             this.cdr.detectChanges();
           }
         }, true);
@@ -51,13 +52,13 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private removeGame(gameId: any) {
-    const game = this.listGames.find((g: any) => g.gameId === gameId);
-    this.listGames = this.listGames.filter(g => g !== game);
+    const game = this.games.find((item: any) => item.gameId === gameId);
+    this.games = this.games.filter(item => item.gameId !== gameId);
     this.cdr.detectChanges();
-    if (game.players.red.username === this.username) {
-      this.gameAbandoned.emit(game.players.yellow.username);
-    } else if (game.players.yellow.username === this.username) {
-      this.gameAbandoned.emit(game.players.red.username);
+    const players = [game.players.red, game.players.yellow];
+    if (players.find(u => u.id === this.user.id)) {
+      const opponent = players.find((u: User) => u.id !== this.user.id);
+      this.gameAbandoned.emit(opponent.name);
     }
   }
 

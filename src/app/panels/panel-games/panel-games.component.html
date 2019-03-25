@@ -1,12 +1,12 @@
 <div class="panel" *ngIf="panelVisible">
   <h6 class="card-header text-center">Join</h6>
-  <p *ngIf="listGames.length == 0">No games yet...</p>
+  <p *ngIf="games.length == 0">No games yet...</p>
   <table>
     <tbody>
-      <tr *ngFor="let game of listGames" (click)="onClick(game.gameId)">
-        <td>{{game.players.red.username}}</td>
+      <tr *ngFor="let game of games" (click)="onClick(game.gameId)">
+        <td>{{game.players.red.name}}</td>
         <td>{{game.points.red}} - {{game.points.yellow}}</td>
-        <td>{{game.players.yellow.username}}</td>
+        <td>{{game.players.yellow.name}}</td>
       </tr>
     </tbody>
   </table>

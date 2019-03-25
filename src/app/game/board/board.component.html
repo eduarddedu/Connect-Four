@@ -3,7 +3,7 @@
     <div>
       <div class="bullet" [ngStyle]="{'background-color' : activePlayer.color}"></div>
       <span *ngIf="activePlayer === player">&nbsp;Your turn</span>
-      <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.username}}'s turn</span>
+      <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.name}}'s turn</span>
     </div>
     <div>
       <div>
@@ -13,12 +13,12 @@
     </div>
   </div>
   <div style="text-align: center" *ngIf="showWinner()">
-    <span *ngIf="player && game.winner.username === player.username">&nbsp;You win!</span>
-    <span *ngIf="player && game.winner.username !== player.username">&nbsp;You loose...</span>
-    <span *ngIf="!player">&nbsp;{{game.winner.username}} wins!</span>
+    <span *ngIf="player && game.winner.name === player.name">&nbsp;You win!</span>
+    <span *ngIf="player && game.winner.name !== player.name">&nbsp;You loose...</span>
+    <span *ngIf="!player">&nbsp;{{game.winner.name}} wins!</span>
   </div>
   <div class="card-row" *ngIf="showWaitingFor()">
-    <div>Waiting for {{opponent.username}}...</div>
+    <div>Waiting for {{opponent.name}}...</div>
   </div>
 </div>
 <form id="gameboard">

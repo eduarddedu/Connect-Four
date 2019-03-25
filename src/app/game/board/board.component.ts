@@ -1,21 +1,24 @@
 import { Component, OnInit, Input, Output, AfterViewInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
+import { User } from '../../auth.service';
+
+type Player = User & { color: string };
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
 export class BoardComponent implements OnInit, AfterViewInit {
-  @Input() players: any;
-  @Input() player: any;
-  @Input() opponent: any;
+  @Input() players: { red: Player, yellow: Player};
+  @Input() player: Player;
+  @Input() opponent: Player;
   @Input() game: any;
   @Input() recordDestroyed: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
   @Output() newGame: EventEmitter<any> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-  activePlayer: any;
+  activePlayer: Player;
   redMovesFirst = true;
 
   constructor(private cdr: ChangeDetectorRef) { }
@@ -25,7 +28,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    /* Bind event handlers for mobile interaction */
+    /* Bind event handlers for board interaction on mobile devices */
     const inputs: any[] = [].slice.call(document.querySelectorAll('input'));
     inputs.forEach(input => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
     inputs.forEach(input => input.addEventListener('touchend', this.onTouchend.bind(this)));
@@ -120,15 +123,15 @@ export class BoardComponent implements OnInit, AfterViewInit {
   showWinner() {
     return this.game.state === 'completed' ||
       (!this.player && this.game.state.startsWith('waiting for') ||
-        this.player && this.game.state === `waiting for ${this.player.username}`);
+        this.player && this.game.state === `waiting for ${this.player.name}`);
   }
 
   showWaitingFor() {
-    return this.opponent && this.game.state === `waiting for ${this.opponent.username}`;
+    return this.opponent && this.game.state === `waiting for ${this.opponent.name}`;
   }
 
   newGameButtonVisibility(): 'visible' | 'hidden' {
-    return this.player && (this.game.state === 'completed' || this.game.state === `waiting for ${this.player.username}`) ?
+    return this.player && (this.game.state === 'completed' || this.game.state === `waiting for ${this.player.name}`) ?
       'visible' : 'hidden';
   }
 

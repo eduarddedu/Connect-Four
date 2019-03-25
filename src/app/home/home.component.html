@@ -1,34 +1,39 @@
-<div id="sidebar">
-  <div class="controls">
-    Chat controls
-  </div>
-</div>
-<div class="content">
-  <div class="box">
-    <header>
+<div class="c4-container">
+  <header>
+    <div class="c4-col">
       <div class="brand" (click)="goHome()">
-        <img src="assets/img/connect4_512x512bb.png" width="40" height="40" alt="board" role="navigation"> Connect Four
+        <img src="assets/img/connect4.png" width="40" height="40" alt="board" role="navigation"> Connect Four
       </div>
-      <div id="logout-btn">
+    </div>
+    <div class="c4-col">
+      <div class="logout">
         <a href="#" (click)="logout()">Sign Out</a>
       </div>
+    </div>
+    <div class="c4-col">
       <div class="profile" *ngIf="user">
-        <span> {{user.username}}</span> <img [src]="user.iconUrl" width="40" height="40" alt>
+        <span>{{user.name}}</span>
+        <div class="icon">
+          <span class="overlay"></span>
+          <img [src]="user.iconUrl" width="40" height="40" alt>
+        </div>
       </div>
-    </header>
-    <main>
+    </div>
+  </header>
+  <main>
+    <div class="box">
       <p *ngIf="showAlert">
         <ngb-alert [type]="alertType" (close)="showAlert = false">{{alertMessage}}</ngb-alert>
       </p>
       <section id="panels" *ngIf="user">
-        <app-panel-players [username]="user.username" (invitationAccepted)="joinGame($event)"
+        <app-panel-players [user]="user" (invitationAccepted)="joinGame($event)"
           (invitationSenderOffline)="onUserOffline($event)" [panelVisible]="panelsVisible">
         </app-panel-players>
-        <app-panel-games [username]="user.username" (gameSelected)="joinGame($event)"
-          (gameAbandoned)="onUserOffline($event)" [panelVisible]="panelsVisible">
+        <app-panel-games [user]="user" (gameSelected)="joinGame($event)" (gameAbandoned)="onUserOffline($event)"
+          [panelVisible]="panelsVisible">
         </app-panel-games>
       </section>
       <router-outlet></router-outlet>
-    </main>
-  </div>
+    </div>
+  </main>
 </div>

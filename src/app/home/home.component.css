@@ -1,37 +1,48 @@
-#sidebar {
-    display: none;
-}
-
-.content {
-    min-width: 550px;
-    height: 100vh;
-    color: #bbb;
-}
-
 header {
+    display: grid;
+    grid-template-columns: 1fr .3fr 1fr;
+}
+
+header>.c4-col>.logout {
     display: flex;
+    height: 100%;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 10px;
-    height: 100px;
-    font-weight: lighter;
-    line-height: normal;
-    user-select: none;
+    justify-content: center;
 }
 
-header>div {
-    padding: 20px;
+header>.c4-col>.logout>a {
+    color: lightcoral;
+    opacity: .8;
 }
 
-header>.brand {
+header>.c4-col>.brand,
+header>.c4-col>.profile {
     cursor: pointer;
 }
 
-.profile>img {
-    margin-left: 3px;
+header>.c4-col>.profile {
+    float: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.profile>.icon {
+    position: relative;
+    margin-left: 5px;
+}
+
+.profile>.icon>.overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    right: 0;
+    background-image: radial-gradient(circle, transparent 68%, transparent 68%, #111 71%);
 }
 
 main {
+    flex-grow: 1;
     padding: 10px 10px 0;
 }
 
@@ -42,38 +53,15 @@ main {
 }
 
 @media (min-width: 768px) {
-    a {
-        color: #eee;
-        opacity: .8;
-    }
-    #sidebar {
-        display: block;
-        position: fixed;
-        top: 0;
-        bottom: 0;
-        width: 250px;
-        background-color: #eee;
-    }
-    #sidebar>.controls {
-        background-color: #ddd;
-        padding: 10px;
-    }
-    .content {
-        position: relative;
-        left: 250px;
-        width: calc(100% - 250px);
-        padding: 0 30px 40px;
-        background: linear-gradient(to bottom, #006994, #fff);
-        color: #eee;
-    }
-    .box {
-        max-width: 720px;
-        margin: 0 auto;
-    }
     header {
         padding: 30px 10px;
     }
     main {
         padding: 30px 10px 0;
+        background: linear-gradient(to bottom, #006994, #fff);
+    }
+    .box {
+        max-width: 720px;
+        margin: 0 auto;
     }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 
 import { environment } from '../environments/environment';
@@ -12,7 +13,7 @@ declare const FB: any;
 /** An interface representing the user */
 export interface User {
   id: string;
-  username: string;
+  name: string;
   iconUrl: string;
   email: string;
   authProvider: 'Google' | 'Facebook' | null;
@@ -27,7 +28,7 @@ export class AuthService {
   public readonly userSignIn: Observable<User> = this.subjectUserSigned.asObservable();
   private GoogleAuth: any;
 
-  constructor() {
+  constructor(private router: Router) {
     if (environment.production) {
       this.initGoogleAuth();
       this.initFacebookAuth();
@@ -57,11 +58,16 @@ export class AuthService {
       return;
     }
     if (this.user.authProvider === 'Google') {
-      this.GoogleAuth.signOut().then(() => console.log('AuthService -> Google user signed out.'));
+      this.GoogleAuth.signOut().then(() => {
+        console.log('AuthService -> Google user signed out.');
+        window.location.assign('/login');
+      });
     } else {
-      FB.logout(() => console.log('AuthService -> Facebook user signed out.'));
+      FB.logout(() => {
+        console.log('AuthService -> Facebook user signed out.');
+        window.location.assign('/login');
+      });
     }
-    this._user = null;
   }
 
   private initGoogleAuth() {
@@ -83,7 +89,7 @@ export class AuthService {
     const profile = googleUser.getBasicProfile();
     this.setUser(<User>{
       id: profile.getId(), // do not send to backend
-      username: profile.getName(),
+      name: profile.getName(),
       iconUrl: profile.getImageUrl(),
       email: profile.getEmail(),
       idToken: googleUser.getAuthResponse().id_token,  /** in the backend, should use id_token to verify the id */
@@ -106,7 +112,7 @@ export class AuthService {
       FB.api(`/me?fields=id,name,email,picture`, (profile: any) => {
         this.setUser({
           id: profile.id,
-          username: profile.name,
+          name: profile.name,
           iconUrl: profile.picture.data.url,
           email: profile.email,
           authProvider: 'Facebook'
@@ -117,9 +123,9 @@ export class AuthService {
 
   private mockUser(): User {
     return {
-      id: Math.random().toString(16).substr(2),
-      username: window.localStorage.getItem('username'),
-      iconUrl: '',
+      id: window.localStorage.getItem('id'),
+      name: window.localStorage.getItem('username'),
+      iconUrl: 'assets/img/user.png',
       email: 'user@example.com',
       authProvider: null
     };

@@ -1,11 +1,11 @@
-<div *ngIf="dataLoaded" class="card-dark">
+<div *ngIf="gameLoaded" class="card-dark">
     <div class="header">
-        <div>{{players.red.username}}</div>
+        <div>{{players.red.name}}</div>
         <div><span>{{points.red}} - {{points.yellow}}</span></div>
-        <div>{{players.yellow.username}}</div>
+        <div>{{players.yellow.name}}</div>
     </div>
 </div>
-<div *ngIf="dataLoaded" class="card-dark">
+<div *ngIf="gameLoaded" class="card-dark">
     <app-board [players]="players" [player]="player" [opponent]="opponent" [game]="game"
     (move)="onMove($event)" (newGame)="onNewGame()" [recordDestroyed]="recordDestroyed"></app-board>
 </div>

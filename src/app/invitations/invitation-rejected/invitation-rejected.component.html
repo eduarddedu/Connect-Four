@@ -5,7 +5,7 @@
     </button>
   </div>
   <div class="modal-body">
-    <p><b>{{username}}</b> turned down your invitation.</p>
+    <img [src]="user.iconUrl" alt="User icon" width="40" height="40"> {{user.name}} turned down your invitation.
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-success" (click)="activeModal.close('')" ngbAutofocus>OK</button>

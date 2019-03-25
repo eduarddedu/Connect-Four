@@ -1,7 +1,7 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { AuthService, User } from '../auth.service';
+import { AuthService } from '../auth.service';
 
 declare const FB: any;
 @Component({
