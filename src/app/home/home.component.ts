@@ -4,9 +4,6 @@ import { AuthService, User } from '../auth.service';
 import { Router } from '@angular/router';
 import { DeepstreamService } from '../deepstream.service';
 
-
-declare const gapi: any;
-
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',

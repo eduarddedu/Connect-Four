@@ -17,12 +17,6 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    const navigateHome = () => this.zone.run(() => this.router.navigateByUrl('/'));
-    if (this.authService.user !== null) {
-      navigateHome();
-    } else {
-      this.authService.userSignIn.subscribe(() => navigateHome());
-    }
     FB.Event.subscribe('xfbml.render', function () {
       const spinner = document.getElementById('spinner');
       if (spinner) {

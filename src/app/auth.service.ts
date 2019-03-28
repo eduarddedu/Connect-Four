@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Observable } from 'rxjs';
 
@@ -28,7 +28,7 @@ export class AuthService {
   public readonly userSignIn: Observable<User> = this.subjectUserSigned.asObservable();
   private GoogleAuth: any;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private zone: NgZone) {
     if (environment.production) {
       this.initGoogleAuth();
       this.initFacebookAuth();
@@ -50,6 +50,7 @@ export class AuthService {
       })(user);
       this._user = user;
       this.subjectUserSigned.next(user);
+      this.router.navigateByUrl('/');
     }
   }
 
@@ -71,13 +72,31 @@ export class AuthService {
   }
 
   private initGoogleAuth() {
+    /**
+     * The id can be spoofed. Use id_token in the backend to verify the id.
+     */
+    const getGoogleUser = (googleUser: any): User => {
+      const profile = googleUser.getBasicProfile();
+      return <User>{
+        id: profile.getId(),
+        name: profile.getName(),
+        iconUrl: profile.getImageUrl(),
+        email: profile.getEmail(),
+        idToken: googleUser.getAuthResponse().id_token,
+        authProvider: 'Google'
+      };
+    };
+    /**
+    * Use zone.run() to return to Angular before setting the user. See: https://github.com/angular/angular/issues/19731
+    */
     gapi.load('auth2', () => {
       this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
       this.GoogleAuth.then(() => {
         const button: Element = document.getElementById('g-login-btn');
-        this.GoogleAuth.attachClickHandler(button, {}, this.setGoogleUser.bind(this));
+        this.GoogleAuth.attachClickHandler(button, {},
+          (googleUser: any) => this.zone.run(() => this.setUser(getGoogleUser(googleUser))));
         if (this.GoogleAuth.isSignedIn.get() === true) {
-          this.setGoogleUser(this.GoogleAuth.currentUser.get());
+          this.zone.run(() => this.setUser(getGoogleUser(this.GoogleAuth.currentUser.get())));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);
@@ -85,41 +104,31 @@ export class AuthService {
     });
   }
 
-  private setGoogleUser(googleUser: any) {
-    const profile = googleUser.getBasicProfile();
-    this.setUser(<User>{
-      id: profile.getId(), // do not send to backend
-      name: profile.getName(),
-      iconUrl: profile.getImageUrl(),
-      email: profile.getEmail(),
-      idToken: googleUser.getAuthResponse().id_token,  /** in the backend, should use id_token to verify the id */
-      authProvider: 'Google'
-    });
-  }
-
   private initFacebookAuth() {
+    const getFacebookUser = (profile: any): User => {
+      return {
+        id: profile.id,
+        name: profile.name,
+        iconUrl: profile.picture.data.url,
+        email: profile.email,
+        authProvider: 'Facebook'
+      };
+    };
+    const onFacebookUserStatusChange = (response: any) => {
+      if (response.status === 'connected') {
+        FB.api(`/me?fields=id,name,email,picture`,
+          (profile: any) => this.zone.run(() => this.setUser(getFacebookUser(profile))));
+      }
+    };
     FB.init({
       appId: '1260178800807045',
       xfbml: true,
       status: true,
       version: 'v3.2'
     });
-    FB.Event.subscribe('auth.authResponseChange', this.onFacebookUserStatusChange.bind(this));
+    FB.Event.subscribe('auth.authResponseChange', onFacebookUserStatusChange.bind(this));
   }
 
-  private onFacebookUserStatusChange(response: any) {
-    if (response.status === 'connected') {
-      FB.api(`/me?fields=id,name,email,picture`, (profile: any) => {
-        this.setUser({
-          id: profile.id,
-          name: profile.name,
-          iconUrl: profile.picture.data.url,
-          email: profile.email,
-          authProvider: 'Facebook'
-        });
-      });
-    }
-  }
 
   private mockUser(): User {
     return {
