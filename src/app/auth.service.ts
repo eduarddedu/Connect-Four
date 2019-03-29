@@ -75,7 +75,7 @@ export class AuthService {
     /**
      * The id can be spoofed. Use id_token in the backend to verify the id.
      */
-    const getGoogleUser = (googleUser: any): User => {
+    const getUser = (googleUser: any): User => {
       const profile = googleUser.getBasicProfile();
       return <User>{
         id: profile.getId(),
@@ -94,9 +94,9 @@ export class AuthService {
       this.GoogleAuth.then(() => {
         const button: Element = document.getElementById('g-login-btn');
         this.GoogleAuth.attachClickHandler(button, {},
-          (googleUser: any) => this.zone.run(() => this.setUser(getGoogleUser(googleUser))));
+          (googleUser: any) => this.zone.run(() => this.setUser(getUser(googleUser))));
         if (this.GoogleAuth.isSignedIn.get() === true) {
-          this.zone.run(() => this.setUser(getGoogleUser(this.GoogleAuth.currentUser.get())));
+          this.zone.run(() => this.setUser(getUser(this.GoogleAuth.currentUser.get())));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);
@@ -105,7 +105,7 @@ export class AuthService {
   }
 
   private initFacebookAuth() {
-    const getFacebookUser = (profile: any): User => {
+    const getUser = (profile: any): User => {
       return {
         id: profile.id,
         name: profile.name,
@@ -117,7 +117,7 @@ export class AuthService {
     const onFacebookUserStatusChange = (response: any) => {
       if (response.status === 'connected') {
         FB.api(`/me?fields=id,name,email,picture`,
-          (profile: any) => this.zone.run(() => this.setUser(getFacebookUser(profile))));
+          (profile: any) => this.zone.run(() => this.setUser(getUser(profile))));
       }
     };
     FB.init({
