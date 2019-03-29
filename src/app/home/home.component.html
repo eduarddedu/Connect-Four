@@ -22,15 +22,11 @@
   </header>
   <main>
     <div class="box">
-      <p *ngIf="showAlert">
-        <ngb-alert [type]="alertType" (close)="showAlert = false">{{alertMessage}}</ngb-alert>
-      </p>
+      <app-notification></app-notification>
       <section id="panels" *ngIf="user">
-        <app-panel-players [user]="user" (invitationAccepted)="joinGame($event)"
-          (invitationSenderOffline)="onUserOffline($event)" [panelVisible]="panelsVisible">
+        <app-panel-players [user]="user" (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
         </app-panel-players>
-        <app-panel-games [user]="user" (gameSelected)="joinGame($event)" (gameAbandoned)="onUserOffline($event)"
-          [panelVisible]="panelsVisible">
+        <app-panel-games [user]="user" (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
         </app-panel-games>
       </section>
       <router-outlet></router-outlet>

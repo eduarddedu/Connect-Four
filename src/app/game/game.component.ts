@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BoardComponent } from './board/board.component';
 import { DeepstreamService } from '../deepstream.service';
 import { AuthService, User } from '../auth.service';
+import { NotificationService } from '../notification.service';
 
 type Player = User & { color: string };
 
@@ -33,7 +34,8 @@ export class GameComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private ds: DeepstreamService) {
+    private ds: DeepstreamService,
+    private notification: NotificationService) {
     this.deepstream = this.ds.getInstance();
     this.user = this.authService.user;
   }
@@ -87,16 +89,6 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  private userOffline(userId: string) {
-    if (this.players) {
-      const offlinePlayer = [this.players.red, this.players.yellow].find(u => u.id === userId);
-      if (offlinePlayer) {
-        this.recordDestroyed = true;
-        this.record.set('game.state', `waiting for ${offlinePlayer.name}`); // this will freeze the board
-      }
-    }
-  }
-
   private discardGame() {
     this.board.clearBoard();
     this.gameLoaded = false;
@@ -143,6 +135,19 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private gameover(id: string) {
     return id === '62';
+  }
+
+  private userOffline(userId: string) {
+    if (this.players) {
+      const offlinePlayer = [this.players.red, this.players.yellow].find(u => u.id === userId);
+      if (offlinePlayer) {
+        this.recordDestroyed = true;
+        this.record.set('game.state', `waiting for ${offlinePlayer.name}`);
+        if (this.player && this.player.id !== offlinePlayer.id) {
+          this.notification.update(`${offlinePlayer.name} went offline`, 'danger');
+        }
+      }
+    }
   }
 
 }

@@ -1,0 +1,3 @@
+<p *ngIf="notification.msg | async as msg" >
+  <ngb-alert [type]="msg.style" (close)="notification.clear()">{{msg.content}}</ngb-alert>
+</p>

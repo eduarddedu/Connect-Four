@@ -13,6 +13,7 @@ import { PanelPlayersComponent } from './panels/panel-players/panel-players.comp
 import { PanelGamesComponent } from './panels/panel-games/panel-games.component';
 import { GameInvitationComponent } from './invitations/game-invitation/game-invitation.component';
 import { InvitationRejectedComponent } from './invitations/invitation-rejected/invitation-rejected.component';
+import { NotificationComponent } from './notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { InvitationRejectedComponent } from './invitations/invitation-rejected/i
     PanelGamesComponent,
     InvitationRejectedComponent,
     GameInvitationComponent,
+    NotificationComponent
   ],
   imports: [
     BrowserModule,

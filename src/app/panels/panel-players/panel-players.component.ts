@@ -5,6 +5,7 @@ import { User } from '../../auth.service';
 import { DeepstreamService } from '../../deepstream.service';
 import { GameInvitationComponent } from '../../invitations/game-invitation/game-invitation.component';
 import { InvitationRejectedComponent } from '../../invitations/invitation-rejected/invitation-rejected.component';
+import { NotificationService } from 'src/app/notification.service';
 
 
 type Player = User & { status: string; };
@@ -22,13 +23,13 @@ interface Invitation {
 export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
   @Input() panelVisible = true;
-  @Output() invitationAccepted: EventEmitter<{ gameId: string, username?: string }> = new EventEmitter();
-  @Output() invitationSenderOffline: EventEmitter<string> = new EventEmitter();
+  @Output() joinGame: EventEmitter<string> = new EventEmitter();
   private deepstream: any;
   private players: Player[] = [];
   private myGames: Set<string> = new Set();
 
-  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal, ds: DeepstreamService) {
+  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal,
+    ds: DeepstreamService, private notification: NotificationService) {
     this.deepstream = ds.getInstance();
     window.addEventListener('beforeunload', this.removeGameRecords.bind(this));
   }
@@ -76,7 +77,8 @@ export class PanelPlayersComponent implements OnInit {
     } else {
       const user = this.players.find(p => p.id === invitation.userId);
       if (invitation.response === 'Accept') {
-        this.invitationAccepted.emit({ gameId: invitation.gameId, username: user.name });
+        this.joinGame.emit(invitation.gameId);
+        this.notification.update(`${user.name} has accepted your invitation.`, 'success');
         this.myGames.add(invitation.gameId);
         user.status = 'Playing';
         this.cdr.detectChanges();
@@ -99,7 +101,7 @@ export class PanelPlayersComponent implements OnInit {
             user.status = 'Playing';
             this.cdr.detectChanges();
           } else {
-            this.invitationSenderOffline.emit(user.name);
+            this.notification.update(`${user.name} went offline`, 'info');
           }
         } else if (option === 'Reject') {
           this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{ userId: this.user.id, response: 'Reject' });
@@ -120,7 +122,7 @@ export class PanelPlayersComponent implements OnInit {
       response: 'Accept',
       gameId: gameId
     });
-    this.invitationAccepted.emit({ gameId: gameId });
+    this.joinGame.emit(gameId);
   }
 
   private createGameRecord(red: User, yellow: User): string {

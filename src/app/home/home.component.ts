@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AuthService, User } from '../auth.service';
 import { Router } from '@angular/router';
@@ -15,6 +15,7 @@ export class HomeComponent implements OnInit {
   private alertMessage: string;
   private alertType: string;
   private panelsVisible = true;
+  private deepstream: any;
 
   constructor(private router: Router, private authService: AuthService, private ds: DeepstreamService) {
 
@@ -25,6 +26,7 @@ export class HomeComponent implements OnInit {
     if (user) {
       this.user = user;
       this.panelsVisible = true;
+      this.deepstream = this.ds.getInstance();
     } else {
       this.router.navigateByUrl('/login');
     }
@@ -35,20 +37,9 @@ export class HomeComponent implements OnInit {
     this.panelsVisible = true;
   }
 
-  joinGame(invitation: { gameId: string, username?: string }) {
-    if (invitation.username) {
-      this.alertMessage = `${invitation.username} has accepted your invitation.`;
-      this.alertType = 'success';
-      this.showAlert = true;
-    }
+  joinGame(gameId: string) {
     this.panelsVisible = false;
-    this.router.navigate([`/game/${invitation.gameId}`]);
-  }
-
-  onUserOffline(user: string) {
-    this.alertMessage = `${user} went offline.`;
-    this.alertType = 'warning';
-    this.showAlert = true;
+    this.router.navigateByUrl(`/game/${gameId}`);
   }
 
   logout() {

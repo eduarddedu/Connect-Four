@@ -12,8 +12,7 @@ export class PanelGamesComponent implements OnInit {
 
   @Input() user: User;
   @Input() panelVisible = true;
-  @Output() gameSelected: EventEmitter<{ gameId: string }> = new EventEmitter();
-  @Output() gameAbandoned: EventEmitter<string> = new EventEmitter();
+  @Output() joinGame: EventEmitter<string> = new EventEmitter();
   private deepstream: any;
   private games: any[] = [];
 
@@ -39,7 +38,7 @@ export class PanelGamesComponent implements OnInit {
       if (game.gameId) {
         this.games.push(game);
         this.cdr.detectChanges();
-        record.unsubscribe(pushGame); // don't duplicate entries
+        record.unsubscribe(pushGame);
         record.subscribe('points', (points: any) => {
           if (points) {
             this.games.find(g => g.gameId === gameId).points = points;
@@ -52,18 +51,12 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private removeGame(gameId: any) {
-    const game = this.games.find((item: any) => item.gameId === gameId);
     this.games = this.games.filter(item => item.gameId !== gameId);
     this.cdr.detectChanges();
-    const players = [game.players.red, game.players.yellow];
-    if (players.find(u => u.id === this.user.id)) {
-      const opponent = players.find((u: User) => u.id !== this.user.id);
-      this.gameAbandoned.emit(opponent.name);
-    }
   }
 
   private onClick(gameId: string) {
-    this.gameSelected.emit({ gameId: gameId });
+    this.joinGame.emit(gameId);
   }
 }
 
