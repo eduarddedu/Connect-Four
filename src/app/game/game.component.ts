@@ -33,28 +33,28 @@ export class GameComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService,
+    private auth: AuthService,
     private ds: DeepstreamService,
     private notification: NotificationService) {
     this.deepstream = this.ds.getInstance();
-    this.user = this.authService.user;
   }
 
   ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      if (this.gameLoaded) {
-        this.discardGame();
-      }
-      this.gameId = params.get('gameId');
-      if (this.deepstream.record.getList('games').getEntries().includes(this.gameId)) {
-        this.record = this.deepstream.record.getRecord(this.gameId);
-        this.callback = this.onRecordUpdate.bind(this);
-        this.record.subscribe(this.callback, true);
-        this.deepstream.record.getList('users').on('entry-removed', this.userOffline.bind(this));
-      } else { // record was destroyed
-        this.router.navigateByUrl('/');
-      }
-    });
+      this.user = this.auth.user;
+      this.route.paramMap.subscribe(params => {
+        if (this.gameLoaded) {
+          this.discardGame();
+        }
+        this.gameId = params.get('gameId');
+        if (this.deepstream.record.getList('games').getEntries().includes(this.gameId)) {
+          this.record = this.deepstream.record.getRecord(this.gameId);
+          this.callback = this.onRecordUpdate.bind(this);
+          this.record.subscribe(this.callback, true);
+          this.deepstream.record.getList('users').on('entry-removed', this.userOffline.bind(this));
+        } else {
+          this.router.navigateByUrl('/');
+        }
+      });
   }
 
   ngOnDestroy() {

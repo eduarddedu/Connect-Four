@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, of, race } from 'rxjs';
 
 import { environment } from '../environments/environment';
 
@@ -23,42 +23,61 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  private _user: User;
-  private subjectUserSigned: Subject<User> = new Subject();
-  public readonly userSignIn: Observable<User> = this.subjectUserSigned.asObservable();
+  public userSignIn: Subject<User> = new Subject();
   private GoogleAuth: any;
+  private _user: User;
 
-  constructor(private router: Router, private zone: NgZone) {
+  constructor(private zone: NgZone) {
     if (environment.production) {
-      this.initGoogleAuth();
-      this.initFacebookAuth();
+      race(this.googleUserSigned(), this.facebookUserSigned())
+        .subscribe((user: User) => {
+          zone.run(() => {
+            this._user = user;
+            this.userSignIn.next(user);
+          });
+        });
     } else {
-      this.setUser(this.mockUser());
+      this._user = this.mockUser();
     }
   }
 
-  get user(): User {
+  get user() {
     return this._user ? Object.assign(this._user) : null;
   }
 
-  private setUser(user: User) {
-    if (this._user) {
-      return;
-    } else {
-      (function (o) {
-        Object.keys(o).forEach(k => console.log(`${k} : ${o[k]}`));
-      })(user);
-      this._user = user;
-      this.subjectUserSigned.next(user);
-      this.router.navigateByUrl('/');
-    }
+  private googleUserSigned(): Observable<User> {
+    const user = new Subject<User>();
+    const getUser = (googleUser: any): User => {
+      const profile = googleUser.getBasicProfile();
+      return <User>{
+        id: profile.getId(),
+        name: profile.getName(),
+        iconUrl: profile.getImageUrl(),
+        email: profile.getEmail(),
+        idToken: googleUser.getAuthResponse().id_token,
+        authProvider: 'Google'
+      };
+    };
+    gapi.load('auth2', () => {
+      this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
+      this.GoogleAuth.then(() => {
+        const button: Element = document.getElementById('g-login-btn');
+        this.GoogleAuth.attachClickHandler(button, {}, (googleUser: any) => user.next(getUser(googleUser)));
+        if (this.GoogleAuth.isSignedIn.get() === true) {
+          user.next(getUser(this.GoogleAuth.currentUser.get()));
+        }
+      }, (error: any) => {
+        console.log(`${error.error} ${error.details}`);
+      });
+    });
+    return user.asObservable();
   }
 
   signOut() {
-    if (this.user.authProvider === null) {
+    if (this._user.authProvider === null) {
       return;
     }
-    if (this.user.authProvider === 'Google') {
+    if (this._user.authProvider === 'Google') {
       this.GoogleAuth.signOut().then(() => {
         console.log('AuthService -> Google user signed out.');
         window.location.assign('/login');
@@ -71,40 +90,8 @@ export class AuthService {
     }
   }
 
-  private initGoogleAuth() {
-    /**
-     * The id can be spoofed. Use id_token in the backend to verify the id.
-     */
-    const getUser = (googleUser: any): User => {
-      const profile = googleUser.getBasicProfile();
-      return <User>{
-        id: profile.getId(),
-        name: profile.getName(),
-        iconUrl: profile.getImageUrl(),
-        email: profile.getEmail(),
-        idToken: googleUser.getAuthResponse().id_token,
-        authProvider: 'Google'
-      };
-    };
-    /**
-    * Use zone.run() to return to Angular before setting the user. See: https://github.com/angular/angular/issues/19731
-    */
-    gapi.load('auth2', () => {
-      this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
-      this.GoogleAuth.then(() => {
-        const button: Element = document.getElementById('g-login-btn');
-        this.GoogleAuth.attachClickHandler(button, {},
-          (googleUser: any) => this.zone.run(() => this.setUser(getUser(googleUser))));
-        if (this.GoogleAuth.isSignedIn.get() === true) {
-          this.zone.run(() => this.setUser(getUser(this.GoogleAuth.currentUser.get())));
-        }
-      }, (error: any) => {
-        console.log(`${error.error} ${error.details}`);
-      });
-    });
-  }
-
-  private initFacebookAuth() {
+  private facebookUserSigned(): Observable<User> {
+    const user = new Subject<User>();
     const getUser = (profile: any): User => {
       return {
         id: profile.id,
@@ -117,7 +104,7 @@ export class AuthService {
     const onFacebookUserStatusChange = (response: any) => {
       if (response.status === 'connected') {
         FB.api(`/me?fields=id,name,email,picture`,
-          (profile: any) => this.zone.run(() => this.setUser(getUser(profile))));
+          (profile: any) => user.next(getUser(profile)));
       }
     };
     FB.init({
@@ -127,6 +114,7 @@ export class AuthService {
       version: 'v3.2'
     });
     FB.Event.subscribe('auth.authResponseChange', onFacebookUserStatusChange.bind(this));
+    return user.asObservable();
   }
 
 

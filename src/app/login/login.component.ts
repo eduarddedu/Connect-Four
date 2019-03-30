@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../auth.service';
@@ -12,18 +12,16 @@ declare const FB: any;
 
 export class LoginComponent implements OnInit {
 
-  constructor(private router: Router, private zone: NgZone, private authService: AuthService) {
-
+  constructor(private router: Router, private auth: AuthService) {
   }
 
   ngOnInit() {
     FB.Event.subscribe('xfbml.render', function () {
       const spinner = document.getElementById('spinner');
-      if (spinner) {
-        spinner.removeAttribute('style');
-        spinner.removeChild(spinner.childNodes[0]);
-      }
+      spinner.removeAttribute('style');
+      spinner.removeChild(spinner.childNodes[0]);
     });
+    this.auth.userSignIn.subscribe(() => setTimeout(() => this.router.navigate(['/']), 0));
   }
 }
 

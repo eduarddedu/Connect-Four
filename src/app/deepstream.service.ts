@@ -13,11 +13,11 @@ export class DeepstreamService {
   private deepstream: any;
   private user: User;
 
-  constructor(authService: AuthService) {
-    if (authService.user !== null) {
-      this.init(authService.user);
+  constructor(auth: AuthService) {
+    if (auth.user) {
+      this.init(auth.user);
     } else {
-      authService.userSignIn.subscribe((user: User) => this.init(user));
+      auth.userSignIn.subscribe((user: User) => this.init(user));
     }
   }
 
@@ -28,7 +28,7 @@ export class DeepstreamService {
   private init(user: User) {
     console.log('Deepstream init...');
     this.user = user;
-    this.deepstream = deepstream(environment.DEEPSTREAM_URL, { maxReconnectAttempts: 5 }).login(({username: user.name}));
+    this.deepstream = deepstream(environment.DEEPSTREAM_URL, { maxReconnectAttempts: 5 }).login(({ username: user.name }));
     this.deepstream.on('error', (error: any, event: any, topic: any) => {
       console.log(error, event, topic);
     });

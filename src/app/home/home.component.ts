@@ -17,18 +17,21 @@ export class HomeComponent implements OnInit {
   private panelsVisible = true;
   private deepstream: any;
 
-  constructor(private router: Router, private authService: AuthService, private ds: DeepstreamService) {
+  constructor(private router: Router, private auth: AuthService, private ds: DeepstreamService) {
 
   }
 
   ngOnInit() {
-    const user = this.authService.user;
-    if (user) {
-      this.user = user;
+    if (this.auth.user) {
+      this.user = this.auth.user;
       this.panelsVisible = true;
       this.deepstream = this.ds.getInstance();
+      (function (o) {
+        console.log('User: ');
+        Object.keys(o).forEach(k => console.log(`${k} : ${o[k]}`));
+      })(this.user);
     } else {
-      this.router.navigateByUrl('/login');
+      this.router.navigate(['/login']);
     }
   }
 
@@ -44,7 +47,7 @@ export class HomeComponent implements OnInit {
 
   logout() {
     this.ds.signOut();
-    this.authService.signOut();
+    this.auth.signOut();
   }
 
 }
