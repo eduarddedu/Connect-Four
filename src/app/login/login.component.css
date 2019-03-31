@@ -10,15 +10,6 @@ main>div {
     margin: 4px auto;
 }
 
-#spinner {
-    background: #4267b2;
-    border-radius: 5px;
-    color: white;
-    height: 40px;
-    text-align: center;
-    width: 250px;
-}
-
 p {
     font-size: .75em;
     margin: 0;
@@ -32,14 +23,54 @@ p {
     border: .5px solid currentColor;
 }
 
-.login {
-    width: 500px;
+.login-box {
+    width: 510px;
     padding: 5px 0;
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-content: center;
 }
+
+#spinner {
+    height: 40px;
+    width: 250px;
+    background: #4267b2;
+    border-radius: 5px;
+    color: white;
+    text-align: center;
+}
+
+#g-login-btn {
+    display: inline-block;
+    width: 250px;
+    height: 40px;
+    background-color: white;
+    border-radius: 6px;
+}
+
+#g-login-btn:hover {
+    cursor: pointer;
+}
+
+#g-login-btn>span.icon {
+    display: inline-block;
+    width: 34px;
+    height: 34px;
+    vertical-align: middle;
+    background-image: url("/assets/img/google-logo.png");
+    background-size: 34px;
+    margin: 3px 2px;
+}
+
+#g-login-btn>span.buttonText {
+    padding-left: 1em;
+    color: #666;
+    font-family: 'Roboto', sans-serif;
+}
+
+
+
 
 @media (min-width: 768px) {
     main {
