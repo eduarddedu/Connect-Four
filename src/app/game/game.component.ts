@@ -20,6 +20,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private player: Player;
   private opponent: Player;
   private game: any;
+  private startDate: Date;
   private points: { red: number, yellow: number };
   private deepstream: any;
   private gameId: string;
@@ -95,11 +96,12 @@ export class GameComponent implements OnInit, OnDestroy {
     this.record.unsubscribe(this.callback);
   }
 
-  private initBoard(data: any) {
-    if (data.players) {
-      this.players = data.players;
-      this.points = data.points;
-      this.game = data.game;
+  private initBoard(recordData: any) {
+    if (recordData.players) {
+      this.players = recordData.players;
+      this.points = recordData.points;
+      this.game = recordData.game;
+      this.startDate = new Date(recordData.createdOn);
       const players = [this.players.red, this.players.yellow];
       if (players.map((p: Player) => p.id).includes(this.user.id)) {
         this.player = players.find((p: Player) => p.id === this.user.id);
@@ -109,7 +111,7 @@ export class GameComponent implements OnInit, OnDestroy {
       setTimeout(() => {
         this.board.clearBoard();
         this.board.replayGame();
-        this.onRecordUpdate(data);
+        this.onRecordUpdate(recordData);
       }, 0);
     }
   }

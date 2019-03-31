@@ -6,10 +6,7 @@
       <span *ngIf="activePlayer !== player">&nbsp;{{activePlayer.name}}'s turn</span>
     </div>
     <div>
-      <div>
-        <app-timer [active]="activePlayer === players.red"></app-timer>
-        <app-timer [active]="activePlayer === players.yellow"></app-timer>
-      </div>
+        <app-timer [startDate]="startDate"></app-timer>
     </div>
   </div>
   <div style="text-align: center" *ngIf="showWinner()">

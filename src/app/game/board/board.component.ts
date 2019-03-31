@@ -13,6 +13,7 @@ export class BoardComponent implements OnInit, AfterViewInit {
   @Input() player: Player;
   @Input() opponent: Player;
   @Input() game: any;
+  @Input() startDate: Date;
   @Input() recordDestroyed: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
   @Output() newGame: EventEmitter<any> = new EventEmitter();

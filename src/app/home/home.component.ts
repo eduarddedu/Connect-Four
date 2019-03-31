@@ -26,10 +26,7 @@ export class HomeComponent implements OnInit {
       this.user = this.auth.user;
       this.panelsVisible = true;
       this.deepstream = this.ds.getInstance();
-      (function (o) {
-        console.log('User: ');
-        Object.keys(o).forEach(k => console.log(`${k} : ${o[k]}`));
-      })(this.user);
+      console.log('User: ', Object.assign(this.user));
     } else {
       this.router.navigate(['/login']);
     }

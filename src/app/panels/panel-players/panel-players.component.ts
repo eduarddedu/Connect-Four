@@ -139,7 +139,8 @@ export class PanelPlayersComponent implements OnInit {
         moves: []
       },
       points: { red: 0, yellow: 0 },
-      gameId: gameId
+      gameId: gameId,
+      createdOn: Date.now()
     });
     return gameId;
   }

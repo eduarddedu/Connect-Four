@@ -1,69 +1,41 @@
-import { Component, ChangeDetectorRef, OnChanges, OnDestroy, ChangeDetectionStrategy, Input } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="active"><i class="far fa-clock"></i>{{hh_mm_ss}}</span>`,
+  template: `<span *ngIf="updateTime | async as time"><i class="far fa-clock"></i>{{time}}</span>`,
   styles: [
-    `
-    i {
-      vertical-align: middle;
+    `i {
       padding: 3px;
       vertical-align: 0.25px;
     }
     span {
       display: inline-block;
       font-size: inherit;
-      width: 5.8em;
+      width: 92.8px;
       line-height: normal;
       text-align: left;
-    }
-    `
-  ],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    }`
+  ]
 })
-export class TimerComponent implements OnChanges, OnDestroy {
-  @Input() active: boolean;
-  @Input() displayOnInit: boolean;
-  private updates: Observable<string>;
-  private subscription: Subscription;
-  private hh_mm_ss = '00:00:00';
+export class TimerComponent implements OnInit, OnDestroy {
+  @Input() startDate: Date;
+  updateTime: Observable<string>;
+  interval: any;
 
-  constructor(private cdr: ChangeDetectorRef) {
-    this.updates = new Observable(function subscribe(subscriber) {
-      const start = new Date(Date.now());
-      const pushUpdate = setInterval(() => {
-        const elapsed = new Date(Date.now() - start.getTime());
+  ngOnInit() {
+    this.updateTime = new Observable(subscriber => {
+      const getElapsedTime = () => {
+        const elapsed = new Date(Date.now() - this.startDate.getTime());
         elapsed.setHours(elapsed.getHours() - Math.abs(elapsed.getTimezoneOffset() / 60));
-        const time = elapsed.toTimeString();
-        const hhmmss = time.substr(0, time.indexOf(' '));
-        subscriber.next(hhmmss);
-      }, 1000);
-
-      return function unsubscribe() {
-        clearInterval(pushUpdate);
+        return elapsed.toTimeString().substr(0, 8);
       };
+      subscriber.next(getElapsedTime());
+      this.interval = setInterval(() => subscriber.next(getElapsedTime()), 1000);
     });
-
-  }
-
-  ngOnChanges() {
-    if (this.active) {
-      this.subscription = this.updates.subscribe(text => {
-        this.hh_mm_ss = text;
-        this.cdr.detectChanges();
-      });
-    } else {
-      if (this.subscription) {
-        this.subscription.unsubscribe();
-      }
-    }
   }
 
   ngOnDestroy() {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+    clearInterval(this.interval);
   }
-
 
 }
