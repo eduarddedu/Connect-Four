@@ -77,16 +77,11 @@ export class AuthService {
     if (this._user.authProvider === null) {
       return;
     }
+    const loadLoginPage = () => setTimeout(() => window.location.assign('/login'), 0);
     if (this._user.authProvider === 'Google') {
-      this.GoogleAuth.signOut().then(() => {
-        console.log('AuthService -> Google user signed out.');
-        window.location.assign('/login');
-      });
+      this.GoogleAuth.signOut().then(loadLoginPage);
     } else {
-      FB.logout(() => {
-        console.log('AuthService -> Facebook user signed out.');
-        window.location.assign('/login');
-      });
+      FB.logout(loadLoginPage);
     }
   }
 
