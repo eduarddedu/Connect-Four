@@ -3,7 +3,7 @@
   <p *ngIf="games.length == 0">No games yet...</p>
   <table>
     <tbody>
-      <tr *ngFor="let game of games" (click)="onClick(game.gameId)">
+      <tr *ngFor="let game of games" (click)="onClickGame(game.id)">
         <td>{{game.players.red.name}}</td>
         <td>{{game.points.red}} - {{game.points.yellow}}</td>
         <td>{{game.players.yellow.name}}</td>

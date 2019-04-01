@@ -139,8 +139,7 @@ export class PanelPlayersComponent implements OnInit {
       state: 'in progress',
       moves: [],
       points: { red: 0, yellow: 0 },
-      redMovesFirst: true,
-      activeColor: 'red'
+      redMovesFirst: true
     });
     return gameId;
   }

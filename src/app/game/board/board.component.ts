@@ -86,7 +86,7 @@ export class BoardComponent implements AfterViewInit {
     }
   }
 
-  clearBoard() {
+  clear() {
     const discs: any[] = [].slice.call(document.querySelectorAll('div.disc'));
     discs.forEach(disc => {
       disc.classList.remove('disc-drop', 'disc-down', 'disc-up');

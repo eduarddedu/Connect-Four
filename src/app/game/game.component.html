@@ -18,17 +18,17 @@
                 <span>{{turnMessage}}</span>
                 <app-timer [startDate]="game.startDate"></app-timer>
             </div>
-            <div style="text-align: center" *ngIf="game.gameOver()">
+            <div *ngIf="gameOverMessage" style="text-align: center">
                 {{gameOverMessage}}
             </div>
-            <div *ngIf="showWaitingFor" class="card-row">
-                <div>Waiting for {{game.opponent.name}}...</div>
+            <div *ngIf="gameOnHoldMessage" class="card-row">
+                {{gameOnHoldMessage}}
             </div>
         </div>
 
         <app-board [activeColor]="game.activeColor" [isOurTurn]="isOurTurn" (move)="onMove($event)"></app-board>
 
-        <div [ngStyle]="{'visibility' : newGameButtonVisibility}">
+        <div style="text-align: center" [ngStyle]="newGameButtonStyle">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()">New game</button>
         </div>
     </div>

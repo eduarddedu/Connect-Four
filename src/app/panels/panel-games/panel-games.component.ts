@@ -17,47 +17,43 @@ export class PanelGamesComponent implements OnInit {
   private deepstream: any;
   private games: any[] = [];
 
-  constructor(private cdr: ChangeDetectorRef, private ds: DeepstreamService) {
+  constructor(private cdr: ChangeDetectorRef, ds: DeepstreamService) {
+    this.deepstream = ds.getInstance();
   }
 
   ngOnInit() {
-    this.deepstream = this.ds.getInstance();
     this.deepstream.record.getList('games').whenReady((list: any) => {
-      this.addGames(list.getEntries());
+      list.getEntries().forEach(this.addGame.bind(this));
       list.on('entry-added', this.addGame.bind(this));
       list.on('entry-removed', this.removeGame.bind(this));
     });
   }
 
-  private addGames(list: any[]) {
-    list.forEach(this.addGame.bind(this));
+  onClickGame(gameId: string) {
+    this.joinGame.emit(gameId);
   }
 
-  private addGame(id: any) {
-    const gameRecord = this.deepstream.record.getRecord(id);
+  private addGame(gameId: any) {
+    const gameRecord = this.deepstream.record.getRecord(gameId);
     const pushGame = (game: Game) => {
       if (game.id) {
         this.games.push(game);
         this.cdr.detectChanges();
         gameRecord.unsubscribe(pushGame);
         gameRecord.subscribe('points', (points: any) => {
-          if (points) {
-            this.games.find((g: Game) => g.id === id).points = points;
-            this.cdr.detectChanges();
-          }
-        }, true);
+          /* this.games.find((g: Game) => g.id === gameId) */
+          game.points = points;
+          this.cdr.detectChanges();
+        });
       }
     };
     gameRecord.subscribe(pushGame);
   }
 
   private removeGame(gameId: any) {
-    this.games = this.games.filter(item => item.gameId !== gameId);
+    this.games = this.games.filter(game => game.id !== gameId);
     this.cdr.detectChanges();
   }
 
-  private onClick(gameId: string) {
-    this.joinGame.emit(gameId);
-  }
 }
 
