@@ -1,12 +1,11 @@
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { BoardComponent } from './board/board.component';
 import { DeepstreamService } from '../deepstream.service';
 import { AuthService, User } from '../auth.service';
 import { NotificationService } from '../notification.service';
-
-type Player = User & { color: string };
+import { BoardComponent } from './board/board.component';
+import { Game } from './game';
 
 @Component({
   selector: 'app-game',
@@ -14,138 +13,164 @@ type Player = User & { color: string };
   styleUrls: ['./game.component.css']
 })
 export class GameComponent implements OnInit, OnDestroy {
-  gameLoaded = false;
-  private user: User;
-  private players: { red: Player, yellow: Player };
-  private player: Player;
-  private opponent: Player;
-  private game: any;
-  private startDate: Date;
-  private points: { red: number, yellow: number };
-  private deepstream: any;
-  private gameId: string;
-  private record: any;
-  private recordDestroyed = false;
-  @ViewChild(BoardComponent)
-  private board: BoardComponent;
-  private callback: any;
-
+  @ViewChild(BoardComponent) board: BoardComponent;
+  user: User;
+  game: Game;
+  gameRecord: any;
+  recordDestroyed = false;
+  callback: any;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private auth: AuthService,
-    private ds: DeepstreamService,
-    private notification: NotificationService) {
-    this.deepstream = this.ds.getInstance();
+    private notification: NotificationService,
+    private ds: DeepstreamService) {
   }
 
   ngOnInit() {
-      this.user = this.auth.user;
-      this.route.paramMap.subscribe(params => {
-        if (this.gameLoaded) {
-          this.discardGame();
-        }
-        this.gameId = params.get('gameId');
-        if (this.deepstream.record.getList('games').getEntries().includes(this.gameId)) {
-          this.record = this.deepstream.record.getRecord(this.gameId);
-          this.callback = this.onRecordUpdate.bind(this);
-          this.record.subscribe(this.callback, true);
-          this.deepstream.record.getList('users').on('entry-removed', this.userOffline.bind(this));
-        } else {
-          this.router.navigateByUrl('/');
-        }
-      });
+    this.user = this.auth.user;
+    const deepstream = this.ds.getInstance();
+    this.route.paramMap.subscribe(params => {
+      if (this.game) {
+        this.unloadGame();
+      }
+      const gameId = params.get('gameId');
+      if (deepstream.record.getList('games').getEntries().includes(gameId)) {
+        this.gameRecord = deepstream.record.getRecord(gameId);
+        const interval = setInterval(() => {
+          const data = this.gameRecord.get();
+          if (data.id) {
+            this.loadGame(data);
+            this.gameRecord.subscribe('moves', this.onGameMovesUpdate.bind(this));
+            this.gameRecord.subscribe('state', this.onGameStateUpdate.bind(this));
+            this.gameRecord.subscribe('points', this.onGamePointsUpdate.bind(this));
+            clearInterval(interval);
+          }
+        }, 50);
+        deepstream.record.getList('users').on('entry-removed', this.userOffline.bind(this));
+      } else {
+        this.router.navigateByUrl('/');
+      }
+    });
   }
 
   ngOnDestroy() {
-    if (this.gameLoaded && !this.recordDestroyed) {
-      this.record.unsubscribe(this.callback);
+    if (this.game && !this.recordDestroyed) {
+      this.gameRecord.unsubscribe(this.callback);
     }
+  }
+
+  loadGame(data: any) {
+    this.game = new Game(data, this.user);
+    console.log('Game: ', this.game);
+    setTimeout(() => {
+      this.board.clearBoard();
+      this.board.replayGame(this.game.moves, this.game.redMovesFirst);
+    }, 0);
+  }
+
+  unloadGame() {
+    this.board.clearBoard();
+    this.game = null;
+    this.gameRecord.unsubscribe(this.callback);
   }
 
   onMove(id: string) {
-    if (this.gameover(id)) {
-      const key = this.board.activePlayer === this.players.red ? 'red' : 'yellow';
-      this.points[`${key}`] += 1;
-      this.record.set('points', this.points);
-      this.record.set('game.winner', this.board.activePlayer);
-      this.record.set('game.state', 'completed');
-    }
-    const moves = this.record.get('game.moves') || [];
+    const moves = this.gameRecord.get('moves');
     moves.push(id);
-    this.record.set('game.moves', moves);
-    if (moves.length === 1) {
-      this.record.set('game.reset', false);
-    }
+    this.gameRecord.set('moves', moves);
+    /* if (moves.length === 1) {
+      this.gameRecord.set('reset', false);
+    } */
   }
 
-  onNewGame() {
-    if (this.board.game.state === `waiting for ${this.user.name}`) {
-      this.record.set('game.state', 'in progress');
-      this.record.set('game.moves', []);
-      this.record.set('game.reset', true);
-    } else {
-      this.record.set('game.state', `waiting for ${this.opponent.name}`);
-    }
-  }
-
-  private discardGame() {
-    this.board.clearBoard();
-    this.gameLoaded = false;
-    this.record.unsubscribe(this.callback);
-  }
-
-  private initBoard(recordData: any) {
-    if (recordData.players) {
-      this.players = recordData.players;
-      this.points = recordData.points;
-      this.game = recordData.game;
-      this.startDate = new Date(recordData.createdOn);
-      const players = [this.players.red, this.players.yellow];
-      if (players.map((p: Player) => p.id).includes(this.user.id)) {
-        this.player = players.find((p: Player) => p.id === this.user.id);
-        this.opponent = players.find((p: Player) => p.id !== this.user.id);
+  onGameMovesUpdate(moves: string[] = []) {
+    this.game.moves = moves;
+    if (moves.length > 0) {
+      const id = moves.pop();
+      const indexNextMove = moves.length + 1;
+      this.board.replayMove(id);
+      if (this.game.gameOver()) {
+        // figure out the winner, update local data and if we are the winner, update the record
+        /* this.gameRecord.set('winner', this.game.activePlayer);
+        this.gameRecord.set('state', 'completed');
+        const key = this.game.activePlayer === this.game.players.red ? 'red' : 'yellow';
+        this.game.points[`${key}`] += 1;
+        this.gameRecord.set('points', this.game.points); */
+      } else {
+        this.game.toggleActivePlayer(indexNextMove);
       }
-      this.gameLoaded = true;
-      setTimeout(() => {
-        this.board.clearBoard();
-        this.board.replayGame();
-        this.onRecordUpdate(recordData);
-      }, 0);
     }
   }
 
-  private onRecordUpdate(data: any) {
-    if (!this.gameLoaded) {
-      this.initBoard(data);
+  onGameStateUpdate(state: 'in progress' | 'over' | 'reset') {
+    this.game.state = state;
+  }
+
+  onGamePointsUpdate(points: any) {
+    this.game.points = points;
+  }
+
+
+  onClickNewGame() {
+    if (this.game.state === `waiting for ${this.user.name}`) {
+      this.gameRecord.set('state', 'in progress');
+      this.gameRecord.set('moves', []);
+      this.gameRecord.set('reset', true);
     } else {
-      this.board.game = data.game;
-      this.points = data.points;
-      if (data.game.reset) {
-        this.resetGame();
-      }
-      this.board.replayLastMove();
+      this.gameRecord.set('state', `waiting for ${this.game.opponent.name}`);
     }
   }
 
-  private resetGame() {
+  resetGame() {
     this.board.clearBoard();
-    this.board.redMovesFirst = this.board.game.winner.name === this.players.red.name ? false : true;
-    this.board.toggleActivePlayer(0);
+    this.game.redMovesFirst = this.game.winner.name === this.game.players.red.name ? false : true;
+    this.game.toggleActivePlayer(0);
   }
 
-  private gameover(id: string) {
-    return id === '62';
+  get showWaitingFor() {
+    return this.game.opponent && this.game.state === `waiting for ${this.game.opponent.name}`;
   }
 
-  private userOffline(userId: string) {
-    if (this.players) {
-      const offlinePlayer = [this.players.red, this.players.yellow].find(u => u.id === userId);
+  get newGameButtonVisibility(): 'visible' | 'hidden' {
+    return this.game.player && (this.game.state === 'over' || this.game.state === `waiting for ${this.game.player.name}`) ?
+      'visible' : 'hidden';
+  }
+
+  get isOurTurn() {
+    return this.game.activePlayer === this.game.player && this.game.state === 'in progress';
+  }
+
+  get turnMessage() {
+    if (this.game.player) {
+      return this.isOurTurn ? 'Your turn' : `Waiting for ${this.game.activePlayer.name}...`;
+    } else {
+      return `Waiting for ${this.game.activePlayer.name}...`;
+    }
+  }
+
+  get gameOver() {
+    return this.game.state === 'over' ||
+      (!this.game.player && this.game.state.startsWith('waiting for') ||
+        this.game.player && this.game.state === `waiting for ${this.game.player.name}`);
+  }
+
+  get gameOverMessage() {
+    if (this.game.player) {
+      return this.game.winner.name === this.game.player.name ? 'You win!' : 'You lose...';
+    } else {
+      return `${this.game.winner.name}} wins!}`;
+    }
+  }
+
+  userOffline(userId: string) {
+    if (this.game) {
+      const offlinePlayer = [this.game.players.red, this.game.players.yellow].find(u => u.id === userId);
       if (offlinePlayer) {
         this.recordDestroyed = true;
-        this.record.set('game.state', `waiting for ${offlinePlayer.name}`);
-        if (this.player && this.player.id !== offlinePlayer.id) {
+        this.gameRecord.set('state', `waiting for ${offlinePlayer.name}`);
+        if (this.game.player && this.game.player.id !== offlinePlayer.id) {
           this.notification.update(`${offlinePlayer.name} went offline`, 'danger');
         }
       }

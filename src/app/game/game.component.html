@@ -1,18 +1,36 @@
-<div *ngIf="gameLoaded" class="card-dark">
-    <div class="header">
-        <div>{{players.red.name}}</div>
-        <div><span>{{points.red}} - {{points.yellow}}</span></div>
-        <div>{{players.yellow.name}}</div>
+<div *ngIf="game">
+    <div class="card-dark">
+        <div class="header">
+            <div>
+                <div class="bullet red"></div>
+                <div>{{game.players.red.name}}</div>
+            </div>
+            <div><span>{{game.points.red}} - {{game.points.yellow}}</span></div>
+            <div>
+                <div class="bullet yellow"></div>
+                <div>{{game.players.yellow.name}}</div>
+            </div>
+        </div>
     </div>
-</div>
-<div *ngIf="gameLoaded" class="card-dark">
-    <app-board 
-    [players]="players" 
-    [player]="player" 
-    [opponent]="opponent" 
-    [game]="game" 
-    [startDate]="startDate"
-    [recordDestroyed]="recordDestroyed"
-    (move)="onMove($event)" 
-    (newGame)="onNewGame()"></app-board>
+    <div class="card-dark">
+        <div class="bulletin">
+            <div *ngIf="game.state === 'in progress'" class="card-row">
+                <span>{{turnMessage}}</span>
+                <app-timer [startDate]="game.startDate"></app-timer>
+            </div>
+            <div style="text-align: center" *ngIf="game.gameOver()">
+                {{gameOverMessage}}
+            </div>
+            <div *ngIf="showWaitingFor" class="card-row">
+                <div>Waiting for {{game.opponent.name}}...</div>
+            </div>
+        </div>
+
+        <app-board [activeColor]="game.activeColor" [isOurTurn]="isOurTurn" (move)="onMove($event)"></app-board>
+
+        <div [ngStyle]="{'visibility' : newGameButtonVisibility}">
+            <button type="button" class="btn btn-primary" (click)="onClickNewGame()">New game</button>
+        </div>
+    </div>
+
 </div>

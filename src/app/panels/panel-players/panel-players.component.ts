@@ -35,10 +35,10 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.deepstream.record.getList('users').whenReady((users: any) => {
-      users.getEntries().forEach(this.addPlayer.bind(this));
-      users.on('entry-added', this.addPlayer.bind(this));
-      users.on('entry-removed', this.removePlayer.bind(this));
+    this.deepstream.record.getList('users').whenReady((list: any) => {
+      list.getEntries().forEach(this.addPlayer.bind(this));
+      list.on('entry-added', this.addPlayer.bind(this));
+      list.on('entry-removed', this.removePlayer.bind(this));
     });
     this.deepstream.event.subscribe(`invitations/${this.user.id}`, this.handleInvitationEvent.bind(this));
   }
@@ -130,17 +130,17 @@ export class PanelPlayersComponent implements OnInit {
     this.deepstream.record.getList('games').addEntry(gameId);
     const record = this.deepstream.record.getRecord(gameId);
     record.set({
+      id: gameId,
+      createdOn: Date.now(),
       players: {
-        red: Object.assign(red, { color: '#ff010b' }),
-        yellow: Object.assign(yellow, { color: '#ffd918' })
+        red: red,
+        yellow: yellow
       },
-      game: {
-        state: 'in progress',
-        moves: []
-      },
+      state: 'in progress',
+      moves: [],
       points: { red: 0, yellow: 0 },
-      gameId: gameId,
-      createdOn: Date.now()
+      redMovesFirst: true,
+      activeColor: 'red'
     });
     return gameId;
   }

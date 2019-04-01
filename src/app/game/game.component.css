@@ -1,15 +1,22 @@
 .card-dark {
-  padding: 1em;
-  margin-bottom: 1em;
-  border-radius: 5px;
-  background-color: var(--gray-dark);
-  font-weight: lighter;
-  color: #ccc;
+    padding: 1em;
+    margin-bottom: 1em;
+    border-radius: 5px;
+    background-color: var(--gray-dark);
+    font-weight: lighter;
+    color: #ccc;
+}
+
+.card-row {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
 }
 
 .header>div {
     display: inline-block;
 }
+
 .header>span {
     font-size: 80%;
 }
@@ -26,4 +33,22 @@
 .header>div:nth-child(3) {
     width: 45%;
     text-align: right;
+}
+
+.bullet {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 7.5px;
+    margin: 0 2px;
+}
+
+.red {
+    background-color: #ff010b;
+}
+
+.yellow {
+    background-color: #ffd918;
 }

@@ -1,31 +1,22 @@
-import { Component, OnInit, Input, Output, AfterViewInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, AfterViewInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
-import { User } from '../../auth.service';
 
-type Player = User & { color: string };
+
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
-export class BoardComponent implements OnInit, AfterViewInit {
-  @Input() players: { red: Player, yellow: Player};
-  @Input() player: Player;
-  @Input() opponent: Player;
-  @Input() game: any;
-  @Input() startDate: Date;
-  @Input() recordDestroyed: boolean;
+export class BoardComponent implements AfterViewInit {
+  @Input() activeColor: string;
+  @Input() isOurTurn: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
-  @Output() newGame: EventEmitter<any> = new EventEmitter();
+  private RED = '#ff010b';
+  private YELLOW = '#ffd918';
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-  activePlayer: Player;
-  redMovesFirst = true;
 
-  constructor(private cdr: ChangeDetectorRef) { }
-
-  ngOnInit() {
-    this.activePlayer = this.players.red;
+  constructor(private cdr: ChangeDetectorRef) {
   }
 
   ngAfterViewInit() {
@@ -36,22 +27,21 @@ export class BoardComponent implements OnInit, AfterViewInit {
   }
 
   onMouseoverInput(id: string) {
-    if (!this.input(id).checked && this.ourTurn) {
+    if (!this.input(id).checked && this.isOurTurn) {
       this.hoistDisc(id);
     }
   }
 
   onMouseleaveInput(id: string) {
-    if (!this.input(id).checked && this.ourTurn) {
+    if (!this.input(id).checked && this.isOurTurn) {
       this.hideDisc(id);
     }
   }
 
   onClickInput(event: any) {
-    if (this.ourTurn) {
+    if (this.isOurTurn) {
       this.move.emit(event.target.name);
       this.dropDisc(event.target.name);
-      this.toggleActivePlayer(this.game.moves.length);
     } else {
       event.preventDefault();
     }
@@ -59,56 +49,41 @@ export class BoardComponent implements OnInit, AfterViewInit {
 
   onTouchstart(event: any) {
     const id = event.target.name;
-    if (!this.input(id).checked && this.ourTurn) {
+    if (!this.input(id).checked && this.isOurTurn) {
       this.hoistDisc(id);
     }
   }
 
   onTouchend(event: any) {
     const id = event.target.name;
-    if (!this.input(id).checked && this.ourTurn) {
+    if (!this.input(id).checked && this.isOurTurn) {
       this.dropDisc(id);
     }
   }
 
-  replayLastMove() {
-    if (this.game.moves.length !== 0) {
-      const id = this.game.moves[this.game.moves.length - 1];
-      const input = this.input(id);
-      if (!input.checked) {
-        input.checked = true;
-        this.hoistDisc(id);
-        setTimeout(() => {
-          this.dropDisc(id);
-          this.toggleActivePlayer(this.game.moves.length);
-        }, 100);
-      }
+  replayMove(id: string) {
+    const input = this.input(id);
+    if (!input.checked) {
+      input.checked = true;
+      this.hoistDisc(id);
+      setTimeout(() => {
+        this.dropDisc(id);
+      }, 100);
     }
   }
 
-  replayGame() {
-    this.toggleActivePlayer(0);
-    for (let i = 0; i < this.game.moves.length; i++) {
-      const id = this.game.moves[i];
+  replayGame(moves: string[], redMovesFirst: boolean) {
+    let color = redMovesFirst ? this.RED : this.YELLOW;
+    for (let i = 0; i < moves.length; i++) {
+      const id = moves[i];
       const input = this.input(id);
       input.checked = true;
       const disc = this.disc(id);
       disc.classList.remove('initial');
       disc.classList.add('disc-down');
-      disc.style.color = this.activePlayer.color;
-      this.toggleActivePlayer(i + 1);
+      disc.style.color = color;
+      color = color === this.RED ? this.YELLOW : this.RED;
     }
-  }
-
-  onClickNewGame() {
-    this.newGame.emit();
-  }
-
-  toggleActivePlayer(indexNextMove: number) {
-    this.activePlayer = indexNextMove % 2 === 0 ?
-      this.redMovesFirst ? this.players.red : this.players.yellow :
-      this.redMovesFirst ? this.players.yellow : this.players.red;
-    this.cdr.detectChanges();
   }
 
   clearBoard() {
@@ -121,30 +96,11 @@ export class BoardComponent implements OnInit, AfterViewInit {
     inputs.forEach((input: any) => input.checked = false);
   }
 
-  showWinner() {
-    return this.game.state === 'completed' ||
-      (!this.player && this.game.state.startsWith('waiting for') ||
-        this.player && this.game.state === `waiting for ${this.player.name}`);
-  }
-
-  showWaitingFor() {
-    return this.opponent && this.game.state === `waiting for ${this.opponent.name}`;
-  }
-
-  newGameButtonVisibility(): 'visible' | 'hidden' {
-    return this.player && (this.game.state === 'completed' || this.game.state === `waiting for ${this.player.name}`) ?
-      'visible' : 'hidden';
-  }
-
-  private get ourTurn() {
-    return this.activePlayer === this.player && this.game.state === 'in progress';
-  }
-
   private hoistDisc(id: string) {
     const disc = this.disc(id);
     disc.classList.remove('disc-initial');
     disc.classList.add('disc-up');
-    disc.style.color = this.activePlayer.color;
+    disc.style.color = this.activeColor === 'red' ? this.RED : this.YELLOW;
   }
 
   private dropDisc(id: string) {

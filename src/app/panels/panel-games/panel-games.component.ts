@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
 import { User } from '../../auth.service';
+import { Game } from '../../game/game';
 import { DeepstreamService } from '../../deepstream.service';
 
 @Component({
@@ -32,22 +33,22 @@ export class PanelGamesComponent implements OnInit {
     list.forEach(this.addGame.bind(this));
   }
 
-  private addGame(gameId: any) {
-    const record = this.deepstream.record.getRecord(gameId);
-    const pushGame = (game: any) => {
-      if (game.gameId) {
+  private addGame(id: any) {
+    const gameRecord = this.deepstream.record.getRecord(id);
+    const pushGame = (game: Game) => {
+      if (game.id) {
         this.games.push(game);
         this.cdr.detectChanges();
-        record.unsubscribe(pushGame);
-        record.subscribe('points', (points: any) => {
+        gameRecord.unsubscribe(pushGame);
+        gameRecord.subscribe('points', (points: any) => {
           if (points) {
-            this.games.find(g => g.gameId === gameId).points = points;
+            this.games.find((g: Game) => g.id === id).points = points;
             this.cdr.detectChanges();
           }
         }, true);
       }
     };
-    record.subscribe(pushGame);
+    gameRecord.subscribe(pushGame);
   }
 
   private removeGame(gameId: any) {

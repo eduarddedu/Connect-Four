@@ -139,18 +139,3 @@ input {
 input:indeterminate {
     display: initial;
 }
-
-.bullet {
-    position: relative;
-    top: 5px;
-    float: left;
-    width: 15px;
-    height: 15px;
-    border-radius: 7.5px;
-}
-
-.card-row {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-}
