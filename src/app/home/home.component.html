@@ -26,7 +26,7 @@
       <section id="panels" *ngIf="user">
         <app-panel-players [user]="user" (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
         </app-panel-players>
-        <app-panel-games [user]="user" (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
+        <app-panel-games (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
         </app-panel-games>
       </section>
       <router-outlet></router-outlet>

@@ -11,9 +11,10 @@ import { BoardComponent } from './game/board/board.component';
 import { TimerComponent } from './timer/timer.component';
 import { PanelPlayersComponent } from './panels/panel-players/panel-players.component';
 import { PanelGamesComponent } from './panels/panel-games/panel-games.component';
-import { GameInvitationComponent } from './invitations/game-invitation/game-invitation.component';
-import { InvitationRejectedComponent } from './invitations/invitation-rejected/invitation-rejected.component';
+import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
+import { InvitationRejectedComponent } from './modals/invitation-rejected/invitation-rejected.component';
 import { NotificationComponent } from './notification/notification.component';
+import { QuitGameComponent } from './modals/quit-game/quit-game.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { NotificationComponent } from './notification/notification.component';
     PanelGamesComponent,
     InvitationRejectedComponent,
     GameInvitationComponent,
-    NotificationComponent
+    NotificationComponent,
+    QuitGameComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +38,7 @@ import { NotificationComponent } from './notification/notification.component';
     LoginModule
   ],
   providers: [],
-  entryComponents: [GameInvitationComponent, InvitationRejectedComponent],
+  entryComponents: [GameInvitationComponent, InvitationRejectedComponent, QuitGameComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

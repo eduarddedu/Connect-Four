@@ -3,15 +3,19 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { User } from '../../auth.service';
 import { DeepstreamService } from '../../deepstream.service';
-import { GameInvitationComponent } from '../../invitations/game-invitation/game-invitation.component';
-import { InvitationRejectedComponent } from '../../invitations/invitation-rejected/invitation-rejected.component';
+import { GameInvitationComponent } from '../../modals/game-invitation/game-invitation.component';
+import { InvitationRejectedComponent } from '../../modals/invitation-rejected/invitation-rejected.component';
 import { NotificationService } from 'src/app/notification.service';
 
 
-type Player = User & { status: string; };
-
-interface Invitation {
-  userId: string; response?: string; gameId?: string;
+export interface Invitation {
+  from: {
+    userId: string;
+  };
+  topic: 'Create Game' | 'Join Game' | 'Reject' | 'Rematch';
+  details?: {
+    gameId?: string;
+  };
 }
 
 @Component({
@@ -24,14 +28,16 @@ export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
   @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
+  private players: Map<string, User> = new Map();
   private deepstream: any;
-  private players: Player[] = [];
-  private myGames: Set<string> = new Set();
 
-  constructor(private cdr: ChangeDetectorRef, private modalService: NgbModal,
-    ds: DeepstreamService, private notification: NotificationService) {
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private modalService: NgbModal,
+    private notification: NotificationService,
+    ds: DeepstreamService) {
     this.deepstream = ds.getInstance();
-    window.addEventListener('beforeunload', this.removeGameRecords.bind(this));
   }
 
   ngOnInit() {
@@ -43,84 +49,81 @@ export class PanelPlayersComponent implements OnInit {
     this.deepstream.event.subscribe(`invitations/${this.user.id}`, this.handleInvitationEvent.bind(this));
   }
 
-  onClick(player: Player) {
-    if (player.status === 'Online') {
-      player.status = 'Invited';
-      this.cdr.detectChanges();
-      this.deepstream.event.emit(`invitations/${player.id}`, <Invitation>{ userId: this.user.id });
+  onClick(user: User) {
+    if (user.status === 'Online') {
+      this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
+        from: { userId: this.user.id }, topic: 'Create Game'
+      });
+      this.deepstream.record.getRecord(user.id).set('status', 'Busy');
+      this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
     }
   }
 
   private addPlayer(userId: string) {
-    if (userId && userId !== this.user.id) {
-      const record = this.deepstream.record.getRecord(userId);
-      const pushPlayer = (user: User) => {
+    if (userId !== this.user.id) {
+      this.deepstream.record.getRecord(userId).subscribe((user: User) => {
         if (user.id) {
-          const player: Player = Object.assign(user, { status: 'Online' });
-          this.players.push(player);
+          this.players.set(user.id, user);
           this.cdr.detectChanges();
-          record.unsubscribe(pushPlayer);
-        }
-      };
-      record.subscribe(pushPlayer, true);
-    }
-  }
-
-  private removePlayer(userId: string) {
-    this.players = this.players.filter(player => player.id !== userId);
-    this.cdr.detectChanges();
-  }
-
-  handleInvitationEvent(invitation: Invitation) {
-    if (invitation.response === undefined) {
-      this.showInvitation(invitation);
-    } else {
-      const user = this.players.find(p => p.id === invitation.userId);
-      if (invitation.response === 'Accept') {
-        this.joinGame.emit(invitation.gameId);
-        this.notification.update(`${user.name} has accepted your invitation.`, 'success');
-        this.myGames.add(invitation.gameId);
-        user.status = 'Playing';
-        this.cdr.detectChanges();
-      } else if (invitation.response === 'Reject') {
-        const modalRef = this.modalService.open(InvitationRejectedComponent);
-        modalRef.componentInstance.user = user;
-      }
-    }
-  }
-
-  private showInvitation(invitation: Invitation) {
-    const user = this.players.find(p => p.id === invitation.userId);
-    if (user) {
-      const modalRef = this.modalService.open(GameInvitationComponent);
-      modalRef.componentInstance.user = user;
-      modalRef.result.then((option: any) => {
-        if (option === 'Join Game') {
-          if (this.players.includes(user)) {
-            this.createAndJoinGame(user);
-            user.status = 'Playing';
-            this.cdr.detectChanges();
-          } else {
-            this.notification.update(`${user.name} went offline`, 'info');
-          }
-        } else if (option === 'Reject') {
-          this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{ userId: this.user.id, response: 'Reject' });
         }
       });
     }
   }
 
-  /*
-  The invited party creates the game record. As a courtesy, we get to play red and move first.
-  */
+  private removePlayer(userId: string) {
+    this.players.delete(userId);
+    this.cdr.detectChanges();
+  }
+
+  handleInvitationEvent(invitation: Invitation) {
+    const user = this.players.get(invitation.from.userId);
+    if (!user) {
+      return;
+    }
+    if (invitation.topic === 'Create Game' || invitation.topic === 'Rematch') {
+      this.getUserResponse(invitation);
+    }
+    if (invitation.topic === 'Join Game') {
+      this.joinGame.emit(invitation.details.gameId);
+      this.deepstream.record.getRecord(user.id).set('status', 'Playing');
+      this.notification.update(`${user.name} accepted your invitation`, 'success');
+    }
+    if (invitation.topic === 'Reject') {
+      const modalRef = this.modalService.open(InvitationRejectedComponent);
+      modalRef.componentInstance.user = user;
+    }
+  }
+
+  private getUserResponse(invitation: Invitation) {
+    let user = this.players.get(invitation.from.userId);
+    const modalRef = this.modalService.open(GameInvitationComponent);
+    modalRef.componentInstance.user = user;
+    modalRef.result.then((option: any) => {
+      user = this.players.get(invitation.from.userId);
+      if (!user) {
+        this.notification.update(`${user.name} went offline`, 'danger');
+        return;
+      }
+      if (option === 'Join Game') {
+        if (invitation.topic === 'Create Game') {
+          this.createAndJoinGame(user);
+        } else if (invitation.topic === 'Rematch') {
+          this.deepstream.record.getRecord(invitation.details.gameId).set('state', 'in progress');
+        }
+        this.deepstream.record.getRecord(user.id).set('status', 'Playing');
+      }
+      if (option === 'Reject') {
+        this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
+          from: { userId: this.user.id }, topic: 'Reject'
+        });
+      }
+    });
+  }
 
   private createAndJoinGame(opponent: User) {
     const gameId = this.createGameRecord(this.user, opponent);
-    this.myGames.add(gameId);
     this.deepstream.event.emit(`invitations/${opponent.id}`, <Invitation>{
-      userId: this.user.id,
-      response: 'Accept',
-      gameId: gameId
+      from: { userId: this.user.id }, topic: 'Join Game', details: { gameId: gameId }
     });
     this.joinGame.emit(gameId);
   }
@@ -138,17 +141,9 @@ export class PanelPlayersComponent implements OnInit {
       },
       state: 'in progress',
       moves: [],
-      points: { red: 0, yellow: 0 },
-      redMovesFirst: true
+      points: { red: 0, yellow: 0 }
     });
     return gameId;
-  }
-
-  private removeGameRecords() {
-    this.myGames.forEach(gameId => {
-      this.deepstream.record.getRecord(gameId).delete();
-      this.deepstream.record.getList('games').removeEntry(gameId);
-    });
   }
 
 }

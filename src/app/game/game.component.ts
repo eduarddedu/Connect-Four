@@ -1,11 +1,13 @@
-import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { DeepstreamService } from '../deepstream.service';
 import { AuthService, User } from '../auth.service';
 import { NotificationService } from '../notification.service';
+import { Invitation } from '../panels/panel-players/panel-players.component';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
+import { GameService } from '../game.service';
 
 @Component({
   selector: 'app-game',
@@ -19,36 +21,37 @@ export class GameComponent implements OnInit, OnDestroy {
   opponent?: User;
   game: Game;
   gameRecord: any;
+  deepstream: any;
   recordDestroyed = false;
   callback: any;
-  localState = { onHold: false };
+  newGameClicked = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private auth: AuthService,
     private notification: NotificationService,
-    private ds: DeepstreamService) {
+    private ds: DeepstreamService,
+    private gameService: GameService) {
   }
 
   ngOnInit() {
     this.user = this.auth.user;
-    const deepstream = this.ds.getInstance();
+    this.deepstream = this.ds.getInstance();
     this.route.paramMap.subscribe(params => {
-      this.unloadGame();
       const gameId = params.get('gameId');
-      if (deepstream.record.getList('games').getEntries().includes(gameId)) {
-        this.gameRecord = deepstream.record.getRecord(gameId);
+      if (this.deepstream.record.getList('games').getEntries().includes(gameId)) {
+        this.gameRecord = this.deepstream.record.getRecord(gameId);
         const interval = setInterval(() => {
           const data = this.gameRecord.get();
           if (data.id) {
             this.loadGame(data);
             this.gameRecord.subscribe('moves', this.onGameMovesUpdate.bind(this));
             this.gameRecord.subscribe('state', this.onGameStateUpdate.bind(this));
+            this.gameRecord.subscribe('redMovesFirst', this.onRedMovesFirstUpdate.bind(this));
             clearInterval(interval);
           }
         }, 50);
-        deepstream.record.getList('users').on('entry-removed', this.userOffline.bind(this));
       } else {
         this.router.navigateByUrl('/');
       }
@@ -64,6 +67,9 @@ export class GameComponent implements OnInit, OnDestroy {
   loadGame(data: any) {
     this.game = new Game(data);
     this.setRelationship();
+    if (this.isPlayer) {
+      this.gameService.push(this.game);
+    }
     setTimeout(() => {
       this.board.clear();
       this.board.replayGame(this.game.moves, this.game.redMovesFirst);
@@ -79,15 +85,6 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  unloadGame() {
-    if (this.game) {
-      console.log('Unloading game: ', this.game);
-      this.board.clear();
-      this.game = null;
-      this.gameRecord.unsubscribe(this.callback);
-    }
-  }
-
   onMove(id: string) {
     const moves = this.gameRecord.get('moves');
     moves.push(id);
@@ -100,7 +97,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.board.replayMove(idLastMove);
       moves.push(idLastMove);
       this.game.update(moves);
-      if (this.game.gameOver) {
+      if (this.game.isOver) {
         if (this.game.winner.id === this.user.id) {
           this.gameRecord.set('state', 'over');
           this.gameRecord.set('points', this.game.points);
@@ -110,56 +107,35 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  onGamePointsUpdate(points: any) {
-    this.game.points = points;
-  }
-
-  onGameStateUpdate(state: 'in progress' | 'over' | 'on hold') {
-    if (state === 'on hold') {
-      if (!this.isPlayer) {
-        return; // we are watcher
-      }
-    }
-    if (state === 'over') {
-      if (this.game.state === 'in progress') {
-        return; // opposite side won
-      }
-    }
-    if (state === 'in progress') {
-      if (this.game.state === 'on hold') {
-        this.game.reset();
-        this.localState.onHold = false;
+  onGameStateUpdate(state: 'in progress' | 'over') {
+    const rematch = this.game.state === 'over' && state === 'in progress';
+    if (rematch) {
+      this.newGameClicked = false;
+      this.board.clear();
+      this.game.newGame();
+      if (this.game.winner.id === this.user.id) {
+        this.gameRecord.set('moves', []);
+        this.gameRecord.set('redMovesFirst', this.game.redMovesFirst);
       }
     }
     this.game.state = state;
   }
 
+  onRedMovesFirstUpdate(redMovesFirst: boolean) {
+    this.game.redMovesFirst = redMovesFirst;
+  }
+
 
   onClickNewGame() {
-    let nextState;
-    if (this.game.state === 'over') {
-      nextState = 'on hold';
-      this.localState.onHold = true;
-    } else if (this.game.state === 'on hold') {
-      nextState = 'in progress';
-      this.gameRecord.set('moves', []);
-      this.gameRecord.set('redMovesFirst', this.game.redMovesFirst);
-    }
-    this.gameRecord.set('state', nextState);
-    this.board.clear();
-
+    this.newGameClicked = true;
+    this.deepstream.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
+      from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
+    });
   }
 
-  /** Turn on/off button visibility */
   get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer &&
-      (this.game.state === 'over' || this.game.state === 'on hold') && !this.localState.onHold ?
+    return this.isPlayer && this.game.isOver ?
       { visibility: 'visible' } : { visibility: 'hidden' };
-  }
-
-  get gameOnHoldMessage() {
-    const showMessage = this.isPlayer && this.localState.onHold;
-    return showMessage ? `Waiting for ${this.opponent.name}...` : null;
   }
 
   get isOurTurn() {
@@ -169,34 +145,20 @@ export class GameComponent implements OnInit, OnDestroy {
   get turnMessage() {
     if (this.isPlayer) {
       return this.isOurTurn ? 'Your turn' : `Waiting for ${this.game.activePlayer.name}...`;
-    } else {
-      return `Waiting for ${this.game.activePlayer.name}...`;
     }
+    return `Waiting for ${this.game.activePlayer.name}...`;
   }
 
   get gameOverMessage() {
-    if (this.game.state === 'in progress' || this.localState.onHold) {
-      return null;
-    }
-    if (this.isPlayer) {
-      return this.game.winner.id === this.user.id ? 'You win!' : 'You lose...';
-    } else {
-      const winner = this.game.winner;
-      return `${winner.name}} wins!}`;
-    }
-  }
-
-  userOffline(userId: string) {
-    if (this.game) {
-      const offlinePlayer = [this.game.players.red, this.game.players.yellow].find(u => u.id === userId);
-      if (offlinePlayer) {
-        this.recordDestroyed = true;
-        this.gameRecord.set('state', `waiting for ${offlinePlayer.name}`);
-        if (this.isPlayer && this.user.id !== offlinePlayer.id) {
-          this.notification.update(`${offlinePlayer.name} went offline`, 'danger');
+    if (this.game.isOver) {
+      if (this.isPlayer) {
+        if (this.newGameClicked) {
+          return `Invitation sent. Waiting for ${this.opponent.name}`;
         }
+          return this.game.winner.id === this.user.id ? 'You win!' : 'You lose...';
+        }
+        return `${this.game.winner.name} wins!`;
       }
     }
-  }
 
-}
+  }

@@ -14,7 +14,6 @@ export interface Game {
         yellow: number;
     };
     redMovesFirst: boolean;
-    _redWins: boolean;
     winner?: User;
 }
 
@@ -26,8 +25,8 @@ export class Game implements Game {
         this.state = data.state;
         this.moves = data.moves;
         this.points = data.points;
-        this.redMovesFirst = data.redMovesFirst;
         this.winner = data.winner;
+        this.redMovesFirst = data.redMovesFirst || true;
     }
 
     get activeColor() {
@@ -46,7 +45,7 @@ export class Game implements Game {
         return this.activePlayer === this.players.red ? this.players.yellow : this.players.red;
     }
 
-    get gameOver() {
+    get isOver() {
         return this.state === 'over';
     }
 
@@ -54,8 +53,8 @@ export class Game implements Game {
         this.moves = moves;
         if (this.isVictory()) {
             this.winner = this.inactivePlayer;
-            this._redWins = this.winner.id === this.players.red.id;
-            if (this._redWins) {
+            const redWins = this.winner.id === this.players.red.id;
+            if (redWins) {
                 this.points.red += 1;
             } else {
                 this.points.yellow += 1;
@@ -71,8 +70,8 @@ export class Game implements Game {
         return isVictory;
     }
 
-    reset() {
+    newGame() {
         this.moves = [];
-        this.redMovesFirst = !this._redWins;
+        this.redMovesFirst = !(this.winner.id === this.players.red.id);
     }
 }

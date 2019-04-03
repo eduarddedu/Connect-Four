@@ -1,6 +1,5 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
-import { User } from '../../auth.service';
 import { Game } from '../../game/game';
 import { DeepstreamService } from '../../deepstream.service';
 
@@ -10,8 +9,6 @@ import { DeepstreamService } from '../../deepstream.service';
   styleUrls: ['./panel-games.component.css', '../panels-styles.css']
 })
 export class PanelGamesComponent implements OnInit {
-
-  @Input() user: User;
   @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
   private deepstream: any;
@@ -41,7 +38,6 @@ export class PanelGamesComponent implements OnInit {
         this.cdr.detectChanges();
         gameRecord.unsubscribe(pushGame);
         gameRecord.subscribe('points', (points: any) => {
-          /* this.games.find((g: Game) => g.id === gameId) */
           game.points = points;
           this.cdr.detectChanges();
         });
@@ -51,7 +47,7 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private removeGame(gameId: any) {
-    this.games = this.games.filter(game => game.id !== gameId);
+    this.games = this.games.filter(g => g.id !== gameId);
     this.cdr.detectChanges();
   }
 

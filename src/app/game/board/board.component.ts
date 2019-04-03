@@ -1,4 +1,4 @@
-import { Component, Input, Output, AfterViewInit, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, AfterViewInit, EventEmitter } from '@angular/core';
 
 
 
@@ -15,9 +15,6 @@ export class BoardComponent implements AfterViewInit {
   private YELLOW = '#ffd918';
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-
-  constructor(private cdr: ChangeDetectorRef) {
-  }
 
   ngAfterViewInit() {
     /* Bind event handlers for board interaction on mobile devices */

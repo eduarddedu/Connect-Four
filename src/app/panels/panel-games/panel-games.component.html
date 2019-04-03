@@ -1,6 +1,6 @@
 <div class="panel" *ngIf="panelVisible">
-  <h6 class="card-header text-center">Join</h6>
-  <p *ngIf="games.length == 0">No games yet...</p>
+  <h6 class="card-header text-center">Watch</h6>
+  <p *ngIf="games.length == 0">No games yet</p>
   <table>
     <tbody>
       <tr *ngFor="let game of games" (click)="onClickGame(game.id)">

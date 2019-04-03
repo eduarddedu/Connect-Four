@@ -1,14 +1,14 @@
 <div class="panel" *ngIf="panelVisible">
   <h6 class="card-header text-center">Invite</h6>
-  <p *ngIf="players.length == 0">No one is online</p>
+  <p *ngIf="players.size == 0">No one is online</p>
   <table>
     <tbody>
-      <tr *ngFor="let player of players" (click)="onClick(player)">
+      <tr *ngFor="let player of players | keyvalue" (click)="onClick(player.value)">
         <td>
-          <img [src]="player.iconUrl" alt="User icon" width="30" height="30"> {{player.name}}
+          <img [src]="player.value.iconUrl" alt="User icon" width="30" height="30"> {{player.value.name}}
         </td>
         <td>
-          {{player.status}}
+          {{player.value.status}}
         </td>
       </tr>
     </tbody>

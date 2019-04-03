@@ -17,6 +17,7 @@ export interface User {
   iconUrl: string;
   email: string;
   authProvider: 'Google' | 'Facebook' | null;
+  status: 'Online' | 'Busy' | 'Playing';
 }
 
 @Injectable({
@@ -55,7 +56,8 @@ export class AuthService {
         iconUrl: profile.getImageUrl(),
         email: profile.getEmail(),
         idToken: googleUser.getAuthResponse().id_token,
-        authProvider: 'Google'
+        authProvider: 'Google',
+        status: 'Online'
       };
     };
     gapi.load('auth2', () => {
@@ -93,7 +95,8 @@ export class AuthService {
         name: profile.name,
         iconUrl: profile.picture.data.url,
         email: profile.email,
-        authProvider: 'Facebook'
+        authProvider: 'Facebook',
+        status: 'Online'
       };
     };
     const onFacebookUserStatusChange = (response: any) => {
@@ -119,7 +122,8 @@ export class AuthService {
       name: window.localStorage.getItem('username'),
       iconUrl: 'assets/img/user.png',
       email: 'user@example.com',
-      authProvider: null
+      authProvider: null,
+      status: 'Online'
     };
   }
 }
