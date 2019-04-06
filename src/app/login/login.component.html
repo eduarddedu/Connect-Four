@@ -4,21 +4,18 @@
   </header>
   <main>
     <div class="login-box">
-      <div id="g-login-btn">
-          <span class="icon"></span>
-          <span class="buttonText">Sign in with Google</span>
+      <h4>Sign in</h4>
+      <div class="social-login-btn g-login-btn">
+        <span class="icon"></span>
+        <span class="buttonText">Continue with Google</span>
       </div>
-      <div id="spinner">
-        Loading
-        <div class="fb-login-button" 
-             data-height="50" data-button-type="login_with" data-size="large" 
-             data-width="240" data-auto-logout-link="false" data-use-continue-as="false">
-        </div>
+      <div class="social-login-btn fb-login-btn" (click)="openFBLogin()">
+        <span class="icon"></span>
+        <span class="buttonText">Continue with Facebook</span>
       </div>
-    </div>
-    <div class="notice">
-      <p><i class="fas fa-info-circle">&nbsp;</i>To use the social login buttons on <b>Firefox,</b></p>
-      <p>please turn content blocking off for this website.</p>
+      <p class="notice">
+        To use the social login buttons on <b>Firefox,</b>
+        please turn content blocking off for this website.</p>
     </div>
   </main>
 </div>

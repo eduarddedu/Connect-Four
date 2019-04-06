@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 
 declare const FB: any;
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -16,12 +17,11 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    FB.Event.subscribe('xfbml.render', function () {
-      const spinner = document.getElementById('spinner');
-      spinner.removeAttribute('style');
-      spinner.removeChild(spinner.childNodes[0]);
-    });
     this.auth.userSignIn.subscribe(() => setTimeout(() => this.router.navigate(['/']), 0));
+  }
+
+  openFBLogin() {
+    FB.login();
   }
 }
 

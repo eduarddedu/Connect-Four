@@ -3,70 +3,77 @@ main {
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    padding-top: 100px;
-}
-
-main>div {
-    margin: 4px auto;
-}
-
-p {
-    font-size: .75em;
-    margin: 0;
-}
-
-.notice {
-    margin: .3em 0;
-    padding: 5px;
-    border-radius: 3px;
-    color: #333;
-    border: .5px solid currentColor;
+    justify-content: center;
 }
 
 .login-box {
-    width: 510px;
-    padding: 5px 0;
+    --main-text-color: #666;
+    padding: 20px 10px;
     display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-    align-content: center;
-}
-
-#spinner {
-    height: 40px;
-    width: 250px;
-    background: #4267b2;
-    border-radius: 5px;
-    color: white;
-    text-align: center;
-}
-
-#g-login-btn {
-    display: inline-block;
-    width: 250px;
-    height: 40px;
+    flex-flow: column nowrap;
+    align-items: center;
     background-color: white;
-    border-radius: 6px;
+    border-radius: 5px;
 }
 
-#g-login-btn:hover {
+.login-box > h4 {
+    color: var(--main-text-color);
+}
+
+.social-login-btn {
+    height: 40px;
+    width: 250px;
+    border-radius: 2px;
+    margin-top: 6px;
+}
+
+.social-login-btn:hover {
     cursor: pointer;
 }
 
-#g-login-btn>span.icon {
+.social-login-btn>span.icon {
+    --icon-size: 24px;
     display: inline-block;
-    width: 34px;
-    height: 34px;
+    width: var(--icon-size);
+    height: var(--icon-size);
     vertical-align: middle;
-    background-image: url("/assets/img/google-logo.png");
-    background-size: 34px;
-    margin: 3px 2px;
+    background-color: white;
+    background-size: var(--icon-size);
+    margin: calc((40px - var(--icon-size)) / 2) 8px;
+    border-radius: 2px;
 }
 
-#g-login-btn>span.buttonText {
-    padding-left: 1em;
-    color: #666;
+.social-login-btn>span.buttonText {
+    padding-left: 16px;
+    color: white;
+}
+
+.g-login-btn {
+    background-color: #4285F4;
+}
+
+.g-login-btn>span.icon {
+    background-image: url("/assets/img/google-logo.png");
+}
+
+.g-login-btn>span.buttonText {
     font-family: 'Roboto', sans-serif;
+}
+
+.fb-login-btn {
+    background-color: #4267b2;
+}
+
+.fb-login-btn>span.icon {
+    background-image: url("/assets/img/facebook-logo.jpg");
+}
+
+.notice {
+    margin-top: 8px;
+    max-width: 300px;
+    font-size: .75em;
+    color: var(--main-text-color);
+    text-align: center;
 }
 
 
@@ -75,6 +82,5 @@ p {
 @media (min-width: 768px) {
     main {
         background: linear-gradient(to bottom, #006994, white);
-        padding-top: 150px;
     }
 }

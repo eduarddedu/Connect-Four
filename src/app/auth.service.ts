@@ -63,7 +63,7 @@ export class AuthService {
     gapi.load('auth2', () => {
       this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
       this.GoogleAuth.then(() => {
-        const button: Element = document.getElementById('g-login-btn');
+        const button: Element = document.querySelector('.g-login-btn');
         this.GoogleAuth.attachClickHandler(button, {}, (googleUser: any) => user.next(getUser(googleUser)));
         if (this.GoogleAuth.isSignedIn.get() === true) {
           user.next(getUser(this.GoogleAuth.currentUser.get()));
