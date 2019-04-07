@@ -1,5 +1,6 @@
 :root {
     --main-text-color: #ccc;
+    --dark-blue: rgb(29, 30, 33);
 }
 
 html,
@@ -9,7 +10,7 @@ body {
 }
 
 body {
-    background-color: #b9b9b9 !important;
+    background-color: #111 !important;
 }
 
 .c4-container {
@@ -26,4 +27,8 @@ body {
     user-select: none;
     background-color: #111;
     color: var(--main-text-color);
+}
+
+main {
+    background-color: var(--dark);
 }
