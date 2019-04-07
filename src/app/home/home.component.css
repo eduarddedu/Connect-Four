@@ -11,7 +11,7 @@ header>.c4-col>.logout {
 }
 
 header>.c4-col>.logout>a {
-    color: lightcoral;
+    color: var(--main-text-color);
     opacity: .8;
 }
 
@@ -58,7 +58,6 @@ main {
     }
     main {
         padding: 30px 10px 0;
-        background: linear-gradient(to bottom, #006994, #fff);
     }
     .box {
         max-width: 720px;

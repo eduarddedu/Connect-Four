@@ -33,13 +33,3 @@ td {
     line-height: 50px;
 }
 
-p, td {
-    font-size: 14px;
-}
-
-@media(min-width:768px) {
-    p, td {
-        font-size: 16px;
-    }
-}
-

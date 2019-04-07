@@ -7,17 +7,13 @@ main {
 }
 
 .login-box {
-    --main-text-color: #666;
+    color: #666;
     padding: 20px 10px;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
     background-color: white;
     border-radius: 5px;
-}
-
-.login-box > h4 {
-    color: var(--main-text-color);
 }
 
 .social-login-btn {
@@ -72,15 +68,5 @@ main {
     margin-top: 8px;
     max-width: 300px;
     font-size: .75em;
-    color: var(--main-text-color);
     text-align: center;
-}
-
-
-
-
-@media (min-width: 768px) {
-    main {
-        background: linear-gradient(to bottom, #006994, white);
-    }
 }
