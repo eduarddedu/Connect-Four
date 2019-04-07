@@ -115,6 +115,7 @@ export class HomeComponent implements OnInit {
       const gameId = this.game.id;
       this.unloadGame();
       this.deepstream.record.getList('games').removeEntry(gameId);
+      this.deepstream.record.getRecord(this.user.id).set('status', 'Online');
     }
   }
 

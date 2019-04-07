@@ -1,6 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subject, Observable, of, race } from 'rxjs';
+import { Subject, Observable, race } from 'rxjs';
 
 import { environment } from '../environments/environment';
 
