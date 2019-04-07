@@ -33,6 +33,10 @@ export class Game implements Game {
         return this.activePlayer === this.players.red ? 'red' : 'yellow';
     }
 
+    get inactiveColor() {
+        return this.activeColor === 'red' ? 'yellow' : 'red';
+    }
+
     get activePlayer() {
         const indexNextMove = this.moves.length;
         return indexNextMove % 2 === 0 ?
@@ -64,10 +68,36 @@ export class Game implements Game {
     }
 
     private isVictory() {
-        let isVictory: boolean;
-        /////////////////////////// 7
-        isVictory = this.moves.length >= 1 && this.moves[this.moves.length - 1] === '62';
-        return isVictory;
+        /* if (this.moves.length < 7) {
+            return false;
+        } */
+
+        const lastMove: number = +this.moves[this.moves.length - 1];
+        const row = Math.floor(lastMove / 10);
+        const col = lastMove % 10;
+        const discSet = (id: number) => {
+            const disc: Element = document.getElementById(`${id}`);
+            return disc.classList.contains(this.inactiveColor);
+        };
+
+        const checkRow = () => {
+            let count = 0;
+            for (let c = 1; c <= 7; c++) {
+                const id = row * 10 + c;
+                if (discSet(id)) {
+                    count++;
+                } else {
+                    count = 0;
+                }
+                if (count === 4) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        /* return checkRowToTheLeft() || checkRowToTheRight() || checkColDown(); */
+        return checkRow();
     }
 
     newGame() {

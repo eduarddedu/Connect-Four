@@ -30,7 +30,6 @@ export class GameComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private auth: AuthService,
-    private notification: NotificationService,
     private ds: DeepstreamService,
     private gameService: GameService) {
   }
@@ -40,7 +39,9 @@ export class GameComponent implements OnInit, OnDestroy {
     this.deepstream = this.ds.getInstance();
     this.route.paramMap.subscribe(params => {
       const gameId = params.get('gameId');
-      if (this.deepstream.record.getList('games').getEntries().includes(gameId)) {
+      const games = this.deepstream.record.getList('games');
+      if (games.getEntries().includes(gameId)) {
+        games.on('entry-removed', (id: string) => this.recordDestroyed = id === gameId);
         this.gameRecord = this.deepstream.record.getRecord(gameId);
         const interval = setInterval(() => {
           const data = this.gameRecord.get();
@@ -134,7 +135,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer && this.game.isOver ?
+    return this.isPlayer && this.game.isOver && !this.recordDestroyed ?
       { visibility: 'visible' } : { visibility: 'hidden' };
   }
 
