@@ -3,6 +3,7 @@
     flex-flow: column;
     align-items: center;
 }
+
 #board {
     width: 450px;
     height: 450px;
@@ -121,8 +122,8 @@
 }
 
 .disc-down {
-  top: 0;
-  opacity: 1;
+    top: 0;
+    opacity: 1;
 }
 
 input {
@@ -138,4 +139,12 @@ input {
 
 input:indeterminate {
     display: initial;
+}
+
+.red {
+    color: #ff010b;
+}
+
+.yellow {
+    color: #ffd918;
 }

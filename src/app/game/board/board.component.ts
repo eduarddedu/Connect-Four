@@ -11,8 +11,6 @@ export class BoardComponent implements AfterViewInit {
   @Input() activeColor: string;
   @Input() isOurTurn: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
-  private RED = '#ff010b';
-  private YELLOW = '#ffd918';
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
 
@@ -70,7 +68,7 @@ export class BoardComponent implements AfterViewInit {
   }
 
   replayGame(moves: string[], redMovesFirst: boolean) {
-    let color = redMovesFirst ? this.RED : this.YELLOW;
+    let colorClass = redMovesFirst ? 'red' : 'yellow';
     for (let i = 0; i < moves.length; i++) {
       const id = moves[i];
       const input = this.input(id);
@@ -78,15 +76,15 @@ export class BoardComponent implements AfterViewInit {
       const disc = this.disc(id);
       disc.classList.remove('initial');
       disc.classList.add('disc-down');
-      disc.style.color = color;
-      color = color === this.RED ? this.YELLOW : this.RED;
+      disc.classList.add(colorClass);
+      colorClass = colorClass === 'red' ? 'yellow' : 'red';
     }
   }
 
   clear() {
     const discs: any[] = [].slice.call(document.querySelectorAll('div.disc'));
     discs.forEach(disc => {
-      disc.classList.remove('disc-drop', 'disc-down', 'disc-up');
+      disc.classList.remove('disc-drop', 'disc-down', 'disc-up', 'red', 'yellow');
       disc.classList.add('disc-initial');
     });
     const inputs = [].slice.call(document.querySelectorAll('input'));
@@ -97,7 +95,7 @@ export class BoardComponent implements AfterViewInit {
     const disc = this.disc(id);
     disc.classList.remove('disc-initial');
     disc.classList.add('disc-up');
-    disc.style.color = this.activeColor === 'red' ? this.RED : this.YELLOW;
+    disc.classList.add(this.activeColor);
   }
 
   private dropDisc(id: string) {
@@ -107,7 +105,7 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private hideDisc(id: string) {
-    this.disc(id).classList.remove('disc-up');
+    this.disc(id).classList.remove('disc-up', 'red', 'yellow');
     this.disc(id).classList.add('disc-initial');
   }
 
