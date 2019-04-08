@@ -3,11 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { DeepstreamService } from '../deepstream.service';
 import { AuthService, User } from '../auth.service';
-import { NotificationService } from '../notification.service';
 import { Invitation } from '../panels/panel-players/panel-players.component';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
 import { GameService } from '../game.service';
+import { Bot } from './bot';
 
 @Component({
   selector: 'app-game',
@@ -104,6 +104,8 @@ export class GameComponent implements OnInit, OnDestroy {
           this.gameRecord.set('points', this.game.points);
           this.gameRecord.set('winner', this.user);
         }
+      } else if (this.isPlayer && !this.isOurTurn && this.opponent.id === '0') {
+        setTimeout(() => this.onMove(Bot.randomMove(moves)), 500);
       }
     }
   }

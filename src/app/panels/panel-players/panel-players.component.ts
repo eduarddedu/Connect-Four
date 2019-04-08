@@ -29,6 +29,14 @@ export class PanelPlayersComponent implements OnInit {
   @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
   private players: Map<string, User> = new Map();
+  private bot: User = {
+    id: '0',
+    name: 'Bobiță',
+    iconUrl: 'assets/img/robot-dog-head.png',
+    email: 'bobita@example.com',
+    authProvider: null,
+    status: 'Online'
+  };
   private deepstream: any;
 
 
@@ -38,6 +46,7 @@ export class PanelPlayersComponent implements OnInit {
     private notification: NotificationService,
     ds: DeepstreamService) {
     this.deepstream = ds.getInstance();
+    this.players.set('0', this.bot);
   }
 
   ngOnInit() {
@@ -50,6 +59,10 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   onClick(user: User) {
+    if (user.id === '0') {
+      this.joinGame.emit(this.createGameRecord(this.user, this.bot));
+      return;
+    }
     if (user.status === 'Online') {
       this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Create Game'
