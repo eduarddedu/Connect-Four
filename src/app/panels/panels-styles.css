@@ -1,8 +1,8 @@
 .panel {
     box-sizing: border-box;
     border-radius: 5px;
-    background-color: white;
-    color: #666;
+    background-color: var(--gray-dark);
+    color: var(--main-text-color);
 }
 
 p {

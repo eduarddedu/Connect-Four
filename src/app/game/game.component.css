@@ -2,7 +2,7 @@
     padding: 1em;
     margin-bottom: 1em;
     border-radius: 5px;
-    background-color: var(--dark-blue);
+    background-color: var(--gray-dark);
     font-weight: lighter;
     color: var(--main-text-color);
 }
