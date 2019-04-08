@@ -35,8 +35,18 @@ export class BoardComponent implements AfterViewInit {
 
   onClickInput(event: any) {
     if (this.isOurTurn) {
-      this.move.emit(event.target.name);
-      this.dropDisc(event.target.name);
+      const id = event.target.name;
+      const disc = this.disc(id);
+      if (disc.classList.contains('disc-initial')) {
+        this.hoistDisc(id);
+        setTimeout(() => {
+          this.dropDisc(id);
+          this.move.emit(id);
+        }, 100);
+      } else {
+        this.dropDisc(id);
+        this.move.emit(id);
+      }
     } else {
       event.preventDefault();
     }
@@ -74,7 +84,7 @@ export class BoardComponent implements AfterViewInit {
       const input = this.input(id);
       input.checked = true;
       const disc = this.disc(id);
-      disc.classList.remove('initial');
+      disc.classList.remove('disc-initial');
       disc.classList.add('disc-down');
       disc.classList.add(colorClass);
       colorClass = colorClass === 'red' ? 'yellow' : 'red';
