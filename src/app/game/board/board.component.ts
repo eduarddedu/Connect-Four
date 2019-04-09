@@ -1,4 +1,4 @@
-import { Component, Input, Output, AfterViewInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 
 
@@ -7,19 +7,12 @@ import { Component, Input, Output, AfterViewInit, EventEmitter } from '@angular/
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.css']
 })
-export class BoardComponent implements AfterViewInit {
+export class BoardComponent {
   @Input() activeColor: string;
   @Input() isOurTurn: boolean;
   @Output() move: EventEmitter<string> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
-
-  ngAfterViewInit() {
-    /* Bind event handlers for board interaction on mobile devices */
-    const inputs: any[] = [].slice.call(document.querySelectorAll('input'));
-    inputs.forEach(input => input.addEventListener('touchstart', this.onTouchstart.bind(this)));
-    inputs.forEach(input => input.addEventListener('touchend', this.onTouchend.bind(this)));
-  }
 
   onMouseoverInput(id: string) {
     if (!this.input(id).checked && this.isOurTurn) {
@@ -49,20 +42,6 @@ export class BoardComponent implements AfterViewInit {
       }
     } else {
       event.preventDefault();
-    }
-  }
-
-  onTouchstart(event: any) {
-    const id = event.target.name;
-    if (!this.input(id).checked && this.isOurTurn) {
-      this.hoistDisc(id);
-    }
-  }
-
-  onTouchend(event: any) {
-    const id = event.target.name;
-    if (!this.input(id).checked && this.isOurTurn) {
-      this.dropDisc(id);
     }
   }
 

@@ -2,15 +2,6 @@
     --main-text-color: #ccc;
 }
 
-html,
-body {
-    width: 100%;
-    height: 100%;
-}
-body {
-    background-color: #ffffff !important;
-}
-
 .c4-container {
     display: flex;
     flex-flow: column nowrap;
@@ -26,5 +17,19 @@ body {
     background-color: #111;
     color: var(--main-text-color);
 }
+
+.c4-card {
+    border-radius: 3px;
+    background-color: var(--gray-dark);
+    font-weight: lighter;
+    color: var(--main-text-color);
+}
+
+@media(min-width: 768px) {
+    body {
+        background-image: linear-gradient(to bottom, #006994, #fff);
+    }
+}
+
 
 

@@ -7,20 +7,17 @@ main {
 }
 
 .login-box {
-    color: #666;
-    padding: 20px 10px;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    background-color: white;
-    border-radius: 5px;
+    padding: 16px;
 }
 
 .social-login-btn {
     height: 40px;
     width: 250px;
     border-radius: 2px;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .social-login-btn:hover {
@@ -50,10 +47,6 @@ main {
 
 .g-login-btn>span.icon {
     background-image: url("/assets/img/google-logo.png");
-}
-
-.g-login-btn>span.buttonText {
-    font-family: 'Roboto', sans-serif;
 }
 
 .fb-login-btn {
