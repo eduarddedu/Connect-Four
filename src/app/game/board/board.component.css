@@ -142,3 +142,65 @@ input:indeterminate {
 .yellow {
     color: #ffd918;
 }
+
+@media(max-width: 575.999px) {
+    #board {
+        width: 300px;
+        height: 300px;
+    }
+    #front {
+        top: 40px;
+        border: 10px solid #007fff;
+        width: 300px;
+        height: 260px;
+        background: radial-gradient(circle, transparent 14px, #007fff 15px, #007fff 17px, #1f90ff 18px,  #1f90ff 24px, #007fff) center top/40px 40px;
+    }
+    
+    #field {
+        top: 0;
+        left: 10px;
+        padding: 50px 0 0 0;
+        width: 280px;
+        height: 290px;
+    }
+    
+    .grid {
+        min-width: 280px;
+        height: 280px;
+    }
+    
+    .column {
+        height: 280px;
+    }
+    
+    .disc {
+        width: 40px;
+        height: 40px;
+        background: radial-gradient(circle, currentcolor 8px, #666 9px, currentcolor 10px, currentcolor 15px, #666 16px, transparent 17px, transparent) center/40px;
+    }
+
+    .disc-up:nth-of-type(1) {
+        top: -50px;
+    }
+    
+    .disc-up:nth-of-type(2) {
+        top: -90px;
+    }
+    
+    .disc-up:nth-of-type(3) {
+        top: -130px;
+    }
+    
+    .disc-up:nth-of-type(4) {
+        top: -170px;
+    }
+    
+    .disc-up:nth-of-type(5) {
+        top: -210px;
+    }
+    
+    .disc-up:nth-of-type(6) {
+        top: -250px;
+    }
+    
+}

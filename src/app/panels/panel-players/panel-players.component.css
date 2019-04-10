@@ -1,8 +1,7 @@
 img {
-    width: 1.2em;
-    height: 1.2em;
-    vertical-align: text-bottom;
-    opacity: 0.55;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
 }
 
 tr {

@@ -15,6 +15,7 @@ import { GameInvitationComponent } from './modals/game-invitation/game-invitatio
 import { InvitationRejectedComponent } from './modals/invitation-rejected/invitation-rejected.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
+import { TrimAfterWhiteSpacePipe } from './util/trim-after-white-space.pipe';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { QuitGameComponent } from './modals/quit-game/quit-game.component';
     InvitationRejectedComponent,
     GameInvitationComponent,
     NotificationComponent,
-    QuitGameComponent
+    QuitGameComponent,
+    TrimAfterWhiteSpacePipe
   ],
   imports: [
     BrowserModule,

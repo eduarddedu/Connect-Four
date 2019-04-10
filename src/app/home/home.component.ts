@@ -9,6 +9,7 @@ import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { Game } from '../game/game';
 import { NotificationService } from '../notification.service';
 import { GameService } from '../game.service';
+import { TrimAfterWhiteSpacePipe as trimAfterWhiteSpace } from '../util/trim-after-white-space.pipe';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +19,7 @@ import { GameService } from '../game.service';
 export class HomeComponent implements OnInit {
   @ViewChild(PanelPlayersComponent) panelPlayers: PanelPlayersComponent;
   user: User;
-  showAlert = false;
+  showDropdownMenu = false;
   private alertMessage: string;
   private alertType: string;
   private panelsVisible = true;
@@ -119,7 +120,7 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  logout() {
+  signOut() {
     this.auth.signOut();
   }
 

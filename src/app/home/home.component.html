@@ -1,22 +1,17 @@
 <div class="c4-container">
   <header>
-    <div class="c4-col">
-      <div class="brand" (click)="goHome()">
-        <img src="assets/img/connect4.png" width="40" height="40" alt="board" role="navigation"> Connect Four
-      </div>
+    <div class="brand" (click)="goHome()">
+      <img src="assets/img/connect4.png" alt="board" role="navigation"> Connect Four
     </div>
-    <div class="c4-col">
-      <div class="logout">
-        <a href="#" (click)="logout()">Sign out</a>
+    <div class="profile" *ngIf="user">
+      <div class="icon" (click)="showDropdownMenu = !showDropdownMenu">
+        {{user.name | trimAfterWhiteSpace }}
+        <img [src]="user.iconUrl" alt="user pic">
       </div>
-    </div>
-    <div class="c4-col">
-      <div class="profile" *ngIf="user">
-        <span>{{user.name}}</span>
-        <div class="icon">
-          <span class="overlay"></span>
-          <img [src]="user.iconUrl" width="40" height="40" alt>
-        </div>
+      <div class="c4-dropdown-menu" *ngIf="showDropdownMenu">
+        <div class="item"><i class="fas fa-cogs"></i> Settings</div>
+        <div class="divider"></div>
+        <div class="item" (click)="signOut()"><i class="fas fa-sign-out-alt"></i> Sign out</div>
       </div>
     </div>
   </header>

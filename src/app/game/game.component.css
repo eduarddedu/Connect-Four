@@ -2,37 +2,33 @@
     padding: 8px;
     margin-bottom: 8px;
 }
-@media(min-width: 768px) {
+
+@media(min-width: 576px) {
     .c4-card {
         padding: 16px;
         margin-bottom: 16px;
     }
 }
-.card-row {
+
+.flex-row {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
 }
 
-.header>div {
-    display: inline-block;
+.score {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
 }
 
-.header>span {
-    font-size: 80%;
+.score>div:nth-child(2) {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    justify-content: end;
 }
 
-.header>div:nth-child(1) {
-    width: 45%;
-}
-
-.header>div:nth-child(2) {
-    width: 10%;
-    text-align: center;
-}
-
-.header>div:nth-child(3) {
-    width: 45%;
+.score>div:last-child {
     text-align: right;
 }
 

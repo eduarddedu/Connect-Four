@@ -1,11 +1,11 @@
 <div *ngIf="game">
     <div class="c4-card">
-        <div class="header">
+        <div class="score">
             <div>
                 <div class="bullet red"></div>
                 <div>{{game.players.red.name}}</div>
             </div>
-            <div><span>{{game.points.red}} - {{game.points.yellow}}</span></div>
+            <div>{{game.points.red}} - {{game.points.yellow}}</div>
             <div>
                 <div class="bullet yellow"></div>
                 <div>{{game.players.yellow.name}}</div>
@@ -13,8 +13,8 @@
         </div>
     </div>
     <div class="c4-card">
-        <div class="bulletin">
-            <div *ngIf="game.state === 'in progress'" class="card-row">
+        <div id="gameInfo">
+            <div *ngIf="game.state === 'in progress'" class="flex-row">
                 <span>{{turnMessage}}</span>
                 <app-timer [startDate]="game.startDate"></app-timer>
             </div>

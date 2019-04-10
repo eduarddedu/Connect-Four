@@ -2,11 +2,15 @@
     --main-text-color: #ccc;
 }
 
+body {
+    background-image: linear-gradient(to bottom, #006994, #fff) !important;
+}
+
 .c4-container {
     display: flex;
     flex-flow: column nowrap;
     min-height: 100vh;
-    min-width: 500px;
+    min-width: 318px;
 }
 
 .c4-container>header {
@@ -23,12 +27,6 @@
     background-color: var(--gray-dark);
     font-weight: lighter;
     color: var(--main-text-color);
-}
-
-@media(min-width: 768px) {
-    body {
-        background-image: linear-gradient(to bottom, #006994, #fff);
-    }
 }
 
 
