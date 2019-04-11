@@ -146,10 +146,11 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   get turnMessage() {
+    const username = this.game.activePlayer.name.replace(/ .*/, '');
     if (this.isPlayer) {
-      return this.isOurTurn ? 'Your turn' : `Waiting for ${this.game.activePlayer.name}...`;
+      return this.isOurTurn ? 'Your turn' : `Waiting for ${username}...`;
     }
-    return `Waiting for ${this.game.activePlayer.name}...`;
+    return `Waiting for ${username}...`;
   }
 
   get gameOverMessage() {

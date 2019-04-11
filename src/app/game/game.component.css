@@ -20,12 +20,10 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
 }
-
-.score>div:nth-child(2) {
-    height: 100%;
-    display: flex;
-    flex-flow: column;
-    justify-content: end;
+img {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
 }
 
 .score>div:last-child {
@@ -40,12 +38,4 @@
     height: 15px;
     border-radius: 7.5px;
     margin: 0 2px;
-}
-
-.red {
-    background-color: #ff010b;
-}
-
-.yellow {
-    background-color: #ffd918;
 }

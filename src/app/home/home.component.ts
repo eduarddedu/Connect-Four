@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, NgZone, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -9,7 +9,6 @@ import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { Game } from '../game/game';
 import { NotificationService } from '../notification.service';
 import { GameService } from '../game.service';
-import { TrimAfterWhiteSpacePipe as trimAfterWhiteSpace } from '../util/trim-after-white-space.pipe';
 
 @Component({
   selector: 'app-home',

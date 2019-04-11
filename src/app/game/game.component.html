@@ -2,13 +2,11 @@
     <div class="c4-card">
         <div class="score">
             <div>
-                <div class="bullet red"></div>
-                <div>{{game.players.red.name}}</div>
+               <img [src]="game.players.red.iconUrl"> {{game.players.red.name  | trimAfterWhiteSpace }}
             </div>
             <div>{{game.points.red}} - {{game.points.yellow}}</div>
             <div>
-                <div class="bullet yellow"></div>
-                <div>{{game.players.yellow.name}}</div>
+                {{game.players.yellow.name | trimAfterWhiteSpace }} <img [src]="game.players.yellow.iconUrl">
             </div>
         </div>
     </div>
