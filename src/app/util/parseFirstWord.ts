@@ -1,9 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-  name: 'trimAfterWhiteSpace'
+  name: 'parseFirstWord'
 })
-export class TrimAfterWhiteSpacePipe implements PipeTransform {
+export class ParseFirstWordPipe implements PipeTransform {
 
   transform(value: string = ''): any {
     return value.replace(/ .*/g, '');

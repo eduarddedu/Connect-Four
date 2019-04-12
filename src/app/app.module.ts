@@ -15,7 +15,7 @@ import { GameInvitationComponent } from './modals/game-invitation/game-invitatio
 import { InvitationRejectedComponent } from './modals/invitation-rejected/invitation-rejected.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
-import { TrimAfterWhiteSpacePipe } from './util/trim-after-white-space.pipe';
+import { ParseFirstWordPipe } from './util/parseFirstWord';
 
 @NgModule({
   declarations: [
@@ -30,7 +30,7 @@ import { TrimAfterWhiteSpacePipe } from './util/trim-after-white-space.pipe';
     GameInvitationComponent,
     NotificationComponent,
     QuitGameComponent,
-    TrimAfterWhiteSpacePipe
+    ParseFirstWordPipe
   ],
   imports: [
     BrowserModule,

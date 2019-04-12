@@ -2,11 +2,11 @@
     <div class="c4-card">
         <div class="score">
             <div>
-               <img [src]="game.players.red.iconUrl"> {{game.players.red.name  | trimAfterWhiteSpace }}
+               <img [src]="game.players.red.iconUrl"> {{game.players.red.name  | parseFirstWord }}
             </div>
             <div>{{game.points.red}} - {{game.points.yellow}}</div>
             <div>
-                {{game.players.yellow.name | trimAfterWhiteSpace }} <img [src]="game.players.yellow.iconUrl">
+                {{game.players.yellow.name | parseFirstWord }} <img [src]="game.players.yellow.iconUrl">
             </div>
         </div>
     </div>

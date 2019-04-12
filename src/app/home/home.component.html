@@ -5,7 +5,7 @@
     </div>
     <div class="profile" *ngIf="user">
       <div class="icon" (click)="showDropdownMenu = !showDropdownMenu">
-        {{user.name | trimAfterWhiteSpace }}
+        {{user.name | parseFirstWord }}
         <img [src]="user.iconUrl" alt="user pic">
       </div>
       <div class="c4-dropdown-menu" *ngIf="showDropdownMenu">
