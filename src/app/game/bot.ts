@@ -8,12 +8,8 @@ export class Bot {
         [61, 62, 63, 64, 65, 66, 67]
     ];
     static randomMove(previousMoves: string[]) {
-        if (previousMoves.length === 42) {
-            throw new Error('No free slots');
-        }
         const nextMoveOptions = this.nextMoveOptions(previousMoves);
-        const randomIndex = this.getRandomInt(0, nextMoveOptions.length);
-        return nextMoveOptions[randomIndex];
+        return nextMoveOptions[Math.floor(Math.random() * nextMoveOptions.length)];
     }
 
     private static nextMoveOptions(previousMoves: string[]) {
@@ -51,10 +47,4 @@ export class Bot {
         }
         return nextMoveOptions;
     }
-
-    private static getRandomInt(min: number, max: number) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min; // The maximum is exclusive and the minimum is inclusive
-      }
 }

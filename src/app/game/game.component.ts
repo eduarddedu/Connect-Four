@@ -130,10 +130,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
 
   onClickNewGame() {
-    this.newGameClicked = true;
-    this.deepstream.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
-      from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
-    });
+    if (this.opponent.id === '0') {
+      this.gameRecord.set('state', 'in progress');
+    } else {
+      this.newGameClicked = true;
+      this.deepstream.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
+        from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
+      });
+    }
   }
 
   get newGameButtonStyle(): { [key: string]: string } {
@@ -159,10 +163,10 @@ export class GameComponent implements OnInit, OnDestroy {
         if (this.newGameClicked) {
           return `Invitation sent. Waiting for ${this.opponent.name}`;
         }
-          return this.game.winner.id === this.user.id ? 'You win 😀' : 'You lose 😞';
-        }
-        return `${this.game.winner.name} wins!`;
+        return this.game.winner.id === this.user.id ? 'You win 😀' : 'You lose 😞';
       }
+      return `${this.game.winner.name} wins!`;
     }
-
   }
+
+}
