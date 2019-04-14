@@ -57,8 +57,7 @@ export class Game implements Game {
         this.moves = moves;
         if (this.isVictory()) {
             this.winner = this.inactivePlayer;
-            const redWins = this.winner.id === this.players.red.id;
-            if (redWins) {
+            if (this.winner.id === this.players.red.id) {
                 this.points.red += 1;
             } else {
                 this.points.yellow += 1;
@@ -67,13 +66,9 @@ export class Game implements Game {
         }
     }
 
-    newGame() {
+    reset() {
         this.moves = [];
-        if (this.players.yellow.id === '0') {
-            this.redMovesFirst = true;
-        } else {
-            this.redMovesFirst = !(this.winner.id === this.players.red.id);
-        }
+        this.redMovesFirst = this.players.yellow.id === '0' ? true : !(this.winner.id === this.players.red.id);
     }
 
     private isVictory() {
@@ -136,19 +131,19 @@ export class Game implements Game {
             while (++r <= 6 && ++c <= 7) {
                 mainDiagonal.push(r * 10 + c);
             }
-            const secondaryDiagonal = [row * 10 + col];
+            const counterDiagonal = [row * 10 + col];
             r = row, c = col;
             // walk NE
             while (--r >= 1 && ++c <= 7) {
-                secondaryDiagonal.push(r * 10 + c);
+                counterDiagonal.push(r * 10 + c);
             }
-            secondaryDiagonal.reverse();
+            counterDiagonal.reverse();
             // walks SW
             r = row, c = col;
             while (++r <= 6 && --c >= 1) {
-                secondaryDiagonal.push(r * 10 + c);
+                counterDiagonal.push(r * 10 + c);
             }
-            return accumulator.check(mainDiagonal) || accumulator.check(secondaryDiagonal);
+            return accumulator.check(mainDiagonal) || accumulator.check(counterDiagonal);
         };
         return checkRow() || checkColumn() || checkDiagonals();
     }

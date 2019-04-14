@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 import { DeepstreamService } from '../deepstream.service';
 import { AuthService, User } from '../auth.service';
 import { Invitation } from '../panels/panel-players/panel-players.component';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
-import { GameService } from '../game.service';
-import { Bot } from './bot';
+import { AI } from './ai';
 
 @Component({
   selector: 'app-game',
@@ -18,59 +18,59 @@ export class GameComponent implements OnInit, OnDestroy {
   @ViewChild(BoardComponent) board: BoardComponent;
   user: User;
   isPlayer = false;
+  isPlayingAgainstAI = false;
   opponent?: User;
   game: Game;
-  gameRecord: any;
-  deepstream: any;
-  recordDestroyed = false;
-  callback: any;
+  record: deepstreamIO.Record;
+  ds: deepstreamIO.Client;
   newGameClicked = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private auth: AuthService,
-    private ds: DeepstreamService,
-    private gameService: GameService) {
+    private deepstreamService: DeepstreamService) {
   }
 
   ngOnInit() {
     this.user = this.auth.user;
-    this.deepstream = this.ds.getInstance();
-    this.route.paramMap.subscribe(params => {
-      const gameId = params.get('gameId');
-      const games = this.deepstream.record.getList('games');
-      if (games.getEntries().includes(gameId)) {
-        games.on('entry-removed', (id: string) => this.recordDestroyed = id === gameId);
-        this.gameRecord = this.deepstream.record.getRecord(gameId);
-        const interval = setInterval(() => {
-          const data = this.gameRecord.get();
-          if (data.id) {
-            this.loadGame(data);
-            this.gameRecord.subscribe('moves', this.onGameMovesUpdate.bind(this));
-            this.gameRecord.subscribe('state', this.onGameStateUpdate.bind(this));
-            this.gameRecord.subscribe('redMovesFirst', this.onRedMovesFirstUpdate.bind(this));
-            clearInterval(interval);
-          }
-        }, 50);
-      } else {
-        this.router.navigateByUrl('/');
-      }
+    this.ds = this.deepstreamService.getInstance();
+    this.route.paramMap.pipe(map(params => params.get('gameId')))
+    .subscribe(gameId => {
+      this.ds.record.has(gameId, (error, hasRecord) => {
+        if (hasRecord) {
+          this.record = this.ds.record.getRecord(gameId);
+          const interval = setInterval(() => {
+            const data = this.record.get();
+            if (data.id) {
+              this.loadGame(data);
+              clearInterval(interval);
+            }
+          }, 50);
+        } else {
+          this.router.navigate(['/']);
+        }
+      });
     });
   }
 
   ngOnDestroy() {
-    if (this.game && !this.recordDestroyed) {
-      this.gameRecord.unsubscribe(this.callback);
+    if (this.record) {
+      ['moves', 'state', 'redMovesFirst'].forEach(path => this.record.unsubscribe(path, null));
     }
   }
 
   loadGame(data: any) {
     this.game = new Game(data);
+    this.record.subscribe('moves', this.onGameMovesUpdate.bind(this));
+    this.record.subscribe('state', this.onGameStateUpdate.bind(this));
+    this.record.subscribe('redMovesFirst', this.onRedMovesFirstUpdate.bind(this));
+    this.ds.record.getList('games').on('entry-removed', id => {
+      if (this.game.id === id) {
+        this.record = null;
+      }
+    });
     this.setRelationship();
-    if (this.isPlayer) {
-      this.gameService.push(this.game);
-    }
     setTimeout(() => {
       this.board.clear();
       this.board.replayGame(this.game.moves, this.game.redMovesFirst);
@@ -83,42 +83,42 @@ export class GameComponent implements OnInit, OnDestroy {
     if (array.map((u: User) => u.id).includes(this.user.id)) {
       this.isPlayer = true;
       this.opponent = array.find((u: User) => u.id !== this.user.id);
+      this.isPlayingAgainstAI = this.opponent.id === '0';
     }
   }
 
   onMove(id: string) {
-    const moves = this.gameRecord.get('moves');
-    moves.push(id);
-    this.gameRecord.set('moves', moves);
+    if (this.record) {
+      const moves = this.record.get('moves');
+      moves.push(id);
+      this.record.set('moves', moves);
+    }
   }
 
   onGameMovesUpdate(moves: string[] = []) {
     if (moves.length > 0) {
-      const idLastMove = moves.pop();
-      this.board.replayMove(idLastMove);
-      moves.push(idLastMove);
+      this.board.replayMove(moves[moves.length - 1]);
       this.game.update(moves);
       if (this.game.isOver) {
-        if (this.game.winner.id === this.user.id) {
-          this.gameRecord.set('state', 'over');
-          this.gameRecord.set('points', this.game.points);
-          this.gameRecord.set('winner', this.user);
+        if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
+          this.record.set('state', 'over');
+          this.record.set('points', this.game.points);
+          this.record.set('winner', this.game.winner);
         }
-      } else if (this.isPlayer && !this.isOurTurn && this.opponent.id === '0') {
-        setTimeout(() => this.onMove(Bot.randomMove(moves)), 500);
+      } else if (this.isPlayingAgainstAI && !this.isOurTurn) {
+        setTimeout(() => this.onMove(AI.randomMove(moves)), 500);
       }
     }
   }
 
   onGameStateUpdate(state: 'in progress' | 'over') {
-    const rematch = this.game.state === 'over' && state === 'in progress';
-    if (rematch) {
+    if (this.game.state === 'over' && state === 'in progress') {
       this.newGameClicked = false;
       this.board.clear();
-      this.game.newGame();
-      if (this.game.winner.id === this.user.id) {
-        this.gameRecord.set('moves', []);
-        this.gameRecord.set('redMovesFirst', this.game.redMovesFirst);
+      this.game.reset();
+      if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
+        this.record.set('moves', []);
+        this.record.set('redMovesFirst', this.game.redMovesFirst);
       }
     }
     this.game.state = state;
@@ -128,20 +128,19 @@ export class GameComponent implements OnInit, OnDestroy {
     this.game.redMovesFirst = redMovesFirst;
   }
 
-
   onClickNewGame() {
-    if (this.opponent.id === '0') {
-      this.gameRecord.set('state', 'in progress');
+    if (this.isPlayingAgainstAI) {
+      this.record.set('state', 'in progress');
     } else {
       this.newGameClicked = true;
-      this.deepstream.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
+      this.ds.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
       });
     }
   }
 
   get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer && this.game.isOver && !this.recordDestroyed ?
+    return this.isPlayer && this.game.isOver && this.record ?
       { visibility: 'visible' } : { visibility: 'hidden' };
   }
 

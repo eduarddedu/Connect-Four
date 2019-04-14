@@ -11,7 +11,7 @@ import { DeepstreamService } from '../../deepstream.service';
 export class PanelGamesComponent implements OnInit {
   @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
-  private deepstream: any;
+  private deepstream: deepstreamIO.Client;
   private games: any[] = [];
 
   constructor(private cdr: ChangeDetectorRef, ds: DeepstreamService) {

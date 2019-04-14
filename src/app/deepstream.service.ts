@@ -10,7 +10,7 @@ declare var deepstream: any;
   providedIn: 'root'
 })
 export class DeepstreamService {
-  private deepstream: any;
+  private deepstream: deepstreamIO.Client;
 
   constructor(auth: AuthService) {
     if (auth.user) {
@@ -26,7 +26,7 @@ export class DeepstreamService {
 
   private init(user: User) {
     console.log('Deepstream init...');
-    this.deepstream = deepstream(environment.DEEPSTREAM_URL, { maxReconnectAttempts: 0 }).login(({ username: user.name }));
+    this.deepstream = deepstream(environment.DEEPSTREAM_URL, { maxReconnectAttempts: 0 }).login({ username: user.name });
     this.deepstream.on('error', (error: any, event: any, topic: any) => {
       console.log(error, event, topic);
     });

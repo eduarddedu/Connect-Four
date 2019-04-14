@@ -1,14 +1,12 @@
-import { Component, OnInit, ViewChild, NgZone } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService, User } from '../auth.service';
 import { DeepstreamService } from '../deepstream.service';
-import { PanelPlayersComponent } from '../panels/panel-players/panel-players.component';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
-import { Game } from '../game/game';
 import { NotificationService } from '../notification.service';
-import { GameService } from '../game.service';
+import { GameComponent } from '../game/game.component';
 
 @Component({
   selector: 'app-home',
@@ -16,50 +14,48 @@ import { GameService } from '../game.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  @ViewChild(PanelPlayersComponent) panelPlayers: PanelPlayersComponent;
+  gameCompRef: GameComponent;
   user: User;
   showDropdownMenu = false;
-  private alertMessage: string;
-  private alertType: string;
   private panelsVisible = true;
-  private deepstream: any;
-  private game: Game;
-  private opponent: User;
+  private ds: deepstreamIO.Client;
 
   constructor(private router: Router,
     private modalService: NgbModal,
     private auth: AuthService,
     private ngZone: NgZone,
-    private ds: DeepstreamService,
-    private notification: NotificationService,
-    private gameService: GameService) {
+    private deepstreamService: DeepstreamService,
+    private notification: NotificationService) {
   }
 
   ngOnInit() {
     if (this.auth.user) {
       this.user = this.auth.user;
       this.panelsVisible = true;
-      this.deepstream = this.ds.getInstance();
-      this.deepstream.record.getList('users').whenReady((list: any) => {
+      this.ds = this.deepstreamService.getInstance();
+      this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
+      this.ds.record.getList('users').whenReady(list => {
         if (!list.getEntries().includes(this.user.id)) {
           list.addEntry(this.user.id);
-          const record = this.deepstream.record.getRecord(this.user.id);
+          const record = this.ds.record.getRecord(this.user.id);
           record.set(this.user);
           window.addEventListener('beforeunload', () => {
             record.delete();
             list.removeEntry(this.user.id);
+            if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
+              this.ds.record.getRecord(this.gameCompRef.game.id).delete();
+              this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
+            }
           });
         }
       });
-      this.gameService.newGame.subscribe(this.loadGame.bind(this));
-      console.log('User: ', Object.assign(this.user));
     } else {
       this.router.navigate(['/login']);
     }
   }
 
   goHome() {
-    if (this.game) {
+    if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
       this.getGameQuitOption();
     } else {
       this.router.navigate(['/']);
@@ -71,30 +67,18 @@ export class HomeComponent implements OnInit {
     const modalRef = this.modalService.open(QuitGameComponent);
     modalRef.result.then((option: any) => {
       if (option === 'Yes') {
-        this.ngZone.run(() => {
-          const gameId = this.game.id;
-          this.deepstream.record.getRecord(this.user.id).set('status', 'Online');
-          this.deepstream.record.getRecord(this.opponent.id).set('status', 'Online');
-          this.unloadGame();
-          this.deepstream.record.getRecord(gameId).delete();
-          this.deepstream.record.getList('games').removeEntry(gameId);
-          this.router.navigate(['/']);
-          this.panelsVisible = true;
-        });
+        this.ds.record.getRecord(this.user.id).set('status', 'Online');
+        this.ds.record.getRecord(this.gameCompRef.opponent.id).set('status', 'Online');
+        this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
+        this.ds.record.getRecord(this.gameCompRef.game.id).delete(); // Note: the 'delete' event is not propagated to all subscribers
+        this.panelsVisible = true;
+        this.ngZone.run(() => this.router.navigate(['/']));
       }
     });
   }
 
-  loadGame(game: Game) {
-    this.game = game;
-    this.opponent = this.game.players.red.id !== this.user.id ? this.game.players.red : this.game.players.yellow;
-    this.deepstream.record.getList('users').on('entry-removed', this.onUserOffline.bind(this));
-    this.deepstream.record.getList('games').on('entry-removed', this.onGameRemoved.bind(this));
-  }
-
-  unloadGame() {
-    this.game = null;
-    this.opponent = null;
+  onGameLoad(gameComponentRef: GameComponent) {
+    this.gameCompRef = gameComponentRef;
   }
 
   joinGame(gameId: string) {
@@ -102,20 +86,12 @@ export class HomeComponent implements OnInit {
     this.router.navigate([`/game/${gameId}`]);
   }
 
-  private onGameRemoved(gameId: string) {
-    if (this.game && this.game.id === gameId) {
-      this.notification.update(`${this.opponent.name} left the game`, 'danger');
-      this.unloadGame();
-    }
-  }
-
-  onUserOffline(userId: string) {
-    if (this.opponent && this.opponent.id === userId) {
-      this.notification.update(`${this.opponent.name} went offline`, 'danger');
-      const gameId = this.game.id;
-      this.unloadGame();
-      this.deepstream.record.getList('games').removeEntry(gameId);
-      this.deepstream.record.getRecord(this.user.id).set('status', 'Online');
+  onGameRecordDelete(gameId: string) {
+    if (this.gameCompRef && this.gameCompRef.game.id === gameId) {
+      this.notification.update(`Game over. Opponent abandoned`, 'danger');
+      if (this.gameCompRef.isPlayer) {
+        this.ds.record.getRecord(this.user.id).set('status', 'Online');
+      }
     }
   }
 

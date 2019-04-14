@@ -37,7 +37,7 @@ export class PanelPlayersComponent implements OnInit {
     authProvider: null,
     status: 'Online'
   };
-  private deepstream: any;
+  private deepstream: deepstreamIO.Client;
 
 
   constructor(
@@ -60,7 +60,9 @@ export class PanelPlayersComponent implements OnInit {
 
   onClick(user: User) {
     if (user.id === '0') {
-      this.joinGame.emit(this.createGameRecord(this.user, this.botUser));
+      (this.createGameRecord(this.user, this.botUser)).then((gameId: string) => {
+        this.joinGame.emit(gameId);
+      });
     } else if (user.status === 'Online') {
       this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Create Game'
@@ -132,29 +134,33 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   private createAndJoinGame(opponent: User) {
-    const gameId = this.createGameRecord(this.user, opponent);
-    this.deepstream.event.emit(`invitations/${opponent.id}`, <Invitation>{
-      from: { userId: this.user.id }, topic: 'Join Game', details: { gameId: gameId }
+    this.createGameRecord(this.user, opponent).then((gameId: string) => {
+      this.deepstream.event.emit(`invitations/${opponent.id}`, <Invitation>{
+        from: { userId: this.user.id }, topic: 'Join Game', details: { gameId: gameId }
+      });
+      this.joinGame.emit(gameId);
     });
-    this.joinGame.emit(gameId);
   }
 
-  private createGameRecord(red: User, yellow: User): string {
-    const gameId = this.deepstream.getUid();
-    this.deepstream.record.getList('games').addEntry(gameId);
-    const record = this.deepstream.record.getRecord(gameId);
-    record.set({
-      id: gameId,
-      createdOn: Date.now(),
-      players: {
-        red: red,
-        yellow: yellow
-      },
-      state: 'in progress',
-      moves: [],
-      points: { red: 0, yellow: 0 }
+  private createGameRecord(red: User, yellow: User): Promise<string> {
+    return new Promise(resolve => {
+      const gameId = this.deepstream.getUid();
+      this.deepstream.record.getRecord(gameId).whenReady((record: deepstreamIO.Record) => {
+        record.set({
+          id: gameId,
+          createdOn: Date.now(),
+          players: {
+            red: red,
+            yellow: yellow
+          },
+          state: 'in progress',
+          moves: [],
+          points: { red: 0, yellow: 0 }
+        });
+        this.deepstream.record.getList('games').addEntry(gameId);
+        resolve(gameId);
+      });
     });
-    return gameId;
   }
 
 }

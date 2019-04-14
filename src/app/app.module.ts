@@ -16,6 +16,8 @@ import { InvitationRejectedComponent } from './modals/invitation-rejected/invita
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
 import { ParseFirstWordPipe } from './util/parseFirstWord';
+import * as _ from 'deepstream.io-client-js';
+
 
 @NgModule({
   declarations: [

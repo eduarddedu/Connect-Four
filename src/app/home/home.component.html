@@ -24,7 +24,7 @@
         <app-panel-games (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
         </app-panel-games>
       </section>
-      <router-outlet></router-outlet>
+      <router-outlet (activate)="onGameLoad($event)"></router-outlet>
     </div>
   </main>
 </div>
