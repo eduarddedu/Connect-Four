@@ -1,7 +1,101 @@
 export class AI {
 
-    /* disc ids */
-    private static readonly matrix = [
+    static randomMove(redMovesFirst: boolean, previousMoves: string[]) {
+        const nextMoveOptions = new Board(redMovesFirst, previousMoves).nextMoveOptions();
+        return nextMoveOptions[Math.floor(Math.random() * nextMoveOptions.length)];
+    }
+
+    static bestMove(redMovesFirst: boolean, previousMoves: string[]) {
+        return this.minmaxRoot(redMovesFirst, previousMoves);
+    }
+
+    private static minmaxRoot(redMovesFirst: boolean, previousMoves: string[]) {
+        let bestMove = null;
+        let bestScore = -Infinity;
+        const board = new Board(redMovesFirst, previousMoves);
+        const nextMoveOptions = board.nextMoveOptions();
+        for (const id of nextMoveOptions) {
+            board.move(id);
+            const score = this.minmax(1, board, true);
+            if (score >= bestScore) {
+                bestScore = score;
+                bestMove = id;
+            }
+            board.undo();
+        }
+        return bestMove;
+    }
+
+    private static minmax(depth: number, board: Board, isMaximisingPlayer: boolean) {
+        if (board.gameOver) {
+            return isMaximisingPlayer ? 10000 : -10000;
+        }
+        if (depth === 0) {
+            return this.evaluateBoard(board);
+        } else {
+            let bestScore = isMaximisingPlayer ? Infinity : -Infinity;
+            for (const id of board.nextMoveOptions()) {
+                board.move(id);
+                if (isMaximisingPlayer) {
+                    bestScore = Math.min(bestScore, this.minmax(depth - 1, board, !isMaximisingPlayer));
+                } else {
+                    bestScore = Math.max(bestScore, this.minmax(depth - 1, board, !isMaximisingPlayer));
+                }
+                board.undo();
+            }
+            return bestScore;
+        }
+
+    }
+
+    /*
+    The function returns a number in the range [-10000, 10000]. The number is determined with the following algorithm.
+    The function scans the board looking for C1, C2, C3 and C4 distinct combinations.
+    A combination means 4 adjacent slots arranged horizontally, vertically or diagonally.
+    Slots can be either set with the same color or empty; at least one slot must be set.
+    If one slot is set and the other are empty, we have a G1 combination.
+    If two slots are set and the other are empty, we have a C2 group etc.
+    We use powers of ten to score the groups, by putting combinations of the same class into sets and considering set type and size.
+    C1 type gets you 10 points for type and 1 point for set size. So C1 set of size 1 = 11 points and C1 set of size 3 = 13 points.
+    C2 type gets you 100 points + 10 points for set size. So C2 set of size 1 = 110 points and C2 set of size 3 = 130 points.
+    C3 type gets you 1000 points + 100 points for set size. So C3 set of size 1 = 1100 and C3 set of size 3 = 1300 points.
+    C4 type gets you 10000 points. If one C4 group is found we return the score w/o additional scanning and counting.
+    The algorithm starts by looking for C4 combinations first.
+    The next level is evaluated if and only if the superior level has no combination.
+    For instance if one C3 combination is found, C2 and C1 combinations become irrelevant.
+    */
+
+    private static evaluateBoard(board: Board): number {
+        let redMoves: number[], yellowMoves: number[];
+        redMoves = board.moves.filter((id, index) => board.redMovesFirst ? index % 2 === 0 && id : index % 2 === 1 && id);
+        yellowMoves = board.moves.filter((id, index) => board.redMovesFirst ? index % 2 === 1 && id : index % 2 === 0 && id);
+        const scoreC1 = () => { },
+            scoreC2 = () => { },
+            scoreC3 = () => { },
+            scoreC4 = (moves: number[]) => {
+                if (moves.length < 4) {
+                    return null;
+                }
+                // check
+                for (let row = 1; row <= 3; row++) {
+                    for (let col = 1; col <= 4; col++) {
+                    }
+                }
+            };
+
+        return 0;
+    }
+
+}
+
+/**
+ * A model of the board; it is used by the minmax algorithm to
+ * simulate game moves and evaluate them.
+ */
+
+class Board {
+    map: Map<number, string> = new Map();
+    matrix = [
         [11, 12, 13, 14, 15, 16, 17],
         [21, 22, 23, 24, 25, 26, 27],
         [31, 32, 33, 34, 35, 36, 37],
@@ -9,84 +103,59 @@ export class AI {
         [51, 52, 53, 54, 55, 56, 57],
         [61, 62, 63, 64, 65, 66, 67]
     ];
-
-    // evaluation scale L1, L2, L3, L4
-    // A: how many distinct connect-four outcomes can the board evolve to - potentially?
-    // B: for each connect-four outcome, what is the progress or completeness level, on a scale of 1 to 4
-    // L1x5, L1x2 + L2x2
-    static bestMove() {
-        const board: Map<number, string> = this.mapBoard();
-    }
-
-    private static mapBoard(): Map<number, string> {
-        const map: Map<number, string> = new Map();
-        for (const row of this.matrix) {
-            for (const id of row) {
-                const disc = document.getElementById(`${id}`);
-                const color = disc.classList.contains('red') ? 'red' : disc.classList.contains('yellow') ? 'yellow' : null;
-                map.set(id, color);
+    turn: IterableIterator<string>;
+    moves: number[];
+    redMovesFirst: boolean;
+    constructor(redMovesFirst: boolean, previousMoves: string[]) {
+        const Generator = function* () {
+            let color = redMovesFirst ? 'red' : 'yellow';
+            while (true) {
+                yield color;
+                color = color === 'red' ? 'yellow' : 'red';
             }
+        };
+        this.turn = Generator();
+        this.redMovesFirst = redMovesFirst;
+        this.moves = previousMoves.map(id => +id);
+        this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
+        this.moves.forEach(id => this.map.set(id, this.turn.next().value));
+    }
+
+    move(id: number) {
+        this.moves.push(id);
+        this.map.set(id, this.turn.next().value);
+    }
+
+    undo() {
+        if (this.moves.length > 0) {
+            const id = this.moves.pop();
+            this.map.set(id, null);
+            this.turn.next();
         }
-        return map;
     }
 
-    private static minmax(depth: number, game: Map<number, string>, isMaximisingPlayer: boolean) {
-        if (depth === 0) {
-            return this.evaluateBoard(game, 'red');
-        }
-
-    }
-
-    private static evaluateBoard(board: Map<number, string>, turn: 'red' | 'yellow'): number {
-
-        return null;
-    }
-
-    private static evaluateRow(row: Map<number, string>) {
-        /*
-        n n n n n n n
-        n n n n n n n
-        n n n n n n n
-        n n n n n n n
-        n n n n n n n
-        n n n n n n n
-        */
-    }
-
-
-    static randomMove(previousMoves: string[]) {
-        console.log(this.mapBoard());
-        const nextMoveOptions = this.nextMoveOptions(previousMoves);
-        return nextMoveOptions[Math.floor(Math.random() * nextMoveOptions.length)];
-    }
-
-    private static nextMoveOptions(previousMoves: string[]) {
-        const moves: number[] = previousMoves.map(x => +x);
+    nextMoveOptions() {
         const nextMoveOptions = [];
         for (let i = 0; i < this.matrix.length; i++) {
             const row = this.matrix[i];
-            if (i === 5) {
-                // row is base row
+            if (i === 5) { // we're iterating over the base row
                 for (const slot of row) {
-                    if (!moves.includes(slot)) {
-                        // for base row any free slot can be taken
-                        nextMoveOptions.push(slot);
-                    } else {
-                        // if slot is not free, we can take the slot on top (if free)
+                    if (!this.moves.includes(slot)) {
+                        nextMoveOptions.push(slot); // for base row any free slot can be taken
+                    } else { // if slot is not free, we can take the slot on top (if free)
                         const col = slot % 10;
                         const topSlot = i * 10 + col;
-                        if (!moves.includes(topSlot)) {
+                        if (!this.moves.includes(topSlot)) {
                             nextMoveOptions.push(topSlot);
                         }
                     }
                 }
-            } else {
-                // row is not the base row; only slot on top of occupied slot can be taken
+            } else { // if this isn't the base row, only a free slot standing on top of an occupied slot can be taken
                 for (const pos of row) {
-                    if (moves.includes(pos) && i !== 0) { // make sure there **is** a row on top
+                    if (this.moves.includes(pos) && i >= 1) { // if (i === 0) => there is no row on top
                         const col = pos % 10;
                         const topSlot = i * 10 + col;
-                        if (!moves.includes(topSlot)) {
+                        if (!this.moves.includes(topSlot)) {
                             nextMoveOptions.push(topSlot);
                         }
                     }
@@ -94,6 +163,10 @@ export class AI {
             }
         }
         return nextMoveOptions;
+    }
+
+    get gameOver() {
+        return false;
     }
 
 }

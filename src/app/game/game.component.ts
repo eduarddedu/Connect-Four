@@ -106,7 +106,9 @@ export class GameComponent implements OnInit, OnDestroy {
           this.record.set('winner', this.game.winner);
         }
       } else if (this.isPlayingAgainstAI && !this.isOurTurn) {
-        setTimeout(() => this.onMove(AI.randomMove(moves)), 500);
+        // setTimeout(() => this.onMove(AI.randomMove(true, moves)), 500);
+        // setTimeout(() => this.onMove(AI.bestMove(true, moves)), 500);
+        console.log(AI.bestMove(true, moves));
       }
     }
   }
