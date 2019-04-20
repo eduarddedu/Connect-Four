@@ -7,7 +7,6 @@ import { AuthService, User } from '../auth.service';
 import { Invitation } from '../panels/panel-players/panel-players.component';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
-import { AI } from './ai';
 
 @Component({
   selector: 'app-game',
@@ -107,9 +106,8 @@ export class GameComponent implements OnInit, OnDestroy {
           this.record.set('winner', this.game.winner);
         }
       } else if (this.isPlayingAgainstAI && !this.isOurTurn) {
-        // setTimeout(() => this.onMove(AI.randomMove(true, moves)), 500);
-        // setTimeout(() => this.onMove(AI.bestMove(true, moves)), 500);
-        console.log(AI.bestMove(true, moves));
+        setTimeout(() => this.onMove(this.game.randomMove()), 500);
+        // console.log(this.game.nextBestMove());
       }
     }
   }

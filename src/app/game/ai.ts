@@ -1,47 +1,59 @@
 export class AI {
+    private game: Game;
 
-    static randomMove(redMovesFirst: boolean, previousMoves: string[]) {
-        const nextMoveOptions = new Board(redMovesFirst, previousMoves).nextMoveOptions();
+    constructor(redMovesFirst: boolean, previousMoves: string[]) {
+        this.game = new Game(redMovesFirst, previousMoves);
+    }
+
+    update(id: string) {
+        this.game.move(+id);
+    }
+
+    randomMove() {
+        const nextMoveOptions = this.game.nextMoveOptions();
         return nextMoveOptions[Math.floor(Math.random() * nextMoveOptions.length)];
     }
 
-    static bestMove(redMovesFirst: boolean, previousMoves: string[]) {
-        return this.minmaxRoot(redMovesFirst, previousMoves);
+    nextBestMove() {
+        return this.minmaxRoot();
     }
 
-    private static minmaxRoot(redMovesFirst: boolean, previousMoves: string[]) {
+    gameover() {
+        return this.game.gameover;
+    }
+
+    private minmaxRoot() {
         let bestMove = null;
         let bestScore = -Infinity;
-        const board = new Board(redMovesFirst, previousMoves);
-        const nextMoveOptions = board.nextMoveOptions();
+        const nextMoveOptions = this.game.nextMoveOptions();
         for (const id of nextMoveOptions) {
-            board.move(id);
-            const score = this.minmax(1, board, true);
+            this.game.move(id);
+            const score = this.minmax(1, true);
             if (score >= bestScore) {
                 bestScore = score;
                 bestMove = id;
             }
-            board.undo();
+            this.game.undo();
         }
         return bestMove;
     }
 
-    private static minmax(depth: number, board: Board, isMaximisingPlayer: boolean) {
-        if (board.gameOver) {
+    private minmax(depth: number, isMaximisingPlayer: boolean) {
+        if (this.game.gameover) {
             return isMaximisingPlayer ? 10000 : -10000;
         }
         if (depth === 0) {
-            return this.evaluateBoard(board);
+            return this.evaluate();
         } else {
             let bestScore = isMaximisingPlayer ? Infinity : -Infinity;
-            for (const id of board.nextMoveOptions()) {
-                board.move(id);
+            for (const id of this.game.nextMoveOptions()) {
+                this.game.move(id);
                 if (isMaximisingPlayer) {
-                    bestScore = Math.min(bestScore, this.minmax(depth - 1, board, !isMaximisingPlayer));
+                    bestScore = Math.min(bestScore, this.minmax(depth - 1, !isMaximisingPlayer));
                 } else {
-                    bestScore = Math.max(bestScore, this.minmax(depth - 1, board, !isMaximisingPlayer));
+                    bestScore = Math.max(bestScore, this.minmax(depth - 1, !isMaximisingPlayer));
                 }
-                board.undo();
+                this.game.undo();
             }
             return bestScore;
         }
@@ -65,10 +77,10 @@ export class AI {
     For instance if one C3 combination is found, C2 and C1 combinations become irrelevant.
     */
 
-    private static evaluateBoard(board: Board): number {
+    private evaluate(): number {
         let redMoves: number[], yellowMoves: number[];
-        redMoves = board.moves.filter((id, index) => board.redMovesFirst ? index % 2 === 0 && id : index % 2 === 1 && id);
-        yellowMoves = board.moves.filter((id, index) => board.redMovesFirst ? index % 2 === 1 && id : index % 2 === 0 && id);
+        redMoves = this.game.moves.filter((id, index) => this.game.redMovesFirst ? index % 2 === 0 && id : index % 2 === 1 && id);
+        yellowMoves = this.game.moves.filter((id, index) => this.game.redMovesFirst ? index % 2 === 1 && id : index % 2 === 0 && id);
         const scoreC1 = () => { },
             scoreC2 = () => { },
             scoreC3 = () => { },
@@ -88,12 +100,7 @@ export class AI {
 
 }
 
-/**
- * A model of the board; it is used by the minmax algorithm to
- * simulate game moves and evaluate them.
- */
-
-class Board {
+class Game {
     map: Map<number, string> = new Map();
     matrix = [
         [11, 12, 13, 14, 15, 16, 17],
@@ -108,10 +115,10 @@ class Board {
     redMovesFirst: boolean;
     constructor(redMovesFirst: boolean, previousMoves: string[]) {
         const Generator = function* () {
-            let color = redMovesFirst ? 'red' : 'yellow';
+            let redsTurn = redMovesFirst;
             while (true) {
-                yield color;
-                color = color === 'red' ? 'yellow' : 'red';
+                yield redsTurn ? 'red' : 'yellow';
+                redsTurn = !redsTurn;
             }
         };
         this.turn = Generator();
@@ -165,8 +172,75 @@ class Board {
         return nextMoveOptions;
     }
 
-    get gameOver() {
-        return false;
+    get gameover() {
+        if (this.moves.length < 7) {
+            return false;
+        }
+        const lastTurnColor = this.turn.next() && this.turn.next().value;
+        const check: (array: number[]) => boolean = (array: number[]) => {
+            if (array.length < 4) {
+                return false;
+            }
+            let count = 0;
+            for (const id of array) {
+                if (this.map.get(id) === lastTurnColor) {
+                    if (++count === 4) {
+                        console.log('Victory : ', array);
+                        return true;
+                    } else {
+                        continue;
+                    }
+                } else {
+                    count = 0;
+                }
+            }
+            return false;
+        };
+        const lastMove: number = this.moves[this.moves.length - 1];
+        const row = Math.floor(lastMove / 10), col = lastMove % 10;
+
+        const checkRow = () => {
+            const arr = [];
+            for (let c = 1; c <= 7; c++) {
+                arr.push(row * 10 + c);
+            }
+            return check(arr);
+        };
+        const checkColumn = () => {
+            const arr = [];
+            for (let r = 1; r <= 6; r++) {
+                arr.push(r * 10 + col);
+            }
+            return check(arr);
+        };
+        const checkDiagonals = () => {
+            const mainDiagonal = [row * 10 + col];
+            let r = row, c = col;
+            // walk NW
+            while (--r >= 1 && --c >= 1) {
+                mainDiagonal.push(r * 10 + c);
+            }
+            mainDiagonal.reverse();
+            // walk SE
+            r = row, c = col;
+            while (++r <= 6 && ++c <= 7) {
+                mainDiagonal.push(r * 10 + c);
+            }
+            const counterDiagonal = [row * 10 + col];
+            r = row, c = col;
+            // walk NE
+            while (--r >= 1 && ++c <= 7) {
+                counterDiagonal.push(r * 10 + c);
+            }
+            counterDiagonal.reverse();
+            // walks SW
+            r = row, c = col;
+            while (++r <= 6 && --c >= 1) {
+                counterDiagonal.push(r * 10 + c);
+            }
+            return check(mainDiagonal) || check(counterDiagonal);
+        };
+        return checkRow() || checkColumn() || checkDiagonals();
     }
 
 }
