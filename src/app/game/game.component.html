@@ -21,10 +21,10 @@
             </div>
         </div>
 
-        <app-board [activeColor]="game.activeColor" [isOurTurn]="isOurTurn" (move)="onMove($event)"></app-board>
+        <app-board [activeColor]="game.activeColor" [isOurTurn]="isOurTurn" (boardClick)="onMove($event)"></app-board>
 
         <div style="text-align: center" [ngStyle]="newGameButtonStyle">
-            <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameClicked">New
+            <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New
                 game</button>
         </div>
     </div>

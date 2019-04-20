@@ -23,7 +23,7 @@ export class GameComponent implements OnInit, OnDestroy {
   game: Game;
   record: deepstreamIO.Record;
   ds: deepstreamIO.Client;
-  newGameClicked = false;
+  newGameBtnClicked = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -97,9 +97,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   onGameMovesUpdate(moves: string[] = []) {
     if (moves.length > 0) {
-      this.board.replayMove(moves[moves.length - 1]);
-      this.game.update(moves);
-      if (this.game.isOver) {
+      const id = moves.pop();
+      this.board.move(id);
+      this.game.move(id);
+      if (this.game.gameover) {
         if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
           this.record.set('state', 'over');
           this.record.set('points', this.game.points);
@@ -115,7 +116,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   onGameStateUpdate(state: 'in progress' | 'over') {
     if (this.game.state === 'over' && state === 'in progress') {
-      this.newGameClicked = false;
+      this.newGameBtnClicked = false;
       this.board.clear();
       this.game.reset();
       if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
@@ -134,7 +135,7 @@ export class GameComponent implements OnInit, OnDestroy {
     if (this.isPlayingAgainstAI) {
       this.record.set('state', 'in progress');
     } else {
-      this.newGameClicked = true;
+      this.newGameBtnClicked = true;
       this.ds.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
       });
@@ -142,7 +143,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer && this.game.isOver && this.record ?
+    return this.isPlayer && this.game.gameover && this.record ?
       { visibility: 'visible' } : { visibility: 'hidden' };
   }
 
@@ -159,9 +160,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   get gameOverMessage() {
-    if (this.game.isOver) {
+    if (this.game.gameover) {
       if (this.isPlayer) {
-        if (this.newGameClicked) {
+        if (this.newGameBtnClicked) {
           return `Invitation sent. Waiting for ${this.opponent.name}`;
         }
         return this.game.winner.id === this.user.id ? 'You win 😀' : 'You lose 😞';

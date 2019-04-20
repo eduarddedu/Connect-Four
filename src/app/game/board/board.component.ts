@@ -10,7 +10,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 export class BoardComponent {
   @Input() activeColor: string;
   @Input() isOurTurn: boolean;
-  @Output() move: EventEmitter<string> = new EventEmitter();
+  @Output() boardClick: EventEmitter<string> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
 
@@ -34,18 +34,18 @@ export class BoardComponent {
         this.hoistDisc(id);
         setTimeout(() => {
           this.dropDisc(id);
-          this.move.emit(id);
+          this.boardClick.emit(id);
         }, 100);
       } else {
         this.dropDisc(id);
-        this.move.emit(id);
+        this.boardClick.emit(id);
       }
     } else {
       event.preventDefault();
     }
   }
 
-  replayMove(id: string) {
+  move(id: string) {
     const input = this.input(id);
     if (!input.checked) {
       input.checked = true;

@@ -49,13 +49,22 @@ export class Game implements Game {
         return this.activePlayer === this.players.red ? this.players.yellow : this.players.red;
     }
 
-    get isOver() {
+    get gameover() {
         return this.state === 'over';
     }
 
-    update(moves: string[]) {
-        this.moves = moves;
-        if (this.isVictory()) {
+    move(id: string) {
+        this.moves.push(id);
+        this.checkGame();
+    }
+
+    reset() {
+        this.moves = [];
+        this.redMovesFirst = this.players.yellow.id === '0' ? true : !(this.winner.id === this.players.red.id);
+    }
+
+    private checkGame() {
+        if (this._gameover()) {
             this.winner = this.inactivePlayer;
             if (this.winner.id === this.players.red.id) {
                 this.points.red += 1;
@@ -66,12 +75,7 @@ export class Game implements Game {
         }
     }
 
-    reset() {
-        this.moves = [];
-        this.redMovesFirst = this.players.yellow.id === '0' ? true : !(this.winner.id === this.players.red.id);
-    }
-
-    private isVictory() {
+    private _gameover() {
         if (this.moves.length < 7) {
             return false;
         }
@@ -80,7 +84,7 @@ export class Game implements Game {
             return disc.classList.contains(this.inactiveColor);
         };
         function CountFour() {
-            this.check = function(array: number[]): boolean {
+            this.check = function (array: number[]): boolean {
                 if (array.length < 4) {
                     return false;
                 }
