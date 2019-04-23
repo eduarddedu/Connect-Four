@@ -1,5 +1,6 @@
 export class AI {
     private game: Game;
+    private LOOK_AHEAD = 2;
 
     constructor(redMovesFirst: boolean, previousMoves: string[]) {
         this.game = new Game(redMovesFirst, previousMoves);
@@ -15,87 +16,131 @@ export class AI {
     }
 
     nextBestMove() {
-        return this.minmaxRoot();
+        return this.minimaxRoot();
     }
 
     gameover() {
         return this.game.gameover;
     }
 
-    private minmaxRoot() {
+    private minimaxRoot() {
         let bestMove = null;
-        let bestScore = -Infinity;
-        const nextMoveOptions = this.game.nextMoveOptions();
-        for (const id of nextMoveOptions) {
+        let bestScore = Infinity;
+        /* console.log(`next move options: ${this.game.nextMoveOptions()}`); */
+        for (const id of this.game.nextMoveOptions()) {
+            /* console.log(`Yellow moving to: ${id}`); */
             this.game.move(id);
-            const score = this.minmax(1, true);
-            if (score >= bestScore) {
-                bestScore = score;
+            if (this.game.gameover) {
                 bestMove = id;
+                this.game.undo();
+                break; // take the move that brings immediate victory
+            } else {
+                const score = this.minimax(this.LOOK_AHEAD, true);
+                /* console.log(`id: ${id} -> score: ${score}`); */
+                if (score <= bestScore) {
+                    bestScore = score;
+                    bestMove = id; // take the move that leads to the most favorable outcome
+                }
+                this.game.undo();
             }
-            this.game.undo();
         }
+        /* console.log(`bestScore: `, bestScore);
+        console.log('best move: ', bestMove); */
         return bestMove;
     }
 
-    private minmax(depth: number, isMaximisingPlayer: boolean) {
+    private minimax(depth: number, isMaximisingPlayer: boolean) {
+        /* console.log(`DEPTH ${depth}`); */
         if (this.game.gameover) {
-            return isMaximisingPlayer ? 10000 : -10000;
+            return isMaximisingPlayer ? -Infinity : Infinity;
         }
         if (depth === 0) {
             return this.evaluate();
         } else {
-            let bestScore = isMaximisingPlayer ? Infinity : -Infinity;
+            let bestScore = isMaximisingPlayer ? -Infinity : Infinity;
+            /* console.log(`next move options: ${this.game.nextMoveOptions()}`); */
             for (const id of this.game.nextMoveOptions()) {
+                /* console.log(`Red moving to: ${id}`); */
                 this.game.move(id);
                 if (isMaximisingPlayer) {
-                    bestScore = Math.min(bestScore, this.minmax(depth - 1, !isMaximisingPlayer));
+                    bestScore = Math.max(bestScore, this.minimax(depth - 1, false));
                 } else {
-                    bestScore = Math.max(bestScore, this.minmax(depth - 1, !isMaximisingPlayer));
+                    bestScore = Math.min(bestScore, this.minimax(depth - 1, true));
                 }
                 this.game.undo();
             }
+            /* console.log('returning score: ', bestScore); */
             return bestScore;
         }
-
     }
 
-    /*
-    The function returns a number in the range [-10000, 10000]. The number is determined with the following algorithm.
-    The function scans the board looking for C1, C2, C3 and C4 distinct combinations.
-    A combination means 4 adjacent slots arranged horizontally, vertically or diagonally.
-    Slots can be either set with the same color or empty; at least one slot must be set.
-    If one slot is set and the other are empty, we have a G1 combination.
-    If two slots are set and the other are empty, we have a C2 group etc.
-    We use powers of ten to score the groups, by putting combinations of the same class into sets and considering set type and size.
-    C1 type gets you 10 points for type and 1 point for set size. So C1 set of size 1 = 11 points and C1 set of size 3 = 13 points.
-    C2 type gets you 100 points + 10 points for set size. So C2 set of size 1 = 110 points and C2 set of size 3 = 130 points.
-    C3 type gets you 1000 points + 100 points for set size. So C3 set of size 1 = 1100 and C3 set of size 3 = 1300 points.
-    C4 type gets you 10000 points. If one C4 group is found we return the score w/o additional scanning and counting.
-    The algorithm starts by looking for C4 combinations first.
-    The next level is evaluated if and only if the superior level has no combination.
-    For instance if one C3 combination is found, C2 and C1 combinations become irrelevant.
-    */
-
     private evaluate(): number {
-        let redMoves: number[], yellowMoves: number[];
-        redMoves = this.game.moves.filter((id, index) => this.game.redMovesFirst ? index % 2 === 0 && id : index % 2 === 1 && id);
-        yellowMoves = this.game.moves.filter((id, index) => this.game.redMovesFirst ? index % 2 === 1 && id : index % 2 === 0 && id);
-        const scoreC1 = () => { },
-            scoreC2 = () => { },
-            scoreC3 = () => { },
-            scoreC4 = (moves: number[]) => {
-                if (moves.length < 4) {
-                    return null;
-                }
-                // check
-                for (let row = 1; row <= 3; row++) {
-                    for (let col = 1; col <= 4; col++) {
+        const evaluateForColor = (color: 'red' | 'yellow') => {
+            const scoreCells = (array: number[]) => {
+                const emptyCells = [], coloredCells = [];
+                for (const cell of array) {
+                    const cellColor = this.game.map.get(cell);
+                    if (cellColor === null) {
+                        emptyCells.push(cell);
+                    } else if (cellColor === color) {
+                        coloredCells.push(cell);
+                    } else {
+                        return 0;
                     }
                 }
+                if (coloredCells.length === 0) {
+                    return 0;
+                }
+                const unit = Math.pow(10, coloredCells.length - 1);
+                let score = 20 * unit;
+                const isColumn = array.filter(cell => cell % 10 === array[0] % 10).length === 4;
+                if (isColumn) {
+                    score = score - emptyCells.length * unit;
+                } else {
+                    for (const emptyCell of emptyCells) {
+                        const col = emptyCell % 10;
+                        let row = Math.floor(emptyCell / 10);
+                        while (row <= 6 && this.game.map.get(row * 10 + col) === null) {
+                            score -= unit;
+                            row++;
+                        }
+                    }
+                }
+                /* console.log(`Found combination of type ${coloredCells.length}: ${array} score: ${score}`); */
+                return score;
             };
-
-        return 0;
+            let totalScore = 0;
+            // check rows
+            for (let row = 10; row <= 60; row += 10) {
+                for (let col = 1; col <= 4; col++) {
+                    const id = row + col;
+                    totalScore += scoreCells([id, id + 1, id + 2, id + 3]);
+                }
+            }
+            // check cols
+            for (let col = 1; col <= 7; col++) {
+                for (let row = 10; row <= 30; row += 10) {
+                    totalScore += scoreCells([row + col, row + 10 + col, row + 20 + col, row + 30 + col]);
+                }
+            }
+            // check top left diagonal
+            for (let row = 10; row <= 30; row += 10) {
+                for (let col = 1; col <= 4; col++) {
+                    totalScore += scoreCells([row + col, row + 10 + col + 1, row + 20 + col + 2, row + 30 + col + 3]);
+                }
+            }
+            // check bottom left diagonal
+            for (let row = 10; row <= 30; row += 10) {
+                for (let col = 7; col >= 4; col--) {
+                    totalScore += scoreCells([row + col, row + 10 + col - 1, row + 20 + col - 2, row + 30 + col - 3]);
+                }
+            }
+            /* console.log(`evaluation for ${color}: ${totalScore}`); */
+            return totalScore;
+        };
+        const evaluation = evaluateForColor('red') - evaluateForColor('yellow');
+        /* console.log(`evaluation: ${evaluation}`); */
+        return evaluation;
     }
 
 }
@@ -103,7 +148,7 @@ export class AI {
 class Game {
     map: Map<number, string> = new Map();
     matrix = [
-        [11, 12, 13, 14, 15, 16, 17],
+        [11, 15, 13, 14, 15, 16, 17],
         [21, 22, 23, 24, 25, 26, 27],
         [31, 32, 33, 34, 35, 36, 37],
         [41, 42, 43, 44, 45, 46, 47],
@@ -176,28 +221,27 @@ class Game {
         if (this.moves.length < 7) {
             return false;
         }
-        const lastTurnColor = this.turn.next() && this.turn.next().value;
+        const lastMoveColor = this.turn.next() && this.turn.next().value;
         const check: (array: number[]) => boolean = (array: number[]) => {
             if (array.length < 4) {
                 return false;
             }
-            let count = 0;
+            let connected = [];
             for (const id of array) {
-                if (this.map.get(id) === lastTurnColor) {
-                    if (++count === 4) {
-                        console.log('Victory : ', array);
-                        return true;
-                    } else {
-                        continue;
-                    }
+                if (this.map.get(id) === lastMoveColor) {
+                    connected.push(id);
                 } else {
-                    count = 0;
+                    connected = [];
+                }
+                if (connected.length === 4) {
+                    /* console.log(`Victory for ${lastMoveColor}: `, connected); */
+                    return true;
                 }
             }
             return false;
         };
-        const lastMove: number = this.moves[this.moves.length - 1];
-        const row = Math.floor(lastMove / 10), col = lastMove % 10;
+        const move = this.moves[this.moves.length - 1];
+        const row = Math.floor(move / 10), col = move % 10;
 
         const checkRow = () => {
             const arr = [];
@@ -242,5 +286,31 @@ class Game {
         };
         return checkRow() || checkColumn() || checkDiagonals();
     }
-
 }
+
+
+/*
+The minimax algorithm returns a number in the range [-Infinity, Infinity].
+The number is determined by scoring combinations.
+A combination is 4 adjacent cells arranged horizontally, vertically or diagonally.
+At least one cell must be colored for a combination to be valid, the other cells can be empty.
+If any cell is colored with the opposite color, the combination is not valid.
+Combinations are scored based on powers of ten.
+For ex, a combination of one colored cell fetches 20 x 10^0, a combination of two colored cells
+fetches 20 x 10^1.
+The score formula is 20 x 10^n, where n = coloredCells.length of combination - 1.
+However, the final combination score also depends on the minimal number of moves needed to complete it.
+
+r e e e x x x
+x x e e x x x
+
+E.g. the top combination needs a minimum of 5 moves to be complete.
+The maximum of the minimum number of moves a combination may need to be complete is 18.
+
+We start out with 20 x 10^n and for each needed move we subtract 10^n,
+where n = coloredCells.length of combination - minus 1.
+The final score of a game state is calculated by adding up the scores of each individual red and
+and yellow combinations.
+Red is positive, yellow is negative. AI plays yellow and is the minimising player.
+The minimising player aims to drive the evaluation down towards -Infinity.
+*/

@@ -17,7 +17,6 @@ export class GameComponent implements OnInit, OnDestroy {
   @ViewChild(BoardComponent) board: BoardComponent;
   user: User;
   isPlayer = false;
-  isPlayingAgainstAI = false;
   opponent?: User;
   game: Game;
   record: deepstreamIO.Record;
@@ -73,6 +72,10 @@ export class GameComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.board.clear();
       this.board.replayGame(this.game.moves, this.game.redMovesFirst);
+      if (this.game.isAgainstAI && !this.isOurTurn) {
+        const id = this.game.nextBestMove();
+        setTimeout(() => this.onMove(id), 500);
+      }
     }, 0);
     console.log('Game loaded: ', this.game);
   }
@@ -82,7 +85,6 @@ export class GameComponent implements OnInit, OnDestroy {
     if (array.map((u: User) => u.id).includes(this.user.id)) {
       this.isPlayer = true;
       this.opponent = array.find((u: User) => u.id !== this.user.id);
-      this.isPlayingAgainstAI = this.opponent.id === '0';
     }
   }
 
@@ -100,14 +102,14 @@ export class GameComponent implements OnInit, OnDestroy {
       this.board.move(id);
       this.game.move(id);
       if (this.game.gameover) {
-        if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
+        if (this.game.winner.id === this.user.id || this.game.isAgainstAI) {
           this.record.set('state', 'over');
           this.record.set('points', this.game.points);
           this.record.set('winner', this.game.winner);
         }
-      } else if (this.isPlayingAgainstAI && !this.isOurTurn) {
-        setTimeout(() => this.onMove(this.game.randomMove()), 500);
-        // console.log(this.game.nextBestMove());
+      } else if (this.game.isAgainstAI && !this.isOurTurn) {
+        const _id = this.game.nextBestMove();
+        setTimeout(() => this.onMove(_id), 500);
       }
     }
   }
@@ -117,7 +119,7 @@ export class GameComponent implements OnInit, OnDestroy {
       this.newGameBtnClicked = false;
       this.board.clear();
       this.game.reset();
-      if (this.game.winner.id === this.user.id || this.isPlayingAgainstAI) {
+      if (this.game.winner.id === this.user.id || this.game.isAgainstAI) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
       }
@@ -130,7 +132,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onClickNewGame() {
-    if (this.isPlayingAgainstAI) {
+    if (this.game.isAgainstAI) {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;
