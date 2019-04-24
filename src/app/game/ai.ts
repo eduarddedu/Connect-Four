@@ -76,9 +76,9 @@ export class AI {
 
     private evaluate(): number {
         const evaluateForColor = (color: 'red' | 'yellow') => {
-            const scoreCells = (array: number[]) => {
+            const scoreCells = (cells: number[]) => {
                 const emptyCells = [], coloredCells = [];
-                for (const cell of array) {
+                for (const cell of cells) {
                     const cellColor = this.game.map.get(cell);
                     if (cellColor === null) {
                         emptyCells.push(cell);
@@ -91,23 +91,22 @@ export class AI {
                 if (coloredCells.length === 0) {
                     return 0;
                 }
-                const unit = Math.pow(10, coloredCells.length - 1);
-                let score = 20 * unit;
-                const isColumn = array.filter(cell => cell % 10 === array[0] % 10).length === 4;
+                let k = 0;
+                const isColumn = cells.filter(id => id % 10 === cells[0] % 10).length === 4;
                 if (isColumn) {
-                    score = score - emptyCells.length * unit;
+                    k = emptyCells.length;
                 } else {
-                    for (const emptyCell of emptyCells) {
-                        const col = emptyCell % 10;
-                        let row = Math.floor(emptyCell / 10);
-                        while (row <= 6 && this.game.map.get(row * 10 + col) === null) {
-                            score -= unit;
-                            row++;
+                    for (const id of emptyCells) {
+                        const col = id % 10;
+                        let row = id - id % 10;
+                        while (row <= 60 && this.game.map.get(row + col) === null) {
+                            k++;
+                            row += 10;
                         }
                     }
                 }
-                /* console.log(`Found combination of type ${coloredCells.length}: ${array} score: ${score}`); */
-                return score;
+                /* console.log(`Found array of type ${coloredCells.length}: ${array} score: ${score}`); */
+                return (20 - k) * Math.pow(10, coloredCells.length - 1);
             };
             let totalScore = 0;
             // check rows
@@ -290,27 +289,33 @@ class Game {
 
 
 /*
+The AI class provide "intelligent" methods which can be used to determine if the game is over, to list possible options for
+for a player's next move and to find out the next best move. The last method relies on minimax algorithm.
+
 The minimax algorithm returns a number in the range [-Infinity, Infinity].
-The number is determined by scoring combinations.
-A combination is 4 adjacent cells arranged horizontally, vertically or diagonally.
-At least one cell must be colored for a combination to be valid, the other cells can be empty.
-If any cell is colored with the opposite color, the combination is not valid.
-Combinations are scored based on powers of ten.
-For ex, a combination of one colored cell fetches 20 x 10^0, a combination of two colored cells
-fetches 20 x 10^1.
-The score formula is 20 x 10^n, where n = coloredCells.length of combination - 1.
-However, the final combination score also depends on the minimal number of moves needed to complete it.
+The algorithm evaluates the positions for red, then for yellow.
+
+Final Score = evaluation(red) + (- evaluation(yellow))
+
+The evaluation for a color is arrived at by scanning the board and counting arrays or four connected cells.
+Cells can be arranged horizontally, vertically or diagonally and must contain **at least one colored cell**.
+For instance, when we evaluate for red, an array must have at least one red cell.
+The other 3 cells can be empty, but cannot be yellow.
+
+Arrays are scored based on powers of ten.
+For ex, a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
+The final array score depends on the minimum number of moves necesary to complete the array.
 
 r e e e x x x
 x x e e x x x
 
-E.g. the top combination needs a minimum of 5 moves to be complete.
-The maximum of the minimum number of moves a combination may need to be complete is 18.
+For instance, the - r e e e - array needs at least 5 moves by both players to become a full set of four.
+The maximum (of the minimum) number of moves a array may need to become complete is 18.
 
-We start out with 20 x 10^n and for each needed move we subtract 10^n,
-where n = coloredCells.length of combination - minus 1.
-The final score of a game state is calculated by adding up the scores of each individual red and
-and yellow combinations.
-Red is positive, yellow is negative. AI plays yellow and is the minimising player.
+For this reason, the score of an array is (20 - k) x 10^n, where n = array.length - 1 and k is the
+minimum number of moves until completion.
+
+
+AI plays yellow and is the minimising player.
 The minimising player aims to drive the evaluation down towards -Infinity.
 */
