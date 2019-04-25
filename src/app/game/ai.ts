@@ -234,6 +234,7 @@ class Game {
                 }
                 if (connected.length === 4) {
                     /* console.log(`Victory for ${lastMoveColor}: `, connected); */
+                    console.log(`Victory: ${this.moves}`);
                     return true;
                 }
             }
@@ -289,8 +290,8 @@ class Game {
 
 
 /*
-The AI class provide "intelligent" methods which can be used to determine if the game is over, to list possible options for
-for a player's next move and to find out the next best move. The last method relies on minimax algorithm.
+The AI class provide "intelligent" methods to detect game over states, to list
+next move options and to find out the next best move. The last method relies on minimax algorithm.
 
 The minimax algorithm returns a number in the range [-Infinity, Infinity].
 The algorithm evaluates the positions for red, then for yellow.
