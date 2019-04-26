@@ -130,7 +130,6 @@ export class AI {
                     totalScore += scoreCells([row + col, row + 10 + col - 1, row + 20 + col - 2, row + 30 + col - 3]);
                 }
             }
-            /* console.log(`evaluation for ${color}: ${totalScore}`); */
             return totalScore;
         };
         return evaluateForColor('red') - evaluateForColor('yellow');
@@ -184,24 +183,24 @@ class Game {
         for (let i = 0; i < this.matrix.length; i++) {
             const row = this.matrix[i];
             if (i === 5) { // we're iterating over the base row
-                for (const slot of row) {
-                    if (!this.moves.includes(slot)) {
-                        nextMoveOptions.push(slot); // for base row any free slot can be taken
-                    } else { // if slot is not free, we can take the slot on top (if free)
-                        const col = slot % 10;
-                        const topSlot = i * 10 + col;
-                        if (!this.moves.includes(topSlot)) {
-                            nextMoveOptions.push(topSlot);
+                for (const id of row) {
+                    if (!this.moves.includes(id)) {
+                        nextMoveOptions.push(id); // for base row any empty cell can be taken
+                    } else { // if cell is not empty, take the slot on top if empty
+                        const col = id % 10;
+                        const idOnTop = i * 10 + col;
+                        if (!this.moves.includes(idOnTop)) {
+                            nextMoveOptions.push(idOnTop);
                         }
                     }
                 }
-            } else { // if this isn't the base row, only a free slot standing on top of an occupied slot can be taken
-                for (const pos of row) {
-                    if (this.moves.includes(pos) && i >= 1) { // if (i === 0) => there is no row on top
-                        const col = pos % 10;
-                        const topSlot = i * 10 + col;
-                        if (!this.moves.includes(topSlot)) {
-                            nextMoveOptions.push(topSlot);
+            } else { // if this isn't the base row, only an empty cell standing on top of an occupied cell can be taken
+                for (const id of row) {
+                    if (this.moves.includes(id) && i >= 1) { // if (i === 0) => there is no row on top
+                        const col = id % 10;
+                        const idOnTop = i * 10 + col;
+                        if (!this.moves.includes(idOnTop)) {
+                            nextMoveOptions.push(idOnTop);
                         }
                     }
                 }
@@ -285,11 +284,13 @@ class Game {
 The AI class provide "intelligent" methods to detect game over states, to list
 next move options and to find out the next best move. The last method relies on minimax algorithm.
 
-The minimax algorithm returns a number in the range [-Infinity, Infinity]. It relies on a function which evaluates the board.
+The minimax algorithm returns a number in the range [-Infinity, Infinity].
+It relies on a heuristic function which evaluates game states.
 
-The evaluation is a number determined by scanning the board and counting arrays or four connected cells.
-Cells can be arranged horizontally, vertically or diagonally and can be any permutation where at least
-one cell is colored and the other three are empty or colored with the same color.
+The function works by scanning the board, identifying, counting and scoring arrays or permutations.
+
+An array or permutation is formed by four cells connected horizontally, vertically or diagonally.
+It can be any permutation where at least one cell is colored and the other three are empty or colored with the same color.
 
 c e e e
 e c e e
@@ -302,14 +303,14 @@ are all valid arrays.
 While an array of four colored cells is equal to Infinity, lesser arrays are scored based on powers of ten.
 For ex, a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
 
-Why 20? Because the final array score also depends on the minimum number of moves necesary to complete the array.
+Why 20? Because the final array score also depends on the minimum number of moves necesary to complete it.
 
 c e e e x x x
-x x e e x x x
+x x e e x x x <= bottom row
 
-For instance, the - c e e e - array needs a minimum of 5 moves for the three empty cells to get colored discs.
-The maximum (of the minimum) number of moves a array may need to become complete is 18.
+The -- c e e e -- array needs a minimum of 5 moves for the three empty cells to get colored discs.
 
-For this reason, the score of an array is (20 - k) x 10^n
+Because the maximum of the minimum number of moves an array may need is 18, the score of an array is
+S = (20 - k) x 10^n
 where n = array.length - 1 and k is the minimum number of moves until completion.
 */
