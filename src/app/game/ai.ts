@@ -1,6 +1,6 @@
 export class AI {
     private game: Game;
-    private LOOK_AHEAD = 2;
+    private PLIES = 4;
 
     constructor(redMovesFirst: boolean, previousMoves: string[]) {
         this.game = new Game(redMovesFirst, previousMoves);
@@ -11,7 +11,7 @@ export class AI {
     }
 
     randomMove() {
-        const nextMoveOptions = this.game.nextMoveOptions();
+        const nextMoveOptions = this.game.nextMoveOptions;
         return nextMoveOptions[Math.floor(Math.random() * nextMoveOptions.length)];
     }
 
@@ -25,52 +25,49 @@ export class AI {
 
     private minimaxRoot() {
         let bestMove = null;
-        let bestScore = Infinity;
-        /* console.log(`next move options: ${this.game.nextMoveOptions()}`); */
-        for (const id of this.game.nextMoveOptions()) {
-            /* console.log(`Yellow moving to: ${id}`); */
+        let bestValue = Infinity;
+        for (const id of this.game.nextMoveOptions) {
             this.game.move(id);
             if (this.game.gameover) {
                 bestMove = id;
                 this.game.undo();
-                break; // take the move that brings immediate victory
+                break;
             } else {
-                const score = this.minimax(this.LOOK_AHEAD, true);
-                /* console.log(`id: ${id} -> score: ${score}`); */
-                if (score <= bestScore) {
-                    bestScore = score;
-                    bestMove = id; // take the move that leads to the most favorable outcome
+                const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
+                if (value <= bestValue) {
+                    bestValue = value;
+                    bestMove = id;
                 }
                 this.game.undo();
             }
         }
-        /* console.log(`bestScore: `, bestScore);
-        console.log('best move: ', bestMove); */
         return bestMove;
     }
 
-    private minimax(depth: number, isMaximisingPlayer: boolean) {
-        /* console.log(`DEPTH ${depth}`); */
+    private minimax(depth: number, alpha: number, beta: number, isMaximisingPlayer: boolean): number {
         if (this.game.gameover) {
             return isMaximisingPlayer ? -Infinity : Infinity;
         }
         if (depth === 0) {
             return this.evaluate();
         } else {
-            let bestScore = isMaximisingPlayer ? -Infinity : Infinity;
-            /* console.log(`next move options: ${this.game.nextMoveOptions()}`); */
-            for (const id of this.game.nextMoveOptions()) {
-                /* console.log(`Red moving to: ${id}`); */
+            let value = isMaximisingPlayer ? -Infinity : Infinity;
+            for (const id of this.game.nextMoveOptions) {
                 this.game.move(id);
                 if (isMaximisingPlayer) {
-                    bestScore = Math.max(bestScore, this.minimax(depth - 1, false));
+                    value = Math.max(value, this.minimax(depth - 1, alpha, beta, false));
+                    alpha = Math.max(alpha, value);
                 } else {
-                    bestScore = Math.min(bestScore, this.minimax(depth - 1, true));
+                    value = Math.min(value, this.minimax(depth - 1, alpha, beta, true));
+                    beta = Math.min(beta, value);
+                }
+                if (alpha >= beta) {
+                    this.game.undo();
+                    break;
                 }
                 this.game.undo();
             }
-            /* console.log('returning score: ', bestScore); */
-            return bestScore;
+            return value;
         }
     }
 
@@ -105,7 +102,6 @@ export class AI {
                         }
                     }
                 }
-                /* console.log(`Found array of type ${coloredCells.length}: ${array} score: ${score}`); */
                 return (20 - k) * Math.pow(10, coloredCells.length - 1);
             };
             let totalScore = 0;
@@ -137,9 +133,7 @@ export class AI {
             /* console.log(`evaluation for ${color}: ${totalScore}`); */
             return totalScore;
         };
-        const evaluation = evaluateForColor('red') - evaluateForColor('yellow');
-        /* console.log(`evaluation: ${evaluation}`); */
-        return evaluation;
+        return evaluateForColor('red') - evaluateForColor('yellow');
     }
 
 }
@@ -185,7 +179,7 @@ class Game {
         }
     }
 
-    nextMoveOptions() {
+    get nextMoveOptions() {
         const nextMoveOptions = [];
         for (let i = 0; i < this.matrix.length; i++) {
             const row = this.matrix[i];
@@ -233,8 +227,6 @@ class Game {
                     connected = [];
                 }
                 if (connected.length === 4) {
-                    /* console.log(`Victory for ${lastMoveColor}: `, connected); */
-                    console.log(`Victory: ${this.moves}`);
                     return true;
                 }
             }
@@ -293,30 +285,31 @@ class Game {
 The AI class provide "intelligent" methods to detect game over states, to list
 next move options and to find out the next best move. The last method relies on minimax algorithm.
 
-The minimax algorithm returns a number in the range [-Infinity, Infinity].
-The algorithm evaluates the positions for red, then for yellow.
+The minimax algorithm returns a number in the range [-Infinity, Infinity]. It relies on a function which evaluates the board.
 
-Final Score = evaluation(red) + (- evaluation(yellow))
+The evaluation is a number determined by scanning the board and counting arrays or four connected cells.
+Cells can be arranged horizontally, vertically or diagonally and can be any permutation where at least
+one cell is colored and the other three are empty or colored with the same color.
 
-The evaluation for a color is arrived at by scanning the board and counting arrays or four connected cells.
-Cells can be arranged horizontally, vertically or diagonally and must contain **at least one colored cell**.
-For instance, when we evaluate for red, an array must have at least one red cell.
-The other 3 cells can be empty, but cannot be yellow.
+c e e e
+e c e e
+e c e c
+c e c c
+etc
 
-Arrays are scored based on powers of ten.
+are all valid arrays.
+
+While an array of four colored cells is equal to Infinity, lesser arrays are scored based on powers of ten.
 For ex, a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
-The final array score depends on the minimum number of moves necesary to complete the array.
 
-r e e e x x x
+Why 20? Because the final array score also depends on the minimum number of moves necesary to complete the array.
+
+c e e e x x x
 x x e e x x x
 
-For instance, the - r e e e - array needs at least 5 moves by both players to become a full set of four.
+For instance, the - c e e e - array needs a minimum of 5 moves for the three empty cells to get colored discs.
 The maximum (of the minimum) number of moves a array may need to become complete is 18.
 
-For this reason, the score of an array is (20 - k) x 10^n, where n = array.length - 1 and k is the
-minimum number of moves until completion.
-
-
-AI plays yellow and is the minimising player.
-The minimising player aims to drive the evaluation down towards -Infinity.
+For this reason, the score of an array is (20 - k) x 10^n
+where n = array.length - 1 and k is the minimum number of moves until completion.
 */
