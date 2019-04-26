@@ -180,29 +180,21 @@ class Game {
 
     get nextMoveOptions() {
         const nextMoveOptions = [];
-        for (let i = 0; i < this.matrix.length; i++) {
-            const row = this.matrix[i];
-            if (i === 5) { // we're iterating over the base row
-                for (const id of row) {
-                    if (!this.moves.includes(id)) {
-                        nextMoveOptions.push(id); // for base row any empty cell can be taken
-                    } else { // if cell is not empty, take the slot on top if empty
-                        const col = id % 10;
-                        const idOnTop = i * 10 + col;
-                        if (!this.moves.includes(idOnTop)) {
-                            nextMoveOptions.push(idOnTop);
-                        }
+        const boardCells: number[] = Array.from(this.map.keys());
+        for (const id of boardCells) {
+            if (id - id % 10 === 60) {
+                if (this.map.get(id) === null) {
+                    nextMoveOptions.push(id);
+                } else {
+                    const idOnTop = id - 10;
+                    if (idOnTop >= 11 && this.map.get(idOnTop) === null) {
+                        nextMoveOptions.push(idOnTop);
                     }
                 }
-            } else { // if this isn't the base row, only an empty cell standing on top of an occupied cell can be taken
-                for (const id of row) {
-                    if (this.moves.includes(id) && i >= 1) { // if (i === 0) => there is no row on top
-                        const col = id % 10;
-                        const idOnTop = i * 10 + col;
-                        if (!this.moves.includes(idOnTop)) {
-                            nextMoveOptions.push(idOnTop);
-                        }
-                    }
+            } else {
+                const idBelow = id + 10;
+                if (this.map.get(id) === null && this.map.get(idBelow) !== null) {
+                    nextMoveOptions.push(id);
                 }
             }
         }
