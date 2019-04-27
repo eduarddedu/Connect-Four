@@ -1,20 +1,17 @@
-body {
-    background-image: linear-gradient(to bottom, #006994, #fff) !important;
-}
-
 .c4-container {
     display: flex;
     flex-flow: column nowrap;
     min-height: 100vh;
     min-width: 318px;
     padding: 0 0 16px 0;
-    color: #ccc;
+    background-color: #dacebe;
+    color: #f0ece7;
 }
 
 .c4-container>header {
-    padding: 24px 12px;
+    padding: 16px 8px;
     user-select: none;
-    background-color: #111;
+    background-color: #2b3035;
 }
 
 .c4-card {
@@ -26,10 +23,4 @@ body {
     .c4-container {
         font-weight: lighter;
     }
-    .c4-container>header {
-        padding: 32px 16px;
-    }
 }
-
-
-

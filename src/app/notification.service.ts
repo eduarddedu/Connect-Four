@@ -16,7 +16,7 @@ export class NotificationService {
 
   msg = this._msgSource.asObservable();
 
-  update(content: string, style: 'danger' | 'info' | 'success') {
+  update(content: string, style: 'danger' | 'info' | 'success' | 'warning') {
     const msg: Msg = { content, style };
     this._msgSource.next(msg);
   }

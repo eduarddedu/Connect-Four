@@ -88,7 +88,7 @@ export class HomeComponent implements OnInit {
 
   onGameRecordDelete(gameId: string) {
     if (this.gameCompRef && this.gameCompRef.game.id === gameId) {
-      this.notification.update(`Game over. Opponent abandoned`, 'danger');
+      this.notification.update(`Game over. Opponent abandoned`, 'warning');
       if (this.gameCompRef.isPlayer) {
         this.ds.record.getRecord(this.user.id).set('status', 'Online');
       }

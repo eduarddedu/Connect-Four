@@ -56,9 +56,6 @@ main {
 }
 
 @media (min-width: 576px) {
-    header {
-        padding: 30px 10px;
-    }
 
     main {
         padding: 30px 10px 0;

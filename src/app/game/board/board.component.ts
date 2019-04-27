@@ -1,7 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-
-
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
