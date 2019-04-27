@@ -56,7 +56,7 @@ export class BoardComponent {
     }
   }
 
-  replayGame(moves: string[], redMovesFirst: boolean) {
+  replayGame(moves: string[] = [], redMovesFirst: boolean) {
     let colorClass = redMovesFirst ? 'red' : 'yellow';
     for (let i = 0; i < moves.length; i++) {
       const id = moves[i];

@@ -1,9 +1,13 @@
-export class AI {
+export class GameModel {
     private game: Game;
     private PLIES = 4;
 
     constructor(redMovesFirst: boolean, previousMoves: string[]) {
         this.game = new Game(redMovesFirst, previousMoves);
+    }
+
+    get gameover() {
+        return this.game.gameover;
     }
 
     update(id: string) {
@@ -17,10 +21,6 @@ export class AI {
 
     nextBestMove() {
         return this.minimaxRoot();
-    }
-
-    gameover() {
-        return this.game.gameover;
     }
 
     private minimaxRoot() {
@@ -49,7 +49,7 @@ export class AI {
             return isMaximisingPlayer ? -Infinity : Infinity;
         }
         if (depth === 0) {
-            return this.evaluate();
+            return this.evaluateBoard();
         } else {
             let value = isMaximisingPlayer ? -Infinity : Infinity;
             for (const id of this.game.nextMoveOptions) {
@@ -71,7 +71,7 @@ export class AI {
         }
     }
 
-    private evaluate(): number {
+    private evaluateBoard(): number {
         const evaluateForColor = (color: 'red' | 'yellow') => {
             const scoreCells = (cells: number[]) => {
                 const emptyCells = [], coloredCells = [];
@@ -272,37 +272,39 @@ class Game {
 }
 
 
-/*
-The AI class provide "intelligent" methods to detect game over states, to list
-next move options and to find out the next best move. The last method relies on minimax algorithm.
+/* GameModel class provides intelligent methods to detect game over states, list next move options
+and calculate the next best move for a player.
 
-The minimax algorithm returns a number in the range [-Infinity, Infinity].
-It relies on a heuristic function which evaluates game states.
+The last method relies on an implementation of the minimax algorithm, optimised with alpha-beta pruning.
+https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
 
-The function works by scanning the board, identifying, counting and scoring arrays or permutations.
+The minimax algorithm depends on a heuristic function to evaluate game states.
+
+The function scans the board looking for arrays or permutations of four, which are individually counted and scored.
 
 An array or permutation is formed by four cells connected horizontally, vertically or diagonally.
-It can be any permutation where at least one cell is colored and the other three are empty or colored with the same color.
+The condition is that at least one cell is colored; the other three can be empty or colored - with the same color!
+
+For example:
 
 c e e e
 e c e e
 e c e c
 c e c c
-etc
 
-are all valid arrays.
+...etc are all valid arrays.
 
-While an array of four colored cells is equal to Infinity, lesser arrays are scored based on powers of ten.
-For ex, a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
+While an array of four colored cells fetches a score of Infinity, lesser arrays are scored based on powers of ten.
+E.g., a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
 
 Why 20? Because the final array score also depends on the minimum number of moves necesary to complete it.
 
+Example
 c e e e x x x
 x x e e x x x <= bottom row
 
 The -- c e e e -- array needs a minimum of 5 moves for the three empty cells to get colored discs.
 
-Because the maximum of the minimum number of moves an array may need is 18, the score of an array is
+Because the maximum of the minimum number of moves an array may need is 18, the score of an array is rounded off to
 S = (20 - k) x 10^n
-where n = array.length - 1 and k is the minimum number of moves until completion.
-*/
+where n = array.length - 1 and k is the minimum number of moves until completion. */

@@ -1,5 +1,5 @@
 import { User } from '../auth.service';
-import { AI } from './ai';
+import { GameModel } from './game-model';
 
 export interface Game {
     id: string;
@@ -9,7 +9,6 @@ export interface Game {
         yellow: User;
     };
     state: 'in progress' | 'over' | 'on hold';
-    moves: string[];
     points: {
         red: number;
         yellow: number;
@@ -20,17 +19,17 @@ export interface Game {
 }
 
 export class Game implements Game {
-    private ai: AI;
+    private model: GameModel;
+    private indexNextMove = 0;
     constructor(data: any) {
         this.id = data.id;
         this.startDate = new Date(data.createdOn);
         this.players = data.players;
         this.state = data.state;
-        this.moves = data.moves || [];
         this.points = data.points;
         this.winner = data.winner;
         this.redMovesFirst = data.redMovesFirst || true;
-        this.ai = new AI(this.redMovesFirst, data.moves || []);
+        this.model = new GameModel(this.redMovesFirst, data.moves || []);
         this.isAgainstAI = this.players.red.id === '0' || this.players.yellow.id === '0';
     }
 
@@ -43,8 +42,7 @@ export class Game implements Game {
     }
 
     get activePlayer() {
-        const indexNextMove = this.moves.length;
-        return indexNextMove % 2 === 0 ?
+        return this.indexNextMove % 2 === 0 ?
             this.redMovesFirst ? this.players.red : this.players.yellow
             :
             this.redMovesFirst ? this.players.yellow : this.players.red;
@@ -59,27 +57,26 @@ export class Game implements Game {
     }
 
     move(id: string) {
-        this.moves.push(id);
-        this.ai.update(id);
+        this.indexNextMove++;
+        this.model.update(id);
         this.checkGame();
     }
 
     nextBestMove() {
-        return this.ai.nextBestMove();
+        return this.model.nextBestMove();
     }
 
     randomMove() {
-        return this.ai.randomMove();
+        return this.model.randomMove();
     }
 
     reset() {
-        this.moves = [];
-        this.redMovesFirst = this.players.yellow.id === '0' ? true : !(this.winner.id === this.players.red.id);
-        this.ai = new AI(this.redMovesFirst, []);
+        this.redMovesFirst = this.winner.id === this.players.yellow.id;
+        this.model = new GameModel(this.redMovesFirst, []);
     }
 
     private checkGame() {
-        if (this.ai.gameover()) {
+        if (this.model.gameover) {
             this.winner = this.inactivePlayer;
             if (this.winner.id === this.players.red.id) {
                 this.points.red += 1;
@@ -90,3 +87,4 @@ export class Game implements Game {
         }
     }
 }
+

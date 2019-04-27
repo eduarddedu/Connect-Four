@@ -71,7 +71,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.setRelationship();
     setTimeout(() => {
       this.board.clear();
-      this.board.replayGame(this.game.moves, this.game.redMovesFirst);
+      this.board.replayGame(data.moves, data.redMovesFirst);
       if (this.game.isAgainstAI && !this.isOurTurn) {
         const id = this.game.nextBestMove();
         setTimeout(() => this.onMove(id), 500);
