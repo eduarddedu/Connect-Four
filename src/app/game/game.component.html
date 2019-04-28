@@ -21,7 +21,7 @@
             </div>
         </div>
 
-        <app-board [activeColor]="game.activeColor" [isOurTurn]="isOurTurn" (boardClick)="onMove($event)"></app-board>
+        <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onMove($event)"></app-board>
 
         <div style="text-align: center" [ngStyle]="newGameButtonStyle">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New

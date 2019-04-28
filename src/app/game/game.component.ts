@@ -34,22 +34,22 @@ export class GameComponent implements OnInit, OnDestroy {
     this.user = this.auth.user;
     this.ds = this.deepstreamService.getInstance();
     this.route.paramMap.pipe(map(params => params.get('gameId')))
-    .subscribe(gameId => {
-      this.ds.record.has(gameId, (error, hasRecord) => {
-        if (hasRecord) {
-          this.record = this.ds.record.getRecord(gameId);
-          const interval = setInterval(() => {
-            const data = this.record.get();
-            if (data.id) {
-              this.loadGame(data);
-              clearInterval(interval);
-            }
-          }, 50);
-        } else {
-          this.router.navigate(['/']);
-        }
+      .subscribe(gameId => {
+        this.ds.record.has(gameId, (error, hasRecord) => {
+          if (hasRecord) {
+            this.record = this.ds.record.getRecord(gameId);
+            const interval = setInterval(() => {
+              const data = this.record.get();
+              if (data.id) {
+                this.loadGame(data);
+                clearInterval(interval);
+              }
+            }, 50);
+          } else {
+            this.router.navigate(['/']);
+          }
+        });
       });
-    });
   }
 
   ngOnDestroy() {
@@ -71,11 +71,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.setRelationship();
     setTimeout(() => {
       this.board.clear();
-      this.board.replayGame(data.moves, data.redMovesFirst);
-      if (this.game.isAgainstAI && !this.isOurTurn) {
-        const id = this.game.nextBestMove();
-        setTimeout(() => this.onMove(id), 500);
-      }
+      this.board.replayGame(data.moves, data.redMovesFirst || true);
     }, 0);
     console.log('Game loaded: ', this.game);
   }
@@ -102,12 +98,12 @@ export class GameComponent implements OnInit, OnDestroy {
       this.board.move(id);
       this.game.move(id);
       if (this.game.gameover) {
-        if (this.game.winner.id === this.user.id || this.game.isAgainstAI) {
+        if (this.user.id === this.game.players.red.id) {
           this.record.set('state', 'over');
           this.record.set('points', this.game.points);
           this.record.set('winner', this.game.winner);
         }
-      } else if (this.game.isAgainstAI && !this.isOurTurn) {
+      } else if (this.isPlayer && !this.isMyTurn && this.game.isAgainstAi) {
         const _id = this.game.nextBestMove();
         setTimeout(() => this.onMove(_id), 500);
       }
@@ -116,10 +112,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   onGameStateUpdate(state: 'in progress' | 'over') {
     if (this.game.state === 'over' && state === 'in progress') {
-      this.newGameBtnClicked = false;
       this.board.clear();
       this.game.reset();
-      if (this.game.winner.id === this.user.id || this.game.isAgainstAI) {
+      this.newGameBtnClicked = false;
+      if (this.user.id === this.game.players.red.id) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
       }
@@ -132,7 +128,7 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   onClickNewGame() {
-    if (this.game.isAgainstAI) {
+    if (this.game.isAgainstAi) {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;
@@ -147,14 +143,14 @@ export class GameComponent implements OnInit, OnDestroy {
       { visibility: 'visible' } : { visibility: 'hidden' };
   }
 
-  get isOurTurn() {
+  get isMyTurn() {
     return this.isPlayer && this.game.state === 'in progress' && this.game.activePlayer.id === this.user.id;
   }
 
   get turnMessage() {
     const username = this.game.activePlayer.name.replace(/ .*/, '');
     if (this.isPlayer) {
-      return this.isOurTurn ? 'Your turn' : `Waiting for ${username}...`;
+      return this.isMyTurn ? 'Your turn' : `Waiting for ${username}...`;
     }
     return `Waiting for ${username}...`;
   }
@@ -162,12 +158,11 @@ export class GameComponent implements OnInit, OnDestroy {
   get gameOverMessage() {
     if (this.game.gameover) {
       if (this.isPlayer) {
-        if (this.newGameBtnClicked) {
-          return `Invitation sent. Waiting for ${this.opponent.name}`;
-        }
-        return this.game.winner.id === this.user.id ? 'You win 😀' : 'You lose 😞';
+        return this.newGameBtnClicked ? `Invitation sent. Waiting for ${this.opponent.name}` :
+          this.game.winner ?
+            this.game.winner.id === this.user.id ? 'You win 😀 🏆' : 'You lose 😞' : `It's a draw 🤔`;
       }
-      return `${this.game.winner.name} wins!`;
+      return this.game.winner ? `${this.game.winner.name} wins!` : `It's a draw 🤔`;
     }
   }
 

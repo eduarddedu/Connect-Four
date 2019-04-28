@@ -7,25 +7,25 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 })
 export class BoardComponent {
   @Input() activeColor: string;
-  @Input() isOurTurn: boolean;
+  @Input() isMyTurn: boolean;
   @Output() boardClick: EventEmitter<string> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
 
   onMouseoverInput(id: string) {
-    if (!this.input(id).checked && this.isOurTurn) {
+    if (!this.input(id).checked && this.isMyTurn) {
       this.hoistDisc(id);
     }
   }
 
   onMouseleaveInput(id: string) {
-    if (!this.input(id).checked && this.isOurTurn) {
+    if (!this.input(id).checked && this.isMyTurn) {
       this.hideDisc(id);
     }
   }
 
   onClickInput(event: any) {
-    if (this.isOurTurn) {
+    if (this.isMyTurn) {
       const id = event.target.name;
       const disc = this.disc(id);
       if (disc.classList.contains('disc-initial')) {

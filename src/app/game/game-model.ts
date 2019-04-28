@@ -6,12 +6,24 @@ export class GameModel {
         this.game = new Game(redMovesFirst, previousMoves);
     }
 
-    get gameover() {
-        return this.game.gameover;
+    get win() {
+        return this.game.win;
     }
 
-    update(id: string) {
+    get draw() {
+        return this.game.draw;
+    }
+
+    get nextMoveOptions() {
+        return this.game.nextMoveOptions;
+    }
+
+    move(id: string) {
         this.game.move(+id);
+    }
+
+    undo() {
+        this.game.undo();
     }
 
     randomMove() {
@@ -25,61 +37,65 @@ export class GameModel {
 
     private minimaxRoot() {
         let bestMove = null;
-        let bestValue = Infinity;
+        let storedValue = Infinity;
         for (const id of this.game.nextMoveOptions) {
             this.game.move(id);
-            if (this.game.gameover) {
-                bestMove = id;
+            if (this.game.win) {
                 this.game.undo();
-                break;
-            } else {
-                const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
-                if (value <= bestValue) {
-                    bestValue = value;
-                    bestMove = id;
-                }
-                this.game.undo();
+                return id;
             }
+            const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
+            if (value <= storedValue) {
+                storedValue = value;
+                bestMove = id;
+            }
+            this.game.undo();
         }
         return bestMove;
     }
 
     private minimax(depth: number, alpha: number, beta: number, isMaximisingPlayer: boolean): number {
-        if (this.game.gameover) {
+
+        if (this.game.win) {
             return isMaximisingPlayer ? -Infinity : Infinity;
         }
+        if (this.game.draw) {
+            return 0;
+        }
+
         if (depth === 0) {
             return this.evaluateBoard();
-        } else {
-            let value = isMaximisingPlayer ? -Infinity : Infinity;
-            for (const id of this.game.nextMoveOptions) {
-                this.game.move(id);
-                if (isMaximisingPlayer) {
-                    value = Math.max(value, this.minimax(depth - 1, alpha, beta, false));
-                    alpha = Math.max(alpha, value);
-                } else {
-                    value = Math.min(value, this.minimax(depth - 1, alpha, beta, true));
-                    beta = Math.min(beta, value);
-                }
-                if (alpha >= beta) {
-                    this.game.undo();
-                    break;
-                }
-                this.game.undo();
-            }
-            return value;
         }
+
+        let value = isMaximisingPlayer ? -Infinity : Infinity;
+        for (const id of this.game.nextMoveOptions) {
+            this.game.move(id);
+            if (isMaximisingPlayer) {
+                value = Math.max(value, this.minimax(depth - 1, alpha, beta, false));
+                alpha = Math.max(alpha, value);
+            } else {
+                value = Math.min(value, this.minimax(depth - 1, alpha, beta, true));
+                beta = Math.min(beta, value);
+            }
+            if (alpha >= beta) {
+                this.game.undo();
+                break;
+            }
+            this.game.undo();
+        }
+        return value;
     }
 
+
     private evaluateBoard(): number {
-        const evaluateForColor = (color: 'red' | 'yellow') => {
+        const evaluateForColor = (currentColor: 'red' | 'yellow') => {
             const scoreCells = (cells: number[]) => {
                 const emptyCells = [], coloredCells = [];
                 for (const cell of cells) {
                     const cellColor = this.game.map.get(cell);
                     if (cellColor === null) {
                         emptyCells.push(cell);
-                    } else if (cellColor === color) {
+                    } else if (cellColor === currentColor) {
                         coloredCells.push(cell);
                     } else {
                         return 0;
@@ -148,8 +164,10 @@ class Game {
         [61, 62, 63, 64, 65, 66, 67]
     ];
     turn: IterableIterator<string>;
-    moves: number[];
+    moves = [];
     redMovesFirst: boolean;
+    _win = false;
+    _draw = false;
     constructor(redMovesFirst: boolean, previousMoves: string[]) {
         const Generator = function* () {
             let redsTurn = redMovesFirst;
@@ -160,50 +178,50 @@ class Game {
         };
         this.turn = Generator();
         this.redMovesFirst = redMovesFirst;
-        this.moves = previousMoves.map(id => +id);
         this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
-        this.moves.forEach(id => this.map.set(id, this.turn.next().value));
+        previousMoves.forEach(id => this.move(+id));
     }
 
     move(id: number) {
         this.moves.push(id);
         this.map.set(id, this.turn.next().value);
+        this.checkGame();
     }
 
     undo() {
         if (this.moves.length > 0) {
             const id = this.moves.pop();
             this.map.set(id, null);
+            this._draw = this._win = false;
             this.turn.next();
         }
     }
 
+    get draw() {
+        return this._draw;
+    }
+
+    get win() {
+        return this._win;
+    }
+
     get nextMoveOptions() {
         const nextMoveOptions = [];
-        const boardCells: number[] = Array.from(this.map.keys());
-        for (const id of boardCells) {
+        this.map.forEach((color, id, map) => {
             if (id - id % 10 === 60) {
-                if (this.map.get(id) === null) {
-                    nextMoveOptions.push(id);
-                } else {
-                    const idOnTop = id - 10;
-                    if (idOnTop >= 11 && this.map.get(idOnTop) === null) {
-                        nextMoveOptions.push(idOnTop);
-                    }
-                }
-            } else {
-                const idBelow = id + 10;
-                if (this.map.get(id) === null && this.map.get(idBelow) !== null) {
+                if (color === null) {
                     nextMoveOptions.push(id);
                 }
+            } else if (color === null && map.get(id + 10) !== null) {
+                nextMoveOptions.push(id);
             }
-        }
+        });
         return nextMoveOptions;
     }
 
-    get gameover() {
+    checkGame() {
         if (this.moves.length < 7) {
-            return false;
+            return;
         }
         const lastMoveColor = this.turn.next() && this.turn.next().value;
         const check: (array: number[]) => boolean = (array: number[]) => {
@@ -267,13 +285,18 @@ class Game {
             }
             return check(mainDiagonal) || check(counterDiagonal);
         };
-        return checkRow() || checkColumn() || checkDiagonals();
+
+        if (checkRow() || checkColumn() || checkDiagonals()) {
+            this._win = true;
+        } else if (this.moves.length === 42) {
+            this._draw = true;
+        }
     }
 }
 
 
-/* GameModel class provides intelligent methods to detect game over states, list next move options
-and calculate the next best move for a player.
+/* GameModel class provides intelligent methods which serve to detect game over states by victory or draw
+and to calculate the next best move for a player.
 
 The last method relies on an implementation of the minimax algorithm, optimised with alpha-beta pruning.
 https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning

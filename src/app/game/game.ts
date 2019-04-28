@@ -15,12 +15,12 @@ export interface Game {
     };
     redMovesFirst: boolean;
     winner?: User;
-    isAgainstAI: boolean;
+    isAgainstAi: boolean;
 }
 
 export class Game implements Game {
     private model: GameModel;
-    private indexNextMove = 0;
+    private indexNextMove: number;
     constructor(data: any) {
         this.id = data.id;
         this.startDate = new Date(data.createdOn);
@@ -29,8 +29,9 @@ export class Game implements Game {
         this.points = data.points;
         this.winner = data.winner;
         this.redMovesFirst = data.redMovesFirst || true;
+        this.indexNextMove = data.moves && data.moves.length || 0;
+        this.isAgainstAi = this.players.red.id === '0' || this.players.yellow.id === '0';
         this.model = new GameModel(this.redMovesFirst, data.moves || []);
-        this.isAgainstAI = this.players.red.id === '0' || this.players.yellow.id === '0';
     }
 
     get activeColor() {
@@ -58,7 +59,7 @@ export class Game implements Game {
 
     move(id: string) {
         this.indexNextMove++;
-        this.model.update(id);
+        this.model.move(id);
         this.checkGame();
     }
 
@@ -71,19 +72,23 @@ export class Game implements Game {
     }
 
     reset() {
-        this.redMovesFirst = this.winner.id === this.players.yellow.id;
+        if (this.winner) {
+            this.redMovesFirst = this.winner.id === this.players.yellow.id;
+        }
         this.model = new GameModel(this.redMovesFirst, []);
     }
 
     private checkGame() {
-        if (this.model.gameover) {
+        if (this.model.win || this.model.draw) {
+            this.state = 'over';
+        }
+        if (this.model.win) {
             this.winner = this.inactivePlayer;
             if (this.winner.id === this.players.red.id) {
                 this.points.red += 1;
             } else {
                 this.points.yellow += 1;
             }
-            this.state = 'over';
         }
     }
 }
