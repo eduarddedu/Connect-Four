@@ -34,6 +34,7 @@ export class HomeComponent implements OnInit {
       this.panelsVisible = true;
       this.ds = this.deepstreamService.getInstance();
       this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
+      // can't use gameRecord.on('delete', fn) because callback is not called -> Deepstream bug
       this.ds.record.getList('users').whenReady(list => {
         if (!list.getEntries().includes(this.user.id)) {
           list.addEntry(this.user.id);
@@ -60,6 +61,7 @@ export class HomeComponent implements OnInit {
     } else {
       this.router.navigate(['/']);
       this.panelsVisible = true;
+      this.gameCompRef = null;
     }
   }
 
@@ -70,7 +72,7 @@ export class HomeComponent implements OnInit {
         this.ds.record.getRecord(this.user.id).set('status', 'Online');
         this.ds.record.getRecord(this.gameCompRef.opponent.id).set('status', 'Online');
         this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
-        this.ds.record.getRecord(this.gameCompRef.game.id).delete(); // Note: the 'delete' event is not propagated to all subscribers
+        this.ds.record.getRecord(this.gameCompRef.game.id).delete();
         this.panelsVisible = true;
         this.ngZone.run(() => this.router.navigate(['/']));
       }

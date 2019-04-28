@@ -54,17 +54,17 @@ export class GameComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.record) {
-      ['moves', 'state', 'redMovesFirst'].forEach(path => this.record.unsubscribe(path, null));
+      this.record.unsubscribe('state', undefined);
+      this.ds.event.unsubscribe(`${this.game.id}/moves`, undefined);
     }
   }
 
   loadGame(data: any) {
     this.game = new Game(data);
-    this.record.subscribe('moves', this.onGameMovesUpdate.bind(this));
-    this.record.subscribe('state', this.onGameStateUpdate.bind(this));
-    this.record.subscribe('redMovesFirst', this.onRedMovesFirstUpdate.bind(this));
+    this.ds.event.subscribe(`${this.game.id}/moves`, this.onMoveUpdate.bind(this));
+    this.record.subscribe('state', this.onStateUpdate.bind(this));
     this.ds.record.getList('games').on('entry-removed', id => {
-      if (this.game.id === id) {
+      if (this.game && this.game.id === id) {
         this.record = null;
       }
     });
@@ -84,38 +84,36 @@ export class GameComponent implements OnInit, OnDestroy {
     }
   }
 
-  onMove(id: string) {
+  onBoardClick(id: string) {
     if (this.record) {
-      const moves = this.record.get('moves');
-      moves.push(id);
-      this.record.set('moves', moves);
+      this.ds.event.emit(`${this.game.id}/moves`, id);
     }
   }
 
-  onGameMovesUpdate(moves: string[] = []) {
-    if (moves.length > 0) {
-      const id = moves.pop();
-      this.board.move(id);
-      this.game.move(id);
+  onMoveUpdate(id: string) {
+    this.board.move(id);
+    this.game.move(id);
+    if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
+      this.record.set('moves', this.game.moves);
       if (this.game.gameover) {
-        if (this.user.id === this.game.players.red.id) {
-          this.record.set('state', 'over');
-          this.record.set('points', this.game.points);
-          this.record.set('winner', this.game.winner);
-        }
-      } else if (this.isPlayer && !this.isMyTurn && this.game.isAgainstAi) {
-        const _id = this.game.nextBestMove();
-        setTimeout(() => this.onMove(_id), 500);
+        this.record.set('state', 'over');
+        this.record.set('points', this.game.points);
+        this.record.set('winner', this.game.winner);
       }
     }
+    if (this.game.state === 'in progress' && this.isPlayer && this.game.activePlayer.id === '0') {
+      setTimeout(() => {
+        this.ds.event.emit(`${this.game.id}/moves`, this.game.nextBestMove());
+      }, 500);
+    }
   }
 
-  onGameStateUpdate(state: 'in progress' | 'over') {
+  onStateUpdate(state: 'in progress' | 'over') {
     if (this.game.state === 'over' && state === 'in progress') {
       this.board.clear();
       this.game.reset();
       this.newGameBtnClicked = false;
-      if (this.user.id === this.game.players.red.id) {
+      if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
       }
@@ -123,12 +121,8 @@ export class GameComponent implements OnInit, OnDestroy {
     this.game.state = state;
   }
 
-  onRedMovesFirstUpdate(redMovesFirst: boolean) {
-    this.game.redMovesFirst = redMovesFirst;
-  }
-
   onClickNewGame() {
-    if (this.game.isAgainstAi) {
+    if (this.isPlayer && this.game.isAgainstAi) {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;
