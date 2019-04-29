@@ -120,6 +120,11 @@ export class GameComponent implements OnInit, OnDestroy {
       if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
+        if (this.isPlayer && this.game.activePlayer.id === '0') {
+          setTimeout(() => {
+            this.ds.event.emit(`${this.game.id}/moves`, this.game.nextBestMove());
+          }, 500);
+        }
       }
     }
     this.game.state = state;
