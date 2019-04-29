@@ -17,7 +17,7 @@ it('should return correct next move options 1', () => {
             isCorrect = false;
         }
     });
-    expect(isCorrect);
+    expect(isCorrect).toBeTruthy();
 });
 
 it('should return correct next move options 2', () => {
@@ -29,13 +29,13 @@ it('should return correct next move options 2', () => {
             isCorrect = false;
         }
     });
-    expect(isCorrect);
+    expect(isCorrect).toBeTruthy();
 });
 
 it('should detect game win 1', () => {
     const moves = [64, 54, 61, 63, 62, 53, 65, 52, 66, 51].map(e => `${e}`);
     const game = new GameModel(true, moves);
-    expect(game.win);
+    expect(game.win).toBeTruthy();
 });
 
 it('should detect game win 2', () => {
@@ -43,7 +43,7 @@ it('should detect game win 2', () => {
     [61, 62, 63, 64, 65, 66, 67, 51, 52, 53, 54, 55, 56, 57, 41, 42, 43, 44, 45, 46, 47, 31]
         .forEach(id => moves.push(id));
     const game = new GameModel(true, moves);
-    expect(game.win);
+    expect(game.win).toBeTruthy();
 });
 
 it('should detect game draw', () => {
@@ -53,7 +53,7 @@ it('should detect game draw', () => {
     [32, 33, 34, 35, 36, 37, 27, 26, 25, 24, 23, 22, 17, 16, 15, 14, 12, 31, 13, 21, 11]
         .forEach(id => moves.push(id));
     const game = new GameModel(true, moves);
-    expect(game.draw);
+    expect(game.draw).toBeTruthy();
 });
 
 
