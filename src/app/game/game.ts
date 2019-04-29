@@ -19,7 +19,7 @@ export interface Game {
         red: number;
         yellow: number;
     };
-    moves: string [];
+    moves: number[];
     redMovesFirst: boolean;
     winner?: User;
     isAgainstAi: boolean;
@@ -63,7 +63,7 @@ export class Game implements Game {
         return this.state === 'over';
     }
 
-    move(id: string) {
+    move(id: number) {
         this.moves.push(id);
         this.model.move(id);
         this.checkGame();

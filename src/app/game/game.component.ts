@@ -96,7 +96,7 @@ export class GameComponent implements OnInit, OnDestroy {
 
   onMoveUpdate(id: string) {
     this.board.move(id);
-    this.game.move(id);
+    this.game.move(+id);
     if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
       this.record.set('moves', this.game.moves);
       if (this.game.gameover) {

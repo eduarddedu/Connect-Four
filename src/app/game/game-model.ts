@@ -18,8 +18,8 @@ export class GameModel {
         return this.game.nextMoveOptions;
     }
 
-    move(id: string) {
-        this.game.move(+id);
+    move(id: number) {
+        this.game.move(id);
     }
 
     undo() {
