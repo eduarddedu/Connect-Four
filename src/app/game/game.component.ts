@@ -1,3 +1,7 @@
+/**
+ * GameComponent updates the game record and manages the data flow between all parties and application components.
+ */
+
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs/operators';

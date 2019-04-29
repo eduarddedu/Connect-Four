@@ -1,3 +1,9 @@
+/**
+ * Contains locally stored game data.
+ * Provides access to properties of the game which are the same for all users.
+ * Delegates the difficult tasks such as calculating the next best move, to the GameModel class.
+ */
+
 import { User } from '../auth.service';
 import { GameModel } from './game-model';
 

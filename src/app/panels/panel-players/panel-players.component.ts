@@ -1,3 +1,7 @@
+/**
+ * PanelPlayers manages game invitations and creates the game record.
+ */
+
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 

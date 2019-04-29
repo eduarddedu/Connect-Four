@@ -62,7 +62,6 @@ export class GameModel {
         if (this.game.draw) {
             return 0;
         }
-
         if (depth === 0) {
             return this.evaluateBoard();
         }
@@ -294,19 +293,19 @@ class Game {
     }
 }
 
+/*
+GameModel detects when a victory or draw event occurs and picks the id for a random move or for the next best move.
 
-/* GameModel class provides intelligent methods which serve to detect game over states by victory or draw
-and to calculate the next best move for a player.
-
-The last method relies on an implementation of the minimax algorithm, optimised with alpha-beta pruning.
+The last method implements the minimax algorithm using alpha-beta pruning optimisation:
 https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
 
-The minimax algorithm depends on a heuristic function to evaluate game states.
+The method builds a search tree of game states linked together and calls a value function
+which heuristically evaluates the terminal nodes of the tree.
 
-The function scans the board looking for arrays or permutations of four, which are individually counted and scored.
+The function scans the board map looking for arrays of four cells.
 
-An array or permutation is formed by four cells connected horizontally, vertically or diagonally.
-The condition is that at least one cell is colored; the other three can be empty or colored - with the same color!
+An array is formed when four cells are connected horizontally, vertically or diagonally, on condition that at least
+one cell is colored and there aren't cells with different colors.
 
 For example:
 
@@ -315,7 +314,7 @@ e c e e
 e c e c
 c e c c
 
-...etc are all valid arrays.
+...etc are all valid arrays, assuming c referes to the same color, red or yellow.
 
 While an array of four colored cells fetches a score of Infinity, lesser arrays are scored based on powers of ten.
 E.g., a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.
@@ -331,3 +330,4 @@ The -- c e e e -- array needs a minimum of 5 moves for the three empty cells to 
 Because the maximum of the minimum number of moves an array may need is 18, the score of an array is rounded off to
 S = (20 - k) x 10^n
 where n = array.length - 1 and k is the minimum number of moves until completion. */
+
