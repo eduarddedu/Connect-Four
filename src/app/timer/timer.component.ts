@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="updateTime | async as time"><i class="far fa-clock"></i>{{time}}</span>`,
+  template: `<span *ngIf="updateTime | async as time">{{time}}</span>`,
   styles: [
     `i {
       padding: 3px;
@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
     span {
       display: inline-block;
       font-size: inherit;
-      width: 92.8px;
+      width: 66px;
       line-height: normal;
       text-align: left;
     }`

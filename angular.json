@@ -24,8 +24,7 @@
             ],
             "styles": [
               "src/styles.css", 
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "src/assets/css/fontawesome/all.min.css"
+              "node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],
             "scripts": [
               "node_modules/deepstream.io-client-js/dist/deepstream.js"
