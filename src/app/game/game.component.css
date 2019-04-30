@@ -3,13 +3,6 @@
     margin-bottom: 8px;
 }
 
-@media(min-width: 576px) {
-    .c4-card {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-}
-
 .flex-row {
     display: flex;
     flex-flow: row nowrap;
@@ -19,14 +12,14 @@
 .score {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-}
-img {
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
+    line-height: 2;
 }
 
-.score>div:last-child {
+.score>.player>img {
+    display: none;
+}
+
+.score>.player:last-child {
     text-align: right;
 }
 
@@ -38,4 +31,18 @@ img {
     height: 15px;
     border-radius: 7.5px;
     margin: 0 2px;
+}
+
+@media(min-width: 576px) {
+    .c4-card {
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .score>.player>img {
+        display: initial;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+    }
 }

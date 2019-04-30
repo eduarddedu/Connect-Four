@@ -1,11 +1,11 @@
 <div *ngIf="game">
     <div class="c4-card">
         <div class="score">
-            <div>
+            <div class="player">
                <img [src]="game.players.red.iconUrl"> {{game.players.red.name  | parseFirstWord }}
             </div>
-            <div>{{game.points.red}} - {{game.points.yellow}}</div>
-            <div>
+            <div class="points">{{game.points.red}} - {{game.points.yellow}}</div>
+            <div class="player">
                 {{game.players.yellow.name | parseFirstWord }} <img [src]="game.players.yellow.iconUrl">
             </div>
         </div>
