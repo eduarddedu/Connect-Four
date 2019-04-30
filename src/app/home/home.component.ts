@@ -34,7 +34,6 @@ export class HomeComponent implements OnInit {
       this.panelsVisible = true;
       this.ds = this.deepstreamService.getInstance();
       this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
-      // can't use gameRecord.on('delete', fn) because callback is not called -> Deepstream bug
       this.ds.record.getList('users').whenReady(list => {
         if (!list.getEntries().includes(this.user.id)) {
           list.addEntry(this.user.id);
@@ -56,7 +55,7 @@ export class HomeComponent implements OnInit {
   }
 
   goHome() {
-    if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
+    if (this.gameCompRef && this.gameCompRef.record && this.gameCompRef.isPlayer) {
       this.getGameQuitOption();
     } else {
       this.router.navigate(['/']);
@@ -88,8 +87,9 @@ export class HomeComponent implements OnInit {
     this.router.navigate([`/game/${gameId}`]);
   }
 
+  // can't use GameComponent.record.on('delete', fn) because callback is not called (Deepstream bug)
   onGameRecordDelete(gameId: string) {
-    if (this.gameCompRef && this.gameCompRef.game.id === gameId) {
+    if (this.gameCompRef && this.gameCompRef.game.id === gameId  && !this.gameCompRef.game.isAgainstAi) {
       this.notification.update(`Game over. Opponent abandoned`, 'warning');
       if (this.gameCompRef.isPlayer) {
         this.ds.record.getRecord(this.user.id).set('status', 'Online');
