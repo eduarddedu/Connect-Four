@@ -5,13 +5,13 @@
     </div>
     <div class="profile" *ngIf="user">
       <div class="icon" (click)="showDropdownMenu = !showDropdownMenu">
-        {{user.name | parseFirstWord }}
         <img [src]="user.iconUrl" alt="user pic">
       </div>
-      <div class="c4-dropdown-menu" *ngIf="showDropdownMenu">
-        <div class="item"><i class="fas fa-cogs"></i> Settings</div>
+      <div class="c4-dropdown" *ngIf="showDropdownMenu">
+        <div class="item"><a href="https://blog.codecritique.org" target="_blank">About</a></div>
+        <div class="item"><a href="https://en.wikipedia.org/wiki/Connect_Four" target="_blank">Help</a></div>
         <div class="divider"></div>
-        <div class="item" (click)="signOut()"><i class="fas fa-sign-out-alt"></i> Sign out</div>
+        <div class="item" (click)="signOut()"><a href="#">Sign out</a></div>
       </div>
     </div>
   </header>
