@@ -2,7 +2,7 @@ export class GameModel {
     private game: Game;
     private PLIES = 4;
 
-    constructor(redMovesFirst: boolean, previousMoves: string[]) {
+    constructor(redMovesFirst: boolean, previousMoves: number[]) {
         this.game = new Game(redMovesFirst, previousMoves);
     }
 
@@ -167,7 +167,7 @@ class Game {
     redMovesFirst: boolean;
     _win = false;
     _draw = false;
-    constructor(redMovesFirst: boolean, previousMoves: string[]) {
+    constructor(redMovesFirst: boolean, previousMoves: number[]) {
         const Generator = function* () {
             let redsTurn = redMovesFirst;
             while (true) {
@@ -178,7 +178,7 @@ class Game {
         this.turn = Generator();
         this.redMovesFirst = redMovesFirst;
         this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
-        previousMoves.forEach(id => this.move(+id));
+        previousMoves.forEach(id => this.move(id));
     }
 
     move(id: number) {
