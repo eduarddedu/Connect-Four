@@ -3,17 +3,12 @@ import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
   template: `<span *ngIf="updateTime | async as time">{{time}}</span>`,
-  styles: [
-    `i {
-      padding: 3px;
-      vertical-align: 0.25px;
-    }
+  styles: [`
     span {
       display: inline-block;
-      font-size: inherit;
       width: 66px;
+      font-size: 16px;
       line-height: normal;
-      text-align: left;
     }`
   ]
 })
