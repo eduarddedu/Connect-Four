@@ -4,14 +4,14 @@
       <img src="assets/img/connect4.png" alt="board" role="navigation"> Connect Four
     </div>
     <div class="profile" *ngIf="user">
-      <div class="icon" (click)="showDropdownMenu = !showDropdownMenu">
+      <div id="icon" class="icon" (click)="showDropdownMenu = !showDropdownMenu;">
         <img [src]="user.iconUrl" alt="user pic">
       </div>
       <div class="c4-dropdown" *ngIf="showDropdownMenu">
         <div class="item"><a href="https://blog.codecritique.org" target="_blank">About</a></div>
         <div class="item"><a href="https://en.wikipedia.org/wiki/Connect_Four" target="_blank">Help</a></div>
         <div class="divider"></div>
-        <div class="item" (click)="signOut()"><a href="#">Sign out</a></div>
+        <div id="signout-btn" class="item" (click)="signout()">Sign out</div>
       </div>
     </div>
   </header>

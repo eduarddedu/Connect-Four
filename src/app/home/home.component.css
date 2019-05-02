@@ -45,6 +45,20 @@ header>.profile>.icon {
     font-weight: normal;
     line-height: 2;
     padding: 4px 16px 4px 10px;
+    color: #222020;
+}
+
+.c4-dropdown>.item:hover {
+    background-color: #f1f1f1;
+}
+
+.c4-dropdown>.item>a {
+    color: inherit;
+}
+
+.c4-dropdown>.item>a:hover {
+    text-decoration: none;
+    color: #000;
 }
 
 .item:first-child {
@@ -53,19 +67,6 @@ header>.profile>.icon {
 
 .item:last-child {
     border-radius: 0 0 3px 3px;
-}
-
-.c4-dropdown>.item:hover {
-    background-color: #f1f1f1;
-}
-
-.c4-dropdown>.item>a {
-    color: #222020;
-}
-
-.c4-dropdown>.item>a:hover {
-    text-decoration: none;
-    color: #000;
 }
 
 .c4-dropdown>.divider {

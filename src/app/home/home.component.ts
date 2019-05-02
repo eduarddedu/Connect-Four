@@ -39,14 +39,7 @@ export class HomeComponent implements OnInit {
           list.addEntry(this.user.id);
           const record = this.ds.record.getRecord(this.user.id);
           record.set(this.user);
-          window.addEventListener('beforeunload', () => {
-            record.delete();
-            list.removeEntry(this.user.id);
-            if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
-              this.ds.record.getRecord(this.gameCompRef.game.id).delete();
-              this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
-            }
-          });
+          window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
         }
       });
     } else {
@@ -89,7 +82,7 @@ export class HomeComponent implements OnInit {
 
   // can't use GameComponent.record.on('delete', fn) because callback is not called (Deepstream bug)
   onGameRecordDelete(gameId: string) {
-    if (this.gameCompRef && this.gameCompRef.game.id === gameId  && !this.gameCompRef.game.isAgainstAi) {
+    if (this.gameCompRef && this.gameCompRef.game.id === gameId && !this.gameCompRef.game.isAgainstAi) {
       this.notification.update(`Game over. Opponent abandoned`, 'warning');
       if (this.gameCompRef.isPlayer) {
         this.ds.record.getRecord(this.user.id).set('status', 'Online');
@@ -97,8 +90,19 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  signOut() {
-    this.auth.signOut();
+  signout() {
+    this.auth.signout();
+    this.signoutDeepstream();
+  }
+
+  signoutDeepstream() {
+    this.ds.record.getRecord(this.user.id).delete();
+    this.ds.record.getList('users').removeEntry(this.user.id);
+    if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
+      this.ds.record.getRecord(this.gameCompRef.game.id).delete();
+      this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
+    }
+    this.ds.close();
   }
 
 }

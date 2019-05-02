@@ -27,7 +27,7 @@ export class AuthService {
   private GoogleAuth: any;
   private _user: User;
 
-  constructor(private zone: NgZone) {
+  constructor(zone: NgZone) {
     if (environment.production) {
       race(this.googleUserSigned(), this.facebookUserSigned())
         .subscribe((user: User) => {
@@ -62,10 +62,11 @@ export class AuthService {
     gapi.load('auth2', () => {
       this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
       this.GoogleAuth.then(() => {
-        const button: Element = document.querySelector('.g-login-btn');
-        this.GoogleAuth.attachClickHandler(button, {}, (googleUser: any) => user.next(getUser(googleUser)));
         if (this.GoogleAuth.isSignedIn.get() === true) {
           user.next(getUser(this.GoogleAuth.currentUser.get()));
+        } else {
+          const button: Element = document.querySelector('.g-login-btn');
+          this.GoogleAuth.attachClickHandler(button, {}, (googleUser: any) => user.next(getUser(googleUser)));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);
@@ -74,15 +75,14 @@ export class AuthService {
     return user.asObservable();
   }
 
-  signOut() {
-    if (this._user.authProvider === null) {
-      return;
-    }
-    const loadLoginPage = () => setTimeout(() => window.location.assign('/login'), 0);
+  signout() {
+    const openLoginPage = () => setTimeout(() => window.location.assign('/login'), 0);
     if (this._user.authProvider === 'Google') {
-      this.GoogleAuth.signOut().then(loadLoginPage);
+      this.GoogleAuth.signOut().then(openLoginPage);
+    } else if (this._user.authProvider === 'Facebook') {
+      FB.logout(openLoginPage);
     } else {
-      FB.logout(loadLoginPage);
+      openLoginPage();
     }
   }
 
