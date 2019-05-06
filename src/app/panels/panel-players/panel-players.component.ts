@@ -30,9 +30,8 @@ export interface Invitation {
 
 export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
-  @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
-  private players: Map<string, User> = new Map();
+  players: Map<string, User> = new Map();
   private botUser: User = {
     id: '0',
     name: 'Bobiță',

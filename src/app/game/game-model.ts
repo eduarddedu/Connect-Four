@@ -314,7 +314,7 @@ e c e e
 e c e c
 c e c c
 
-...etc are all valid arrays, assuming c referes to the same color, red or yellow.
+...etc are all valid arrays, assuming c refers to the same color, red or yellow.
 
 While an array of four colored cells fetches a score of Infinity, lesser arrays are scored based on powers of ten.
 E.g., a array with one colored cell fetches 20 x 10^0, a array with two colored cells fetches 20 x 10^1.

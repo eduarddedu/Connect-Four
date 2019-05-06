@@ -18,11 +18,9 @@
   <main>
     <div class="box">
       <app-notification></app-notification>
-      <section id="panels" *ngIf="user">
-        <app-panel-players [user]="user" (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
-        </app-panel-players>
-        <app-panel-games (joinGame)="joinGame($event)" [panelVisible]="panelsVisible">
-        </app-panel-games>
+      <section id="panels" *ngIf="showPanels">
+        <app-panel-players [user]="user" (joinGame)="joinGame($event)"></app-panel-players>
+        <app-panel-games (joinGame)="joinGame($event)"></app-panel-games>
       </section>
       <router-outlet (activate)="onGameLoad($event)"></router-outlet>
     </div>

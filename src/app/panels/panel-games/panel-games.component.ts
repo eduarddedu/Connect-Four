@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
 import { Game } from '../../game/game';
 import { DeepstreamService } from '../../deepstream.service';
@@ -9,10 +9,9 @@ import { DeepstreamService } from '../../deepstream.service';
   styleUrls: ['./panel-games.component.css', '../panels-styles.css']
 })
 export class PanelGamesComponent implements OnInit {
-  @Input() panelVisible = true;
   @Output() joinGame: EventEmitter<string> = new EventEmitter();
+  games: Game[] = [];
   private deepstream: deepstreamIO.Client;
-  private games: any[] = [];
 
   constructor(private cdr: ChangeDetectorRef, ds: DeepstreamService) {
     this.deepstream = ds.getInstance();

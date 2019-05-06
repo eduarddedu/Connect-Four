@@ -17,7 +17,7 @@ export class HomeComponent implements OnInit {
   gameCompRef: GameComponent;
   user: User;
   showDropdownMenu = false;
-  private panelsVisible = true;
+  showPanels = false;
   private ds: deepstreamIO.Client;
 
   constructor(private router: Router,
@@ -31,7 +31,7 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     if (this.auth.user) {
       this.user = this.auth.user;
-      this.panelsVisible = true;
+      this.showPanels = true;
       this.ds = this.deepstreamService.getInstance();
       this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
       this.ds.record.getList('users').whenReady(list => {
@@ -52,7 +52,7 @@ export class HomeComponent implements OnInit {
       this.getGameQuitOption();
     } else {
       this.router.navigate(['/']);
-      this.panelsVisible = true;
+      this.showPanels = true;
       this.gameCompRef = null;
     }
   }
@@ -65,7 +65,7 @@ export class HomeComponent implements OnInit {
         this.ds.record.getRecord(this.gameCompRef.opponent.id).set('status', 'Online');
         this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
         this.ds.record.getRecord(this.gameCompRef.game.id).delete();
-        this.panelsVisible = true;
+        this.showPanels = true;
         this.ngZone.run(() => this.router.navigate(['/']));
       }
     });
@@ -76,7 +76,7 @@ export class HomeComponent implements OnInit {
   }
 
   joinGame(gameId: string) {
-    this.panelsVisible = false;
+    this.showPanels = false;
     this.router.navigate([`/game/${gameId}`]);
   }
 
