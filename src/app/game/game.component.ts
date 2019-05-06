@@ -163,7 +163,7 @@ export class GameComponent implements OnInit, OnDestroy {
       if (this.isPlayer) {
         return this.newGameBtnClicked ? `Invitation sent. Waiting for ${this.opponent.name}` :
           this.game.winner ?
-            this.game.winner.id === this.user.id ? 'You win 😀 🏆' : 'You lose 😞' : `It's a draw 🤔`;
+            this.game.winner.id === this.user.id ? 'You win 😀' : 'You lose 😞' : `It's a draw 🤔`;
       }
       return this.game.winner ? `${this.game.winner.name} wins!` : `It's a draw 🤔`;
     }

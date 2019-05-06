@@ -72,7 +72,7 @@ export class PanelPlayersComponent implements OnInit {
         from: { userId: this.user.id }, topic: 'Create Game'
       });
       this.deepstream.record.getRecord(user.id).set('status', 'Busy');
-      this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'warning');
+      this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
     }
   }
 
@@ -103,7 +103,7 @@ export class PanelPlayersComponent implements OnInit {
     if (invitation.topic === 'Join Game') {
       this.joinGame.emit(invitation.details.gameId);
       this.deepstream.record.getRecord(user.id).set('status', 'Playing');
-      this.notification.update(`${user.name} accepted your invitation`, 'warning');
+      this.notification.update(`${user.name} accepted your invitation`, 'success');
     }
     if (invitation.topic === 'Reject') {
       const modalRef = this.modalService.open(InvitationRejectedComponent);

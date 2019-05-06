@@ -83,7 +83,7 @@ export class HomeComponent implements OnInit {
   // can't use GameComponent.record.on('delete', fn) because callback is not called (Deepstream bug)
   onGameRecordDelete(gameId: string) {
     if (this.gameCompRef && this.gameCompRef.game.id === gameId && !this.gameCompRef.game.isAgainstAi) {
-      this.notification.update(`Game over. Opponent abandoned`, 'warning');
+      this.notification.update(`Game over. Opponent abandoned`, 'danger');
       if (this.gameCompRef.isPlayer) {
         this.ds.record.getRecord(this.user.id).set('status', 'Online');
       }

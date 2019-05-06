@@ -4,7 +4,7 @@
     min-height: 100vh;
     min-width: 318px;
     padding: 0 0 16px 0;
-    background-color: #dacebe;
+    background-image: linear-gradient(to bottom, #006994, #fff) !important; 
     color: #f0ece7;
 }
 
