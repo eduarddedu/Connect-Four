@@ -16,7 +16,6 @@ import { GameComponent } from '../game/game.component';
 export class HomeComponent implements OnInit {
   gameCompRef: GameComponent;
   user: User;
-  showDropdownMenu = false;
   showPanels = false;
   private ds: deepstreamIO.Client;
 

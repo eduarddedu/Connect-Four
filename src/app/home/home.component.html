@@ -4,10 +4,10 @@
       <img src="assets/img/connect4.png" alt="board" role="navigation"> Connect Four
     </div>
     <div class="profile" *ngIf="user">
-      <div id="icon" class="icon" (click)="showDropdownMenu = !showDropdownMenu;">
-        <img [src]="user.iconUrl" alt="user pic">
+      <div id="icon" class="icon" (click)="showPopoverMenu = !showPopoverMenu">
+        <img [src]="user.iconUrl" alt>
       </div>
-      <div class="c4-dropdown" *ngIf="showDropdownMenu">
+      <div class="c4-popover" *ngIf="showPopoverMenu">
         <div class="item"><a href="https://blog.codecritique.org" target="_blank">About</a></div>
         <div class="item"><a href="https://en.wikipedia.org/wiki/Connect_Four" target="_blank">Help</a></div>
         <div class="divider"></div>
