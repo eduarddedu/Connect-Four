@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="updateTime | async as time">{{time}}</span>`,
+  template: `<span *ngIf="observable | async as time">{{time}}</span>`,
   styles: [`
     span {
       display: inline-block;
@@ -14,23 +14,30 @@ import { Observable } from 'rxjs';
 })
 export class TimerComponent implements OnInit, OnDestroy {
   @Input() startDate: Date;
-  updateTime: Observable<string>;
-  interval: any;
+  observable: Observable<string>;
+  updateInterval: any;
+  formatter = new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'UTC'
+  });
 
   ngOnInit() {
-    this.updateTime = new Observable(subscriber => {
-      const getElapsedTime = () => {
-        const elapsed = new Date(Date.now() - this.startDate.getTime());
-        elapsed.setHours(elapsed.getHours() - Math.abs(elapsed.getTimezoneOffset() / 60));
-        return elapsed.toTimeString().substr(0, 8);
-      };
-      subscriber.next(getElapsedTime());
-      this.interval = setInterval(() => subscriber.next(getElapsedTime()), 1000);
+    this.observable = new Observable(subscriber => {
+      subscriber.next(this.getHourMinuteSecondSince());
+      this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondSince()), 1000);
     });
   }
 
   ngOnDestroy() {
-    clearInterval(this.interval);
+    clearInterval(this.updateInterval);
+  }
+
+  getHourMinuteSecondSince() {
+    const since = new Date(Date.now() - this.startDate.getTime());
+    return this.formatter.format(since);
   }
 
 }
