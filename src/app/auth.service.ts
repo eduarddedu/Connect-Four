@@ -65,8 +65,7 @@ export class AuthService {
         if (this.GoogleAuth.isSignedIn.get() === true) {
           user.next(getUser(this.GoogleAuth.currentUser.get()));
         } else {
-          const button: Element = document.querySelector('.g-login-btn');
-          this.GoogleAuth.attachClickHandler(button, {}, (googleUser: any) => user.next(getUser(googleUser)));
+          this.GoogleAuth.attachClickHandler('g-login-btn', {}, (googleUser: any) => user.next(getUser(googleUser)));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);

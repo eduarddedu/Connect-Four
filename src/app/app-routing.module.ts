@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { GameComponent } from './game/game.component';
+import { PolicyPageComponent } from './policy-page/policy-page.component';
 
 const routes: Routes = [
   {
@@ -19,6 +20,10 @@ const routes: Routes = [
   {
     path: 'login',
     component: LoginComponent
+  },
+  {
+    path: 'policy',
+    component: PolicyPageComponent
   },
   {
     path: '**',

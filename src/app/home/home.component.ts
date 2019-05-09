@@ -16,7 +16,8 @@ import { GameComponent } from '../game/game.component';
 export class HomeComponent implements OnInit {
   gameCompRef: GameComponent;
   user: User;
-  showPanels = false;
+  showPanels = true;
+  showPopoverMenu = false;
   private ds: deepstreamIO.Client;
 
   constructor(private router: Router,
@@ -30,7 +31,6 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     if (this.auth.user) {
       this.user = this.auth.user;
-      this.showPanels = true;
       this.ds = this.deepstreamService.getInstance();
       this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
       this.ds.record.getList('users').whenReady(list => {

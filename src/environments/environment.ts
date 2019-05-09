@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
-  DEEPSTREAM_URL: 'ws://localhost:6020'
+  origin: 'localhost',
+  deepstreamUrl: 'ws://localhost:6020'
 };
 
 

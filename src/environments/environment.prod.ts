@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  DEEPSTREAM_URL: 'wss://codecritique.org:6020'
+  origin: 'connectfour.codecritique.org',
+  deepstreamUrl: 'wss://codecritique.org:6020'
 };

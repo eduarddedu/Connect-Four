@@ -1,9 +1,9 @@
-<div class="c4-container">
+<div class="c4-container" *ngIf="user">
   <header>
     <div class="brand" (click)="goHome()">
       <img src="assets/img/connect4.png" alt="board" role="navigation"> Connect Four
     </div>
-    <div class="profile" *ngIf="user">
+    <div class="profile">
       <div id="icon" class="icon" (click)="showPopoverMenu = !showPopoverMenu">
         <img [src]="user.iconUrl" alt>
       </div>
@@ -18,11 +18,14 @@
   <main>
     <div class="box">
       <app-notification></app-notification>
-      <section id="panels" *ngIf="showPanels">
-        <app-panel-players [user]="user" (joinGame)="joinGame($event)"></app-panel-players>
-        <app-panel-games (joinGame)="joinGame($event)"></app-panel-games>
+      <section id="panels" [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
+        <div class="panels-box">
+          <app-panel-players [user]="user" (joinGame)="joinGame($event)"></app-panel-players>
+          <app-panel-games (joinGame)="joinGame($event)"></app-panel-games>
+        </div>
       </section>
       <router-outlet (activate)="onGameLoad($event)"></router-outlet>
     </div>
   </main>
+  <app-policy-accept></app-policy-accept>
 </div>
