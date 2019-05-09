@@ -1,4 +1,4 @@
-import { Component, OnInit, NgZone } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -14,7 +14,7 @@ import { GameComponent } from '../game/game.component';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  gameCompRef: GameComponent;
+  @ViewChild(GameComponent) gc: GameComponent;
   user: User;
   showPanels = true;
   showPopoverMenu = false;
@@ -23,22 +23,21 @@ export class HomeComponent implements OnInit {
   constructor(private router: Router,
     private modalService: NgbModal,
     private auth: AuthService,
-    private ngZone: NgZone,
-    private deepstreamService: DeepstreamService,
+    private deepstream: DeepstreamService,
     private notification: NotificationService) {
   }
 
   ngOnInit() {
     if (this.auth.user) {
       this.user = this.auth.user;
-      this.ds = this.deepstreamService.getInstance();
+      this.ds = this.deepstream.getInstance();
       this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
-      this.ds.record.getList('users').whenReady(list => {
-        if (!list.getEntries().includes(this.user.id)) {
-          list.addEntry(this.user.id);
+      this.ds.record.getList('users').whenReady(usersList => {
+        if (!usersList.getEntries().includes(this.user.id)) {
+          usersList.addEntry(this.user.id);
           const record = this.ds.record.getRecord(this.user.id);
           record.set(this.user);
-          window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
+          window.addEventListener('beforeunload', this.closeDeepstream.bind(this));
         }
       });
     } else {
@@ -46,62 +45,62 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  goHome() {
-    if (this.gameCompRef && this.gameCompRef.record && this.gameCompRef.isPlayer) {
-      this.getGameQuitOption();
+  closeGameView() {
+    if (this.gc.game && this.gc.isPlayer && this.gc.record) {
+      this.getGameQuitConsent();
     } else {
-      this.router.navigate(['/']);
+      this.gc.unloadGame();
       this.showPanels = true;
-      this.gameCompRef = null;
     }
   }
 
-  getGameQuitOption() {
+  getGameQuitConsent() {
     const modalRef = this.modalService.open(QuitGameComponent);
-    modalRef.result.then((option: any) => {
+    modalRef.result.then((option: string) => {
       if (option === 'Yes') {
-        this.ds.record.getRecord(this.user.id).set('status', 'Online');
-        this.ds.record.getRecord(this.gameCompRef.opponent.id).set('status', 'Online');
-        this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
-        this.ds.record.getRecord(this.gameCompRef.game.id).delete();
+        const game = this.gc.game;
+        this.gc.unloadGame();
         this.showPanels = true;
-        this.ngZone.run(() => this.router.navigate(['/']));
+        this.ds.record.getRecord(this.user.id).set('status', 'Online');
+        if (!game.isAgainstAi) {
+          this.ds.record.getRecord(this.gc.opponent.id).set('status', 'Online');
+        }
+        this.ds.record.getList('games').removeEntry(game.id);
+        this.ds.record.getRecord(game.id).delete();
       }
     });
   }
 
-  onGameLoad(gameComponentRef: GameComponent) {
-    this.gameCompRef = gameComponentRef;
-  }
-
-  joinGame(gameId: string) {
+  loadGame(gameId: string) {
     this.showPanels = false;
-    this.router.navigate([`/game/${gameId}`]);
+    this.gc.loadGame(gameId);
   }
 
-  // can't use GameComponent.record.on('delete', fn) because callback is not called (Deepstream bug)
   onGameRecordDelete(gameId: string) {
-    if (this.gameCompRef && this.gameCompRef.game.id === gameId && !this.gameCompRef.game.isAgainstAi) {
+    if (this.gc.game && this.gc.game.id === gameId) {
       this.notification.update(`Game over. Opponent abandoned`, 'danger');
-      if (this.gameCompRef.isPlayer) {
-        this.ds.record.getRecord(this.user.id).set('status', 'Online');
-      }
+      this.gc.record = null;
     }
   }
 
   signout() {
     this.auth.signout();
-    this.signoutDeepstream();
+    this.closeDeepstream();
   }
 
-  signoutDeepstream() {
+  closeDeepstream() {
     this.ds.record.getRecord(this.user.id).delete();
     this.ds.record.getList('users').removeEntry(this.user.id);
-    if (this.gameCompRef && this.gameCompRef.isPlayer && this.gameCompRef.record) {
-      this.ds.record.getRecord(this.gameCompRef.game.id).delete();
-      this.ds.record.getList('games').removeEntry(this.gameCompRef.game.id);
+    if (this.gc.game && this.gc.isPlayer && this.gc.record) {
+      this.ds.record.getRecord(this.gc.game.id).delete();
+      this.ds.record.getList('games').removeEntry(this.gc.game.id);
     }
     this.ds.close();
   }
 
 }
+
+/**
+ * HomeComponent handles disruptive events such as user signout, user closing the browser window or user navigating
+ * out of the game view.
+ */

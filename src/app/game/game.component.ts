@@ -1,13 +1,7 @@
-/**
- * GameComponent updates the game record and manages the data flow between all parties and application components.
- */
-
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs/operators';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { DeepstreamService } from '../deepstream.service';
-import { AuthService, User } from '../auth.service';
+import { User } from '../auth.service';
 import { Invitation } from '../panels/panel-players/panel-players.component';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
@@ -17,9 +11,9 @@ import { Game } from './game';
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.css']
 })
-export class GameComponent implements OnInit, OnDestroy {
+export class GameComponent implements OnInit {
   @ViewChild(BoardComponent) board: BoardComponent;
-  user: User;
+  @Input() user: User;
   isPlayer = false;
   opponent?: User;
   game: Game;
@@ -27,66 +21,50 @@ export class GameComponent implements OnInit, OnDestroy {
   ds: deepstreamIO.Client;
   newGameBtnClicked = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private auth: AuthService,
-    private deepstreamService: DeepstreamService) {
-  }
+  constructor(private deepstreamService: DeepstreamService) { }
 
   ngOnInit() {
-    this.user = this.auth.user;
     this.ds = this.deepstreamService.getInstance();
-    this.route.paramMap.pipe(map(params => params.get('gameId')))
-      .subscribe(gameId => {
-        this.ds.record.has(gameId, (error, hasRecord) => {
-          if (hasRecord) {
-            this.record = this.ds.record.getRecord(gameId);
-            const interval = setInterval(() => {
-              const data = this.record.get();
-              if (data.id) {
-                this.loadGame(data);
-                clearInterval(interval);
-              }
-            }, 50);
-          } else {
-            this.router.navigate(['/']);
-          }
-        });
-      });
   }
 
-  ngOnDestroy() {
-    if (this.record) {
-      this.record.unsubscribe('state', undefined);
-      this.ds.event.unsubscribe(`${this.game.id}/moves`, undefined);
-    }
-  }
-
-  loadGame(data: any) {
+  async loadGame(gameId: string) {
+    this.record = this.ds.record.getRecord(gameId);
+    const data = await this.pollRecord(this.record, 50);
     this.game = new Game(data);
     this.ds.event.subscribe(`${this.game.id}/moves`, this.onMoveUpdate.bind(this));
     this.record.subscribe('state', this.onStateUpdate.bind(this));
-    this.ds.record.getList('games').on('entry-removed', id => {
-      if (this.game && this.game.id === id) {
-        this.record = null;
-      }
-    });
-    this.setRelationship();
+    const players = [data.players.red, data.players.yellow];
+    if (players.map((user: User) => user.id).includes(this.user.id)) {
+      this.isPlayer = true;
+      this.opponent = players.find((user: User) => user.id !== this.user.id);
+    }
     setTimeout(() => {
       this.board.clear();
       this.board.replayGame(data.moves, data.redMovesFirst || true);
     }, 0);
-    console.log('Game loaded: ', this.game);
   }
 
-  setRelationship() {
-    const array = [this.game.players.red, this.game.players.yellow];
-    if (array.map((u: User) => u.id).includes(this.user.id)) {
-      this.isPlayer = true;
-      this.opponent = array.find((u: User) => u.id !== this.user.id);
-    }
+  private async pollRecord(record: deepstreamIO.Record, millis: number): Promise<any> {
+    return new Promise(resolve => {
+      const interval = setInterval(() => {
+        const data = record.get();
+        if (Object.keys(data).length > 0) {
+          clearInterval(interval);
+          resolve(data);
+        }
+      }, millis);
+    });
   }
+
+  unloadGame() {
+    if (this.record) {
+      this.record.unsubscribe('state', undefined);
+      this.ds.event.unsubscribe(`${this.game.id}/moves`, undefined);
+      this.record = null;
+    }
+    this.game = null;
+  }
+
 
   onBoardClick(id: string) {
     if (this.record) {
@@ -170,3 +148,8 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
 }
+
+/**
+ * GameComponent's task is to update the game state and user interface throughout the game loop cycle.
+ */
+

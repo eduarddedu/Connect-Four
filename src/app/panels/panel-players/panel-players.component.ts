@@ -1,7 +1,3 @@
-/**
- * PanelPlayers manages game invitations and creates the game record.
- */
-
 import { Component, OnInit, Input, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -30,9 +26,8 @@ export interface Invitation {
 
 export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
-  @Output() joinGame: EventEmitter<string> = new EventEmitter();
-  players: Map<string, User> = new Map();
-  private botUser: User = {
+  @Output() loadGame: EventEmitter<string> = new EventEmitter();
+  private bot: User = {
     id: '0',
     name: 'Bobiță',
     iconUrl: 'assets/img/robot-dog-head.png',
@@ -40,44 +35,42 @@ export class PanelPlayersComponent implements OnInit {
     authProvider: null,
     status: 'Online'
   };
-  private deepstream: deepstreamIO.Client;
+  players: Map<string, User> = new Map([['0', this.bot]]);
+  private ds: deepstreamIO.Client;
 
 
   constructor(
     private cdr: ChangeDetectorRef,
     private modalService: NgbModal,
-    private notification: NotificationService,
-    ds: DeepstreamService) {
-    this.deepstream = ds.getInstance();
-    this.players.set('0', this.botUser);
+    private notification: NotificationService, deepstream: DeepstreamService) {
+    this.ds = deepstream.getInstance();
   }
 
   ngOnInit() {
-    this.deepstream.record.getList('users').whenReady((list: any) => {
+    this.ds.record.getList('users').whenReady((list: any) => {
       list.getEntries().forEach(this.addPlayer.bind(this));
       list.on('entry-added', this.addPlayer.bind(this));
       list.on('entry-removed', this.removePlayer.bind(this));
     });
-    this.deepstream.event.subscribe(`invitations/${this.user.id}`, this.handleInvitationEvent.bind(this));
+    this.ds.event.subscribe(`invitations/${this.user.id}`, this.handleInvitationEvent.bind(this));
   }
 
-  onClick(user: User) {
-    if (user.id === '0') {
-      (this.createGameRecord(this.user, this.botUser)).then((gameId: string) => {
-        this.joinGame.emit(gameId);
-      });
+  async onClick(user: User) {
+    if (user.id === this.bot.id) {
+      const gameId = await this.createGameRecord(this.user, this.bot);
+      this.loadGame.emit(gameId);
     } else if (user.status === 'Online') {
-      this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
+      this.ds.event.emit(`invitations/${user.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Create Game'
       });
-      this.deepstream.record.getRecord(user.id).set('status', 'Busy');
+      this.ds.record.getRecord(user.id).set('status', 'Busy');
       this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
     }
   }
 
   private addPlayer(userId: string) {
     if (userId !== this.user.id) {
-      this.deepstream.record.getRecord(userId).subscribe((user: User) => {
+      this.ds.record.getRecord(userId).subscribe((user: User) => {
         if (user.id) {
           this.players.set(user.id, user);
           this.cdr.detectChanges();
@@ -100,8 +93,8 @@ export class PanelPlayersComponent implements OnInit {
       this.getUserResponse(invitation);
     }
     if (invitation.topic === 'Join Game') {
-      this.joinGame.emit(invitation.details.gameId);
-      this.deepstream.record.getRecord(user.id).set('status', 'Playing');
+      this.loadGame.emit(invitation.details.gameId);
+      this.ds.record.getRecord(user.id).set('status', 'Playing');
       this.notification.update(`${user.name} accepted your invitation`, 'success');
     }
     if (invitation.topic === 'Reject') {
@@ -114,7 +107,7 @@ export class PanelPlayersComponent implements OnInit {
     let user = this.players.get(invitation.from.userId);
     const modalRef = this.modalService.open(GameInvitationComponent);
     modalRef.componentInstance.user = user;
-    modalRef.result.then((option: any) => {
+    modalRef.result.then((option: string) => {
       user = this.players.get(invitation.from.userId);
       if (!user) {
         this.notification.update(`${user.name} went offline`, 'warning');
@@ -122,33 +115,32 @@ export class PanelPlayersComponent implements OnInit {
       }
       if (option === 'Join Game') {
         if (invitation.topic === 'Create Game') {
-          this.createAndJoinGame(user);
+          this.createAndLoadGame(user);
         } else if (invitation.topic === 'Rematch') {
-          this.deepstream.record.getRecord(invitation.details.gameId).set('state', 'in progress');
+          this.ds.record.getRecord(invitation.details.gameId).set('state', 'in progress');
         }
-        this.deepstream.record.getRecord(user.id).set('status', 'Playing');
+        this.ds.record.getRecord(user.id).set('status', 'Playing');
       }
       if (option === 'Reject') {
-        this.deepstream.event.emit(`invitations/${user.id}`, <Invitation>{
+        this.ds.event.emit(`invitations/${user.id}`, <Invitation>{
           from: { userId: this.user.id }, topic: 'Reject'
         });
       }
     });
   }
 
-  private createAndJoinGame(opponent: User) {
-    this.createGameRecord(this.user, opponent).then((gameId: string) => {
-      this.deepstream.event.emit(`invitations/${opponent.id}`, <Invitation>{
-        from: { userId: this.user.id }, topic: 'Join Game', details: { gameId: gameId }
-      });
-      this.joinGame.emit(gameId);
+  private async createAndLoadGame(opponent: User) {
+    const gameId = await this.createGameRecord(this.user, opponent);
+    this.ds.event.emit(`invitations/${opponent.id}`, <Invitation>{
+      from: { userId: this.user.id }, topic: 'Join Game', details: { gameId: gameId }
     });
+    this.loadGame.emit(gameId);
   }
 
   private createGameRecord(red: User, yellow: User): Promise<string> {
     return new Promise(resolve => {
-      const gameId = this.deepstream.getUid();
-      this.deepstream.record.getRecord(gameId).whenReady((record: deepstreamIO.Record) => {
+      const gameId = this.ds.getUid();
+      this.ds.record.getRecord(gameId).whenReady((record: deepstreamIO.Record) => {
         record.set({
           id: gameId,
           createdOn: Date.now(),
@@ -160,11 +152,17 @@ export class PanelPlayersComponent implements OnInit {
           moves: [],
           points: { red: 0, yellow: 0 }
         });
-        this.deepstream.record.getList('games').addEntry(gameId);
+        this.ds.record.getList('games').addEntry(gameId);
         resolve(gameId);
       });
     });
   }
 
 }
+
+/**
+ * PanelPlayers displays online players and their status in a list which also provides the UI for sending game invitations.
+ * This component also initializes the game record right after two users have agreed to play.
+ */
+
 

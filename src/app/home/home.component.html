@@ -1,6 +1,6 @@
 <div class="c4-container" *ngIf="user">
   <header>
-    <div class="brand" (click)="goHome()">
+    <div class="brand" (click)="closeGameView()">
       <img src="assets/img/connect4.png" alt="board" role="navigation"> Connect Four
     </div>
     <div class="profile">
@@ -20,11 +20,11 @@
       <app-notification></app-notification>
       <section id="panels" [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
         <div class="panels-box">
-          <app-panel-players [user]="user" (joinGame)="joinGame($event)"></app-panel-players>
-          <app-panel-games (joinGame)="joinGame($event)"></app-panel-games>
+          <app-panel-players [user]="user" (loadGame)="loadGame($event)"></app-panel-players>
+          <app-panel-games (loadGame)="loadGame($event)"></app-panel-games>
         </div>
       </section>
-      <router-outlet (activate)="onGameLoad($event)"></router-outlet>
+      <app-game [user]="user"></app-game>
     </div>
   </main>
   <app-policy-accept></app-policy-accept>

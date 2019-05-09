@@ -9,7 +9,7 @@ import { DeepstreamService } from '../../deepstream.service';
   styleUrls: ['./panel-games.component.css', '../panels-styles.css']
 })
 export class PanelGamesComponent implements OnInit {
-  @Output() joinGame: EventEmitter<string> = new EventEmitter();
+  @Output() loadGame: EventEmitter<string> = new EventEmitter();
   games: Game[] = [];
   private deepstream: deepstreamIO.Client;
 
@@ -26,7 +26,7 @@ export class PanelGamesComponent implements OnInit {
   }
 
   onClickGame(gameId: string) {
-    this.joinGame.emit(gameId);
+    this.loadGame.emit(gameId);
   }
 
   private addGame(gameId: any) {
@@ -51,4 +51,8 @@ export class PanelGamesComponent implements OnInit {
   }
 
 }
+
+/**
+ * PanelGames displays and updates the list of on-going games.
+ */
 
