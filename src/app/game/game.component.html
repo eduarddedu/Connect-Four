@@ -13,7 +13,7 @@
     <div class="c4-card">
         <div id="gameInfo">
             <div *ngIf="game.state === 'in progress'" class="flex-row">
-                <span>{{turnMessage}}</span>
+                <span id="turnInfo">{{turnMessage}}</span>
                 <app-timer [startDate]="game.startDate"></app-timer>
             </div>
             <div *ngIf="gameOverMessage" style="text-align: center">

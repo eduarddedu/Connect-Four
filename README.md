@@ -1,25 +1,27 @@
 ## Run e2e tests
 
+First execute: 
+```
+webdriver-manager update
+```
+Then from another terminal 
 ```
 npm run serve
 ```
-
-From another terminal execute: 
-
-```
-webdriver-manager update
-webdriver-manager start
-```
-
-And from yet another terminal:
-
+Finally from another terminal:
 ```
 protractor e2e/protractor-ci.conf.js 
 ```
 
-## Debug e2e tests in Chrome
+Or debug e2e tests in Chrome
 
  ```
-node --inspect-brk ~/.node_modules_global/bin/protractor e2e/protractor-ci.conf.js
+node --inspect-brk ~/.node_modules_global/bin/protractor e2e/protractor.conf.js --specs e2e/src/home.e2e-spec.ts 
+ ```
+
+ Then open Chrome browser and type 
+
+ ```
+ chrome://inspect/#devices
  ```
 

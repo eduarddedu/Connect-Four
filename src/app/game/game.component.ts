@@ -44,7 +44,7 @@ export class GameComponent implements OnInit {
     }, 0);
   }
 
-  private async pollRecord(record: deepstreamIO.Record, millis: number): Promise<any> {
+  private pollRecord(record: deepstreamIO.Record, millis: number): Promise<any> {
     return new Promise(resolve => {
       const interval = setInterval(() => {
         const data = record.get();
@@ -64,7 +64,6 @@ export class GameComponent implements OnInit {
     }
     this.game = null;
   }
-
 
   onBoardClick(id: string) {
     if (this.record) {
