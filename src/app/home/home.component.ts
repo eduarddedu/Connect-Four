@@ -18,7 +18,7 @@ export class HomeComponent implements OnInit {
   user: User;
   showPanels = true;
   showPopoverMenu = false;
-  private ds: deepstreamIO.Client;
+  private client: deepstreamIO.Client;
 
   constructor(private router: Router,
     private modalService: NgbModal,
@@ -28,18 +28,17 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.auth.user) {
-      this.user = this.auth.user;
-      this.ds = this.deepstream.getInstance();
-      this.ds.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
-      this.ds.record.getList('users').whenReady(usersList => {
-        if (!usersList.getEntries().includes(this.user.id)) {
-          usersList.addEntry(this.user.id);
-          const record = this.ds.record.getRecord(this.user.id);
-          record.set(this.user);
-          window.addEventListener('beforeunload', this.closeDeepstream.bind(this));
+    if (this.auth.currentUser) {
+      this.user = this.auth.currentUser;
+      this.client = this.deepstream.getInstance();
+      this.client.record.getList('users').whenReady(list => {
+        if (!list.getEntries().includes(this.user.id)) {
+          list.addEntry(this.user.id);
+          this.client.record.getRecord(this.user.id).set(this.user);
+          window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
         }
       });
+      this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
     } else {
       this.router.navigate(['/login']);
     }
@@ -61,12 +60,12 @@ export class HomeComponent implements OnInit {
         const game = this.gc.game;
         this.gc.unloadGame();
         this.showPanels = true;
-        this.ds.record.getRecord(this.user.id).set('status', 'Online');
+        this.client.record.getRecord(this.user.id).set('status', 'Online');
         if (!game.isAgainstAi) {
-          this.ds.record.getRecord(this.gc.opponent.id).set('status', 'Online');
+          this.client.record.getRecord(this.gc.opponent.id).set('status', 'Online');
         }
-        this.ds.record.getList('games').removeEntry(game.id);
-        this.ds.record.getRecord(game.id).delete();
+        this.client.record.getList('games').removeEntry(game.id);
+        this.client.record.getRecord(game.id).delete();
       }
     });
   }
@@ -85,17 +84,17 @@ export class HomeComponent implements OnInit {
 
   signout() {
     this.auth.signout();
-    this.closeDeepstream();
+    this.signoutDeepstream();
   }
 
-  closeDeepstream() {
-    this.ds.record.getRecord(this.user.id).delete();
-    this.ds.record.getList('users').removeEntry(this.user.id);
+  signoutDeepstream() {
+    this.client.record.getRecord(this.user.id).delete();
+    this.client.record.getList('users').removeEntry(this.user.id);
     if (this.gc.game && this.gc.isPlayer && this.gc.record) {
-      this.ds.record.getRecord(this.gc.game.id).delete();
-      this.ds.record.getList('games').removeEntry(this.gc.game.id);
+      this.client.record.getRecord(this.gc.game.id).delete();
+      this.client.record.getList('games').removeEntry(this.gc.game.id);
     }
-    this.ds.close();
+    this.client.close();
   }
 
 }

@@ -63,9 +63,9 @@ export class Game implements Game {
         return this.state === 'over';
     }
 
-    move(id: number) {
-        this.moves.push(id);
-        this.model.move(id);
+    update(id: string) {
+        this.moves.push(+id);
+        this.model.move(+id);
         this.checkGame();
     }
 

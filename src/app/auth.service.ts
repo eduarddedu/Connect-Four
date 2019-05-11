@@ -4,16 +4,15 @@ import { Subject, Observable, race } from 'rxjs';
 import { environment } from '../environments/environment';
 
 
-/** Declare Google and Facebook top-level API objects. */
-
+// global OAuth API objects
 declare const gapi: any;
 declare const FB: any;
 
-/** An interface representing the user */
+// An interface representing the user
 export interface User {
   id: string;
   name: string;
-  iconUrl: string;
+  imgUrl: string;
   email: string;
   authProvider: 'Google' | 'Facebook' | null;
   status: 'Online' | 'Busy' | 'Playing';
@@ -23,9 +22,9 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  public userSignIn: Subject<User> = new Subject();
-  private GoogleAuth: any;
+  public user: Subject<User> = new Subject();
   private _user: User;
+  private GoogleAuth: any;
 
   constructor(zone: NgZone) {
     if (environment.production) {
@@ -33,7 +32,7 @@ export class AuthService {
         .subscribe((user: User) => {
           zone.run(() => {
             this._user = user;
-            this.userSignIn.next(user);
+            this.user.next(user);
           });
         });
     } else {
@@ -41,7 +40,7 @@ export class AuthService {
     }
   }
 
-  get user() {
+  get currentUser() {
     return this._user ? Object.assign(this._user) : null;
   }
 
@@ -52,7 +51,7 @@ export class AuthService {
       return <User>{
         id: profile.getId(),
         name: profile.getName(),
-        iconUrl: profile.getImageUrl(),
+        imgUrl: profile.getImageUrl(),
         email: profile.getEmail(),
         idToken: googleUser.getAuthResponse().id_token,
         authProvider: 'Google',
@@ -91,7 +90,7 @@ export class AuthService {
       return {
         id: profile.id,
         name: profile.name,
-        iconUrl: profile.picture.data.url,
+        imgUrl: profile.picture.data.url,
         email: profile.email,
         authProvider: 'Facebook',
         status: 'Online'
@@ -116,10 +115,10 @@ export class AuthService {
 
   private mockUser(): User {
     return {
-      id: window.localStorage.getItem('id'),
-      name: window.localStorage.getItem('username'),
-      iconUrl: 'assets/img/user.png',
-      email: 'user@example.com',
+      id: localStorage.getItem('id'),
+      name: localStorage.getItem('username'),
+      imgUrl: 'assets/img/user.png',
+      email: null,
       authProvider: null,
       status: 'Online'
     };

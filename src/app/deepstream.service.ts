@@ -13,10 +13,10 @@ export class DeepstreamService {
   private deepstream: deepstreamIO.Client;
 
   constructor(auth: AuthService) {
-    if (auth.user) {
-      this.init(auth.user);
+    if (auth.currentUser) {
+      this.init(auth.currentUser);
     } else {
-      auth.userSignIn.subscribe((user: User) => this.init(user));
+      auth.user.subscribe((user: User) => this.init(user));
     }
   }
 

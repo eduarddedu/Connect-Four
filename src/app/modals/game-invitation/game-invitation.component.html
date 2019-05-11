@@ -5,7 +5,7 @@
     </button>
   </div>
   <div class="modal-body" *ngIf="user">
-    <img [src]="user.iconUrl" alt="User icon" width="40" height="40"> {{user.name}} invites you to play 
+    <img [src]="user.imgUrl" alt="User icon" width="40" height="40"> {{user.name}} invites you to play 
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Join Game')" ngbAutofocus>Join Game</button>

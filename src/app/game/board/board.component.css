@@ -1,3 +1,7 @@
+/* 
+Board styles courtesy of Roman Empire: https://css-tricks.com/roman-empire-made-pure-css-connect-4-possible/
+*/
+
 #board {
     width: 450px;
     height: 450px;

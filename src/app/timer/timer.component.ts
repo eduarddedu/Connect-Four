@@ -26,8 +26,8 @@ export class TimerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.observable = new Observable(subscriber => {
-      subscriber.next(this.getHourMinuteSecondSince());
-      this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondSince()), 1000);
+      subscriber.next('00:00:00');
+      this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondStr()), 1000);
     });
   }
 
@@ -35,7 +35,7 @@ export class TimerComponent implements OnInit, OnDestroy {
     clearInterval(this.updateInterval);
   }
 
-  getHourMinuteSecondSince() {
+  getHourMinuteSecondStr() {
     const since = new Date(Date.now() - this.startDate.getTime());
     return this.formatter.format(since);
   }

@@ -17,7 +17,7 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.auth.userSignIn.subscribe(() => setTimeout(() => this.router.navigate(['/']), 0));
+    this.auth.user.subscribe(() => setTimeout(() => this.router.navigate(['/']), 0));
   }
 
   openFBLogin() {

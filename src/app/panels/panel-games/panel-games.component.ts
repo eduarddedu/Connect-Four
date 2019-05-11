@@ -11,14 +11,14 @@ import { DeepstreamService } from '../../deepstream.service';
 export class PanelGamesComponent implements OnInit {
   @Output() loadGame: EventEmitter<string> = new EventEmitter();
   games: Game[] = [];
-  private deepstream: deepstreamIO.Client;
+  private client: deepstreamIO.Client;
 
-  constructor(private cdr: ChangeDetectorRef, ds: DeepstreamService) {
-    this.deepstream = ds.getInstance();
+  constructor(private cdr: ChangeDetectorRef, deepstream: DeepstreamService) {
+    this.client = deepstream.getInstance();
   }
 
   ngOnInit() {
-    this.deepstream.record.getList('games').whenReady((list: any) => {
+    this.client.record.getList('games').whenReady((list: any) => {
       list.getEntries().forEach(this.addGame.bind(this));
       list.on('entry-added', this.addGame.bind(this));
       list.on('entry-removed', this.removeGame.bind(this));
@@ -30,7 +30,7 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private addGame(gameId: any) {
-    const gameRecord = this.deepstream.record.getRecord(gameId);
+    const gameRecord = this.client.record.getRecord(gameId);
     const pushGame = (game: Game) => {
       if (game.id) {
         this.games.push(game);

@@ -18,20 +18,20 @@ export class GameComponent implements OnInit {
   opponent?: User;
   game: Game;
   record: deepstreamIO.Record;
-  ds: deepstreamIO.Client;
+  client: deepstreamIO.Client;
   newGameBtnClicked = false;
 
-  constructor(private deepstreamService: DeepstreamService) { }
+  constructor(private deepstream: DeepstreamService) { }
 
   ngOnInit() {
-    this.ds = this.deepstreamService.getInstance();
+    this.client = this.deepstream.getInstance();
   }
 
   async loadGame(gameId: string) {
-    this.record = this.ds.record.getRecord(gameId);
+    this.record = this.client.record.getRecord(gameId);
     const data = await this.pollRecord(this.record, 50);
     this.game = new Game(data);
-    this.ds.event.subscribe(`${this.game.id}/moves`, this.onMoveUpdate.bind(this));
+    this.client.event.subscribe(`moves/${this.game.id}`, this.onMoveUpdate.bind(this));
     this.record.subscribe('state', this.onStateUpdate.bind(this));
     const players = [data.players.red, data.players.yellow];
     if (players.map((user: User) => user.id).includes(this.user.id)) {
@@ -59,7 +59,7 @@ export class GameComponent implements OnInit {
   unloadGame() {
     if (this.record) {
       this.record.unsubscribe('state', undefined);
-      this.ds.event.unsubscribe(`${this.game.id}/moves`, undefined);
+      this.client.event.unsubscribe(`moves/${this.game.id}`, undefined);
       this.record = null;
     }
     this.game = null;
@@ -67,13 +67,13 @@ export class GameComponent implements OnInit {
 
   onBoardClick(id: string) {
     if (this.record) {
-      this.ds.event.emit(`${this.game.id}/moves`, id);
+      this.client.event.emit(`moves/${this.game.id}`, id);
     }
   }
 
   onMoveUpdate(id: string) {
     this.board.move(id);
-    this.game.move(+id);
+    this.game.update(id);
     if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
       this.record.set('moves', this.game.moves);
       if (this.game.gameover) {
@@ -82,9 +82,9 @@ export class GameComponent implements OnInit {
         this.record.set('winner', this.game.winner);
       }
     }
-    if (this.game.state === 'in progress' && this.isPlayer && this.game.activePlayer.id === '0') {
+    if (this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
       setTimeout(() => {
-        this.ds.event.emit(`${this.game.id}/moves`, this.game.nextBestMove());
+        this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
       }, 500);
     }
   }
@@ -97,9 +97,9 @@ export class GameComponent implements OnInit {
       if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
-        if (this.isPlayer && this.game.activePlayer.id === '0') {
+        if (this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
           setTimeout(() => {
-            this.ds.event.emit(`${this.game.id}/moves`, this.game.nextBestMove());
+            this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
           }, 500);
         }
       }
@@ -112,7 +112,7 @@ export class GameComponent implements OnInit {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;
-      this.ds.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
+      this.client.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
         from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
       });
     }

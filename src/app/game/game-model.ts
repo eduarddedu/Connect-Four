@@ -37,7 +37,7 @@ export class GameModel {
 
     private minimaxRoot() {
         let bestMove = null;
-        let storedValue = Infinity;
+        let minimum = Infinity;
         for (const id of this.game.nextMoveOptions) {
             this.game.move(id);
             if (this.game.win) {
@@ -45,8 +45,8 @@ export class GameModel {
                 return id;
             }
             const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
-            if (value <= storedValue) {
-                storedValue = value;
+            if (value <= minimum) {
+                minimum = value;
                 bestMove = id;
             }
             this.game.undo();
@@ -162,28 +162,30 @@ class Game {
         [51, 52, 53, 54, 55, 56, 57],
         [61, 62, 63, 64, 65, 66, 67]
     ];
-    turn: IterableIterator<string>;
-    moves = [];
-    redMovesFirst: boolean;
+    color: IterableIterator<'red' | 'yellow'>;
+    moves: number[] = [];
     _win = false;
     _draw = false;
     constructor(redMovesFirst: boolean, previousMoves: number[]) {
         const Generator = function* () {
-            let redsTurn = redMovesFirst;
+            let redMove = redMovesFirst;
             while (true) {
-                yield redsTurn ? 'red' : 'yellow';
-                redsTurn = !redsTurn;
+                yield redMove ? 'red' : 'yellow';
+                redMove = !redMove;
             }
         };
-        this.turn = Generator();
-        this.redMovesFirst = redMovesFirst;
+        this.color = Generator();
         this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
-        previousMoves.forEach(id => this.move(id));
+        previousMoves.forEach(id => {
+            this.moves.push(id);
+            this.map.set(id, this.color.next().value);
+        });
+        this.checkGame();
     }
 
     move(id: number) {
         this.moves.push(id);
-        this.map.set(id, this.turn.next().value);
+        this.map.set(id, this.color.next().value);
         this.checkGame();
     }
 
@@ -192,19 +194,19 @@ class Game {
             const id = this.moves.pop();
             this.map.set(id, null);
             this._draw = this._win = false;
-            this.turn.next();
+            this.color.next();
         }
     }
 
-    get draw() {
+    get draw(): boolean {
         return this._draw;
     }
 
-    get win() {
+    get win(): boolean {
         return this._win;
     }
 
-    get nextMoveOptions() {
+    get nextMoveOptions(): number[] {
         const nextMoveOptions = [];
         this.map.forEach((color, id, map) => {
             if (id - id % 10 === 60) {
@@ -222,7 +224,7 @@ class Game {
         if (this.moves.length < 7) {
             return;
         }
-        const lastMoveColor = this.turn.next() && this.turn.next().value;
+        const lastMoveColor = this.color.next() && this.color.next().value;
         const check: (array: number[]) => boolean = (array: number[]) => {
             if (array.length < 4) {
                 return false;
