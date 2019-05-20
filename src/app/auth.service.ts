@@ -3,12 +3,11 @@ import { Subject, Observable, race } from 'rxjs';
 
 import { environment } from '../environments/environment';
 
-
-// global OAuth API objects
+/* global entry points to OAuth APIs */
 declare const gapi: any;
 declare const FB: any;
 
-// An interface representing the user
+/* An interface representing the user */
 export interface User {
   id: string;
   name: string;
@@ -22,7 +21,7 @@ export interface User {
   providedIn: 'root'
 })
 export class AuthService {
-  public user: Subject<User> = new Subject();
+  public signin: Subject<any> = new Subject();
   private _user: User;
   private GoogleAuth: any;
 
@@ -32,7 +31,7 @@ export class AuthService {
         .subscribe((user: User) => {
           zone.run(() => {
             this._user = user;
-            this.user.next(user);
+            this.signin.next();
           });
         });
     } else {
@@ -40,7 +39,7 @@ export class AuthService {
     }
   }
 
-  get currentUser() {
+  get user() {
     return this._user ? Object.assign(this._user) : null;
   }
 
@@ -111,7 +110,6 @@ export class AuthService {
     FB.Event.subscribe('auth.authResponseChange', onFacebookUserStatusChange.bind(this));
     return user.asObservable();
   }
-
 
   private mockUser(): User {
     return {

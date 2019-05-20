@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../auth.service';
@@ -11,13 +11,10 @@ declare const FB: any;
   styleUrls: ['./login.component.css']
 })
 
-export class LoginComponent implements OnInit {
+export class LoginComponent {
 
-  constructor(private router: Router, private auth: AuthService) {
-  }
-
-  ngOnInit() {
-    this.auth.user.subscribe(() => setTimeout(() => this.router.navigate(['/']), 0));
+  constructor(router: Router, auth: AuthService) {
+    auth.signin.subscribe(() => router.navigate(['/']));
   }
 
   openFBLogin() {

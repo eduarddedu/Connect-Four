@@ -28,20 +28,16 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.auth.currentUser) {
-      this.user = this.auth.currentUser;
-      this.client = this.deepstream.getInstance();
-      this.client.record.getList('users').whenReady(list => {
-        if (!list.getEntries().includes(this.user.id)) {
-          list.addEntry(this.user.id);
-          this.client.record.getRecord(this.user.id).set(this.user);
-          window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
-        }
-      });
-      this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
-    } else {
-      this.router.navigate(['/login']);
-    }
+    this.user = this.auth.user;
+    this.client = this.deepstream.getInstance();
+    this.client.record.getList('users').whenReady(list => {
+      if (!list.getEntries().includes(this.user.id)) {
+        list.addEntry(this.user.id);
+        this.client.record.getRecord(this.user.id).set(this.user);
+        window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
+      }
+    });
+    this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
   }
 
   closeGameView() {
