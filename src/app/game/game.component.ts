@@ -76,13 +76,13 @@ export class GameComponent implements OnInit {
     this.game.update(id);
     if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
       this.record.set('moves', this.game.moves);
-      if (this.game.gameover) {
+      if (this.game.state === 'over') {
         this.record.set('state', 'over');
         this.record.set('points', this.game.points);
         this.record.set('winner', this.game.winner);
       }
     }
-    if (this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
+    if (this.game.state === 'in progress' && this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
       setTimeout(() => {
         this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
       }, 500);
@@ -119,7 +119,7 @@ export class GameComponent implements OnInit {
   }
 
   get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer && this.game.gameover && this.record ?
+    return this.isPlayer && this.game.state === 'over' && this.record ?
       { visibility: 'visible' } : { visibility: 'hidden' };
   }
 
@@ -136,7 +136,7 @@ export class GameComponent implements OnInit {
   }
 
   get gameOverMessage() {
-    if (this.game.gameover) {
+    if (this.game.state === 'over') {
       if (this.isPlayer) {
         return this.newGameBtnClicked ? `Invitation sent. Waiting for ${this.opponent.name}` :
           this.game.winner ?

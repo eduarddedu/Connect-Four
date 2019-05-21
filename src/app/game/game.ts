@@ -14,7 +14,7 @@ export interface Game {
         red: User;
         yellow: User;
     };
-    state: 'in progress' | 'over' | 'on hold';
+    state: 'in progress' | 'over';
     points: {
         red: number;
         yellow: number;
@@ -57,10 +57,6 @@ export class Game implements Game {
 
     get inactivePlayer() {
         return this.activePlayer === this.players.red ? this.players.yellow : this.players.red;
-    }
-
-    get gameover() {
-        return this.state === 'over';
     }
 
     update(id: string) {
