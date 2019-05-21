@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService, User } from '../auth.service';
@@ -18,9 +17,9 @@ export class HomeComponent implements OnInit {
   user: User;
   showPanels = true;
   showPopoverMenu = false;
-  private client: deepstreamIO.Client;
+  client: deepstreamIO.Client;
 
-  constructor(private router: Router,
+  constructor(
     private modalService: NgbModal,
     private auth: AuthService,
     private deepstream: DeepstreamService,
