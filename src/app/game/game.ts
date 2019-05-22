@@ -1,7 +1,6 @@
 /**
- * Contains locally stored game data.
- * Provides access to properties of the game which are the same for all users.
- * Delegates the difficult tasks such as calculating the next best move, to the GameModel class.
+ * The Game class contains the whole game state. The methods to determine
+ * win/draw or the next best move for a player are delegated to the GameModel helper class.
  */
 
 import { User } from '../auth.service';
@@ -27,6 +26,7 @@ export interface Game {
 
 export class Game implements Game {
     private model: GameModel;
+
     constructor(data: any) {
         this.id = data.id;
         this.startDate = new Date(data.createdOn);
