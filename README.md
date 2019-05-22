@@ -7,14 +7,31 @@ Please check a live demo for this [thingy](https://connectfour.codecritique.org)
 ## Requirements 
 
 * Angular
+* [Deepstream Server](https://deepstreamhub.com/open-source/?io)
 
 ## Launch app
+
+First install project dependencies. 
+
     npm install
-    ng serve
+
+If Deepstream server is also installed now you can launch the app. 
+
+    npm run serve
+
+To stop both Angular and Deepstream: 
+
+    npm run kill
 
 ## Execute e2e tests
 
-Open a terminal window and execute: ​	
+Use npm to install Protractor globally with: 
+
+    npm install -g protractor
+
+This will install two command line tools, protractor and webdriver-manager. Try running ```protractor --version``` to make sure it's working.
+
+The webdriver-manager is a helper tool to easily get an instance of a Selenium Server running. Use it to download the necessary binaries with:	
 
 ``` 
 webdriver-manager update
