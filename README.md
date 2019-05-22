@@ -14,9 +14,12 @@ Please check a live demo for this [thingy](https://connectfour.codecritique.org)
 
 ## Execute e2e tests
 
-Open a terminal window and execute: 
-​    webdriver-manager update   
-​    webdriver-manager start
+Open a terminal window and execute: ​	
+
+``` 
+webdriver-manager update
+webdriver-manager start
+```	
 
 In a second terminal execute: 
 
