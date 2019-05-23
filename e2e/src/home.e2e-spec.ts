@@ -39,8 +39,8 @@ describe('HomeSpec', () => {
         browser.sleep(200);
         const confirmQuitButton = element(by.buttonText('Yes'));
         await confirmQuitButton.click();
-        browser2.sleep(200);
         // Eduard should see Game over message
+        browser2.sleep(200);
         const html = await browser2.getPageSource();
         expect(html).toContain('Game over. Opponent abandoned');
     });
