@@ -20,31 +20,27 @@ describe('HomeSpec', () => {
         await assertNoBrowserError(browser2);
     });
 
-    it('should see game as watcher', async () => {
+    it('should display "Waiting for {username}" and "Game over" messages', async () => {
+        // Galapagogol starts a game against AI
         let row = element.all(by.css('tr')).first();
-        await row.click(); // Galapagogol starts a game against AI
+        await row.click();
+        // Eduard starts watching the game
         browser2.sleep(200);
         const panelGames = browser2.element.all(by.tagName('table')).get(1);
         row = panelGames.element(by.css('tr'));
-        await row.click(); // Eduard watches the game
+        await row.click();
         browser2.sleep(200);
+        // Eduard should see Waiting for Galapagogol message
         const span = browser2.element(by.id('turnInfo'));
         expect(span.getText()).toEqual('Waiting for Galapagogol...');
-    });
-
-    it('should display message "Game over. Opponent quit"', async () => {
-        let row = element.all(by.css('tr')).first();
-        await row.click(); // Galapagogol starts a game against AI
-        browser2.sleep(200);
-        const panelGames = browser2.element.all(by.tagName('table')).get(1);
-        row = panelGames.element(by.css('tr'));
-        await row.click(); // Eduard watches the game with interest
+        // now Galapagogol abandons the game. How sad!
         const homeButton = element(by.css('.brand'));
         await homeButton.click();
         browser.sleep(200);
         const confirmQuitButton = element(by.buttonText('Yes'));
-        await confirmQuitButton.click(); // but Galapagogol abandons the game. How sad!
+        await confirmQuitButton.click();
         browser2.sleep(200);
+        // Eduard should see Game over message
         const html = await browser2.getPageSource();
         expect(html).toContain('Game over. Opponent abandoned');
     });

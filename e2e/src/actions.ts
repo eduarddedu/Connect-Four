@@ -1,4 +1,4 @@
-import { by, ProtractorBrowser, browser } from 'protractor';
+import { by, ProtractorBrowser } from 'protractor';
 
 export async function signUserIn(browserInstance: ProtractorBrowser, username: string) {
     await browserInstance.get('/login');
