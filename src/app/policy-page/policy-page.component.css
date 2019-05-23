@@ -1,0 +1,42 @@
+.wrapper {
+    color: #f0ece7;
+    background-color: var(--gray-dark);
+    height: 100vh;
+}
+
+.brand img {
+    width: 40px;
+    height: 40px;
+}
+
+.brand {
+    font-weight: bold;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+main {
+    padding: 20px;
+}
+
+
+section {
+    display: grid;
+    grid-template-columns: 4fr 6fr;
+    gap: 20px;
+    border-radius: 6px;
+    margin: 20px 0 0 0;
+}
+
+section .text {
+    padding-top: 10px;
+    font-weight: lighter;
+}
+
+.bold {
+    font-weight: normal;
+}
