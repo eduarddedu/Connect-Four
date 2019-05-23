@@ -3,7 +3,7 @@ import { Subject, Observable, race } from 'rxjs';
 
 import { environment } from '../environments/environment';
 
-/* global entry points to OAuth APIs */
+/* Global entry points to OAuth APIs */
 declare const gapi: any;
 declare const FB: any;
 
@@ -40,7 +40,7 @@ export class AuthService {
   }
 
   get user() {
-    return this._user ? Object.assign(this._user) : null;
+    return Object.assign(this._user);
   }
 
   private googleUserSigned(): Observable<User> {
@@ -73,7 +73,7 @@ export class AuthService {
   }
 
   signout() {
-    const openLoginPage = () => setTimeout(() => window.location.assign('/login'), 0);
+    const openLoginPage = () => setTimeout(() => location.assign('/login'), 0);
     if (this._user.authProvider === 'Google') {
       this.GoogleAuth.signOut().then(openLoginPage);
     } else if (this._user.authProvider === 'Facebook') {
