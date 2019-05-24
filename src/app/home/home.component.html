@@ -20,8 +20,8 @@
       <app-notification></app-notification>
       <section id="panels" [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
         <div class="panels-box">
-          <app-panel-players [user]="user" (loadGame)="loadGame($event)"></app-panel-players>
-          <app-panel-games (loadGame)="loadGame($event)"></app-panel-games>
+          <app-panel-players [user]="user"></app-panel-players>
+          <app-panel-games (loadGame)="loadGame($event, 1)"></app-panel-games>
         </div>
       </section>
       <app-game [user]="user"></app-game>

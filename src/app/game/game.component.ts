@@ -1,10 +1,10 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { DeepstreamService } from '../deepstream.service';
-import { User } from '../auth.service';
-import { Invitation } from '../panels/panel-players/panel-players.component';
+import { User } from '../util/user';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
+import { NewGameService } from '../new-game.service';
 
 @Component({
   selector: 'app-game',
@@ -21,39 +21,26 @@ export class GameComponent implements OnInit {
   client: deepstreamIO.Client;
   newGameBtnClicked = false;
 
-  constructor(private deepstream: DeepstreamService) { }
+  constructor(private deepstream: DeepstreamService, private newGame: NewGameService) { }
 
   ngOnInit() {
     this.client = this.deepstream.getInstance();
   }
 
-  async loadGame(gameId: string) {
-    this.record = this.client.record.getRecord(gameId);
-    const data = await this.pollRecord(this.record, 50);
+  loadGame(data: any) {
     this.game = new Game(data);
-    this.client.event.subscribe(`moves/${this.game.id}`, this.onMoveUpdate.bind(this));
+    this.record = this.client.record.getRecord(data.id);
     this.record.subscribe('state', this.onStateUpdate.bind(this));
     const players = [data.players.red, data.players.yellow];
     if (players.map((user: User) => user.id).includes(this.user.id)) {
       this.isPlayer = true;
       this.opponent = players.find((user: User) => user.id !== this.user.id);
     }
+    this.client.event.subscribe(`moves/${this.game.id}`, this.onMoveUpdate.bind(this));
     setTimeout(() => {
       this.board.clear();
       this.board.replayGame(data.moves, data.redMovesFirst || true);
     }, 0);
-  }
-
-  private pollRecord(record: deepstreamIO.Record, millis: number): Promise<any> {
-    return new Promise(resolve => {
-      const interval = setInterval(() => {
-        const data = record.get();
-        if (Object.keys(data).length > 0) {
-          clearInterval(interval);
-          resolve(data);
-        }
-      }, millis);
-    });
   }
 
   unloadGame() {
@@ -112,9 +99,7 @@ export class GameComponent implements OnInit {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;
-      this.client.event.emit(`invitations/${this.opponent.id}`, <Invitation>{
-        from: { userId: this.user.id }, topic: 'Rematch', details: { gameId: this.game.id }
-      });
+      this.newGame.sendRematchInvitation(this.opponent.id, this.game.id);
     }
   }
 

@@ -1,7 +1,7 @@
 import { browser, element, by, ProtractorBrowser, logging } from 'protractor';
 import { signUserIn as signinUser, signUserOut as signoutUser } from './actions';
 
-describe('HomeSpec', () => {
+describe('GameComponent', () => {
     const browser2: ProtractorBrowser = browser.forkNewDriverInstance(false);
 
     beforeEach(async function () {

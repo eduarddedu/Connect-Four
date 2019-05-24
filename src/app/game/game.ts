@@ -3,7 +3,7 @@
  * win/draw or the next best move for a player are delegated to the GameModel helper class.
  */
 
-import { User } from '../auth.service';
+import { User } from '../util/user';
 import { GameModel } from './game-model';
 
 export interface Game {
@@ -29,15 +29,15 @@ export class Game implements Game {
 
     constructor(data: any) {
         this.id = data.id;
-        this.startDate = new Date(data.createdOn);
+        this.startDate = new Date(data.startDate);
         this.players = data.players;
         this.state = data.state;
         this.points = data.points;
         this.winner = data.winner;
-        this.redMovesFirst = data.redMovesFirst || true;
-        this.moves = data.moves || [];
+        this.redMovesFirst = data.redMovesFirst;
+        this.moves = data.moves;
         this.isAgainstAi = this.players.red.id === '0' || this.players.yellow.id === '0';
-        this.model = new GameModel(this.redMovesFirst, data.moves || []);
+        this.model = new GameModel(this.redMovesFirst, data.moves);
     }
 
     get activeColor() {

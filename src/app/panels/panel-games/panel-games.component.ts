@@ -29,24 +29,20 @@ export class PanelGamesComponent implements OnInit {
     this.loadGame.emit(gameId);
   }
 
-  private addGame(gameId: any) {
-    const gameRecord = this.client.record.getRecord(gameId);
-    const pushGame = (game: Game) => {
-      if (game.id) {
-        this.games.push(game);
+  private addGame(gameId: string) {
+    this.client.record.getRecord(gameId).whenReady(record => {
+      const game = record.get();
+      this.games.push(game);
+      this.cdr.detectChanges();
+      record.subscribe('points', data => {
+        game.points = data;
         this.cdr.detectChanges();
-        gameRecord.unsubscribe(pushGame);
-        gameRecord.subscribe('points', (points: any) => {
-          game.points = points;
-          this.cdr.detectChanges();
-        });
-      }
-    };
-    gameRecord.subscribe(pushGame);
+      });
+    });
   }
 
   private removeGame(gameId: any) {
-    this.games = this.games.filter(g => g.id !== gameId);
+    this.games = this.games.filter(game => game.id !== gameId);
     this.cdr.detectChanges();
   }
 

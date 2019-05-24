@@ -1,11 +1,14 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { AuthService, User } from '../auth.service';
+import { AuthService } from '../auth.service';
+import { User } from '../util/user';
 import { DeepstreamService } from '../deepstream.service';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
 import { GameComponent } from '../game/game.component';
+import { shallowEqual } from '@angular/router/src/utils/collection';
+import { NewGameService } from '../new-game.service';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +26,8 @@ export class HomeComponent implements OnInit {
     private modalService: NgbModal,
     private auth: AuthService,
     private deepstream: DeepstreamService,
-    private notification: NotificationService) {
+    private notification: NotificationService,
+    private newGame: NewGameService) {
   }
 
   ngOnInit() {
@@ -37,6 +41,26 @@ export class HomeComponent implements OnInit {
       }
     });
     this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
+    this.newGame.loadGame.subscribe(this.loadGame.bind(this));
+  }
+
+  loadGame(gameId: string) {
+    const record = this.client.record.getRecord(gameId);
+    const loadOnce = (data: any) => {
+      if (data.id) {
+        this.showPanels = false;
+        this.gc.loadGame(data);
+        record.unsubscribe(loadOnce);
+      }
+    };
+    record.subscribe(loadOnce, true);
+  }
+
+  onGameRecordDelete(gameId: string) {
+    if (this.gc.game && this.gc.game.id === gameId) {
+      this.notification.update(`Game over. Opponent abandoned`, 'danger');
+      this.gc.record = null;
+    }
   }
 
   closeGameView() {
@@ -63,18 +87,6 @@ export class HomeComponent implements OnInit {
         this.client.record.getRecord(game.id).delete();
       }
     });
-  }
-
-  loadGame(gameId: string) {
-    this.showPanels = false;
-    this.gc.loadGame(gameId);
-  }
-
-  onGameRecordDelete(gameId: string) {
-    if (this.gc.game && this.gc.game.id === gameId) {
-      this.notification.update(`Game over. Opponent abandoned`, 'danger');
-      this.gc.record = null;
-    }
   }
 
   signout() {

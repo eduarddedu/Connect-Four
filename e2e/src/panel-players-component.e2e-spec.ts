@@ -1,12 +1,6 @@
 import { browser, element, by, ProtractorBrowser } from 'protractor';
 import { signUserIn, signUserOut } from './actions';
 
-/**
- * https://github.com/angular/angular/issues/11853
- * Our Angular application imports the deepstream.io-client-js library and opens a websocket connection.
- * Because of socket long polling, protractor.waitForAngular() stalls, which causes e2e tests to timeout.
- * The workaround is to disable browser synchronisation. Unfortunately this leads to flaky tests.
- */
 describe('PanelPlayers', () => {
     const browser2: ProtractorBrowser = browser.forkNewDriverInstance(false);
 

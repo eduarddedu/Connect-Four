@@ -1,21 +1,12 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable, race } from 'rxjs';
 
+import { User } from './util/user';
 import { environment } from '../environments/environment';
 
 /* Global entry points to OAuth APIs */
 declare const gapi: any;
 declare const FB: any;
-
-/* An interface representing the user */
-export interface User {
-  id: string;
-  name: string;
-  imgUrl: string;
-  email: string;
-  authProvider: 'Google' | 'Facebook' | null;
-  status: 'Online' | 'Busy' | 'Playing';
-}
 
 @Injectable({
   providedIn: 'root'

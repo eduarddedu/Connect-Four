@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
 import { environment } from '../environments/environment';
-import { AuthService, User } from './auth.service';
+import { AuthService } from './auth.service';
+import { User } from './util/user';
 
 declare var deepstream: any;
-
 @Injectable({
   providedIn: 'root'
 })
