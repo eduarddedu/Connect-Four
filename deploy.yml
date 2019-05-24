@@ -35,4 +35,6 @@
         path: '{{ artifact }}'
         state: absent
       delegate_to: 127.0.0.1
+    - name: Restart Deepstream Server
+      command: docker restart deepstream.io
 ...
