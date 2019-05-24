@@ -1,7 +1,8 @@
 .wrapper {
     color: #f0ece7;
     background-color: var(--gray-dark);
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px 30px 50px 30px;
 }
 
 .brand img {
@@ -16,13 +17,8 @@
 header {
     display: flex;
     justify-content: space-between;
-    padding: 20px;
+    padding: 20px 0 40px 0;
 }
-
-main {
-    padding: 20px;
-}
-
 
 section {
     display: grid;
@@ -33,7 +29,6 @@ section {
 }
 
 section .text {
-    padding-top: 10px;
     font-weight: lighter;
 }
 
