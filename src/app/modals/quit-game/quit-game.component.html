@@ -1,14 +1,14 @@
 <div class="modal-header">
-  <h4 class="modal-title"> Game in progress</h4>
+  <h4 class="modal-title"> Game in progress!</h4>
 </div>
-<div class="modal-body"> Quit game? 
+<div class="modal-body">Do you want to quit the game?
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-outline-danger" (click)="activeModal.close('Yes')">
-      Yes
-    </button>
+  <button type="button" class="btn btn-outline-danger" (click)="activeModal.close('Quit')">
+    Quit
+  </button>
 
-  <button type="button" class="btn btn-outline-success" aria-label="Close" (click)="activeModal.close('Cancel')" ngbAutofocus>
-      Cancel
-    </button>
+  <button type="button" class="btn btn-success" aria-label="Close" (click)="activeModal.close('Cancel')" ngbAutofocus>
+    Cancel
+  </button>
 </div>

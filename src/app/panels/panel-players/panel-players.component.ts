@@ -29,7 +29,9 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   onClick(user: User) {
-    if (user.status === 'Online') {
+    if (user === Bot) {
+      this.newGame.loadAIGame();
+    } else {
       this.newGame.invite(user);
     }
   }

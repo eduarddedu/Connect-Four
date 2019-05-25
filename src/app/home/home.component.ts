@@ -7,7 +7,6 @@ import { DeepstreamService } from '../deepstream.service';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
 import { GameComponent } from '../game/game.component';
-import { shallowEqual } from '@angular/router/src/utils/collection';
 import { NewGameService } from '../new-game.service';
 
 @Component({
@@ -58,24 +57,24 @@ export class HomeComponent implements OnInit {
 
   onGameRecordDelete(gameId: string) {
     if (this.gc.game && this.gc.game.id === gameId) {
-      this.notification.update(`Game over. Opponent abandoned`, 'danger');
+      this.notification.update(`Game abandoned by player`, 'danger');
       this.gc.record = null;
     }
   }
 
   closeGameView() {
     if (this.gc.game && this.gc.isPlayer && this.gc.record) {
-      this.getGameQuitConsent();
+      this.confirmGameQuit();
     } else {
       this.gc.unloadGame();
       this.showPanels = true;
     }
   }
 
-  getGameQuitConsent() {
-    const modalRef = this.modalService.open(QuitGameComponent);
-    modalRef.result.then((option: string) => {
-      if (option === 'Yes') {
+  confirmGameQuit() {
+    const modal = this.modalService.open(QuitGameComponent);
+    modal.result.then((option: string) => {
+      if (option === 'Quit') {
         const game = this.gc.game;
         this.gc.unloadGame();
         this.showPanels = true;
@@ -100,6 +99,7 @@ export class HomeComponent implements OnInit {
     if (this.gc.game && this.gc.isPlayer && this.gc.record) {
       this.client.record.getRecord(this.gc.game.id).delete();
       this.client.record.getList('games').removeEntry(this.gc.game.id);
+      this.client.record.getRecord(this.gc.opponent.id).set('status', 'Online');
     }
     this.client.close();
   }

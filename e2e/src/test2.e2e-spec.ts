@@ -20,7 +20,7 @@ describe('GameComponent', () => {
         await assertNoBrowserError(browser2);
     });
 
-    it('should display "Waiting for {username}" and "Game over" messages', async () => {
+    it('should display "Waiting for {username}" and "Game abandoned" messages', async () => {
         // Galapagogol starts a game against AI
         let row = element.all(by.css('tr')).first();
         await row.click();
@@ -37,12 +37,12 @@ describe('GameComponent', () => {
         const homeButton = element(by.css('.brand'));
         await homeButton.click();
         browser.sleep(200);
-        const confirmQuitButton = element(by.buttonText('Yes'));
-        await confirmQuitButton.click();
+        const confirmNavigation = element(by.buttonText('Quit'));
+        await confirmNavigation.click();
         // Eduard should see Game over message
         browser2.sleep(200);
         const html = await browser2.getPageSource();
-        expect(html).toContain('Game over. Opponent abandoned');
+        expect(html).toContain('Game abandoned by player');
     });
 
     async function assertNoBrowserError(browserInstance: ProtractorBrowser) {

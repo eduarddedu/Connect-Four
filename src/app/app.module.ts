@@ -13,7 +13,6 @@ import { TimerComponent } from './timer/timer.component';
 import { PanelPlayersComponent } from './panels/panel-players/panel-players.component';
 import { PanelGamesComponent } from './panels/panel-games/panel-games.component';
 import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
-import { InvitationRejectedComponent } from './modals/invitation-rejected/invitation-rejected.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
 import { ParseFirstWordPipe } from './util/parseFirstWord';
@@ -32,7 +31,6 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
     TimerComponent,
     PanelPlayersComponent,
     PanelGamesComponent,
-    InvitationRejectedComponent,
     GameInvitationComponent,
     NotificationComponent,
     QuitGameComponent,
@@ -46,7 +44,7 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
     AppRoutingModule
   ],
   providers: [],
-  entryComponents: [GameInvitationComponent, InvitationRejectedComponent, QuitGameComponent],
+  entryComponents: [GameInvitationComponent, QuitGameComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
