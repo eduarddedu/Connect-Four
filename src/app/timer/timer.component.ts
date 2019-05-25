@@ -26,7 +26,7 @@ export class TimerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.observable = new Observable(subscriber => {
-      subscriber.next('00:00:00');
+      subscriber.next(this.getHourMinuteSecondStr());
       this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondStr()), 1000);
     });
   }
