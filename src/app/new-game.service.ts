@@ -101,6 +101,7 @@ export class NewGameService {
           this.getRecord(this.user.id).set('status', 'Online');
         }
       } else {
+        this.getRecord(this.user.id).set('status', 'Online');
         this.notification.update(`${user.name} is not available`, 'warning');
       }
     });

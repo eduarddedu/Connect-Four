@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService } from '../auth.service';
@@ -14,7 +14,7 @@ import { NewGameService } from '../new-game.service';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild(GameComponent) gc: GameComponent;
   user: User;
   showPanels = true;
@@ -41,6 +41,10 @@ export class HomeComponent implements OnInit {
     });
     this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
     this.newGame.loadGame.subscribe(this.loadGame.bind(this));
+  }
+
+  ngAfterViewInit() {
+    // this.notification.update('A notification', 'info');
   }
 
   loadGame(gameId: string) {

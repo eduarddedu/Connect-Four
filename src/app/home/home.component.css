@@ -79,7 +79,12 @@ main {
     padding: 10px 10px 0;
 }
 
-.panels-box {
+.content {
+    display: grid;
+    grid-gap: 10px;
+}
+
+.panels {
     display: grid;
     grid-gap: 10px;
 }
@@ -90,12 +95,13 @@ main {
         padding: 30px 10px 0;
     }
 
-    .box {
-        max-width: 720px;
-        margin: 0 auto;
+    .content {
+        display: grid;
+       /*  grid-template-columns: 1fr 2fr 1fr; */
+        grid-gap: 10px;
     }
 
-    .panels-box {
+    .panels {
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-gap: 10px;

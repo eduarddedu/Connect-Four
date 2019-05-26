@@ -16,15 +16,21 @@
     </div>
   </header>
   <main>
-    <div class="box">
-      <app-notification></app-notification>
-      <section id="panels" [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
-        <div class="panels-box">
-          <app-panel-players [user]="user"></app-panel-players>
-          <app-panel-games (loadGame)="loadGame($event, 1)"></app-panel-games>
-        </div>
+    <div class="content">
+      <section style="margin-bottom: -1em;">
+          <app-notification></app-notification>
       </section>
-      <app-game [user]="user"></app-game>
+      <section>
+        <div [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
+          <div class="panels">
+            <app-panel-players [user]="user"></app-panel-players>
+            <app-panel-games (loadGame)="loadGame($event)"></app-panel-games>
+          </div>
+        </div>
+        <app-game [user]="user"></app-game>
+      </section>
+      <section>
+      </section>
     </div>
   </main>
   <app-policy-accept></app-policy-accept>
