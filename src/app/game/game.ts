@@ -21,7 +21,7 @@ export interface Game {
     moves: number[];
     redMovesFirst: boolean;
     winner?: User;
-    isAgainstAi: boolean;
+    isAgainstAI: boolean;
 }
 
 export class Game implements Game {
@@ -36,7 +36,7 @@ export class Game implements Game {
         this.winner = data.winner;
         this.redMovesFirst = data.redMovesFirst;
         this.moves = data.moves;
-        this.isAgainstAi = this.players.red.id === '0' || this.players.yellow.id === '0';
+        this.isAgainstAI = this.players.red.id === '0' || this.players.yellow.id === '0';
         this.model = new GameModel(this.redMovesFirst, data.moves);
     }
 
@@ -78,6 +78,7 @@ export class Game implements Game {
             this.redMovesFirst = this.winner.id === this.players.yellow.id;
         }
         this.moves = [];
+        this.state = 'in progress';
         this.model = new GameModel(this.redMovesFirst, []);
     }
 

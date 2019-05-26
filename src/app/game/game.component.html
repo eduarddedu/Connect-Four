@@ -2,7 +2,7 @@
     <div class="c4-card">
         <div class="score">
             <div class="player">
-               <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | parseFirstWord }}
+                <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | parseFirstWord }}
             </div>
             <div class="points">{{game.points.red}} - {{game.points.yellow}}</div>
             <div class="player">
@@ -21,7 +21,8 @@
             </div>
         </div>
 
-        <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onBoardClick($event)"></app-board>
+        <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onBoardClick($event)">
+        </app-board>
 
         <div style="text-align: center" *ngIf="isPlayer && game.state === 'over' && record">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New

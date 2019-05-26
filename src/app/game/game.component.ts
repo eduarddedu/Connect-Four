@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 
 import { DeepstreamService } from '../deepstream.service';
-import { User } from '../util/user';
+import { User, Bot } from '../util/user';
 import { BoardComponent } from './board/board.component';
 import { Game } from './game';
 import { NewGameService } from '../new-game.service';
@@ -61,7 +61,7 @@ export class GameComponent implements OnInit {
   onMoveUpdate(id: string) {
     this.board.move(id);
     this.game.update(id);
-    if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
+    if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAI) {
       this.record.set('moves', this.game.moves);
       if (this.game.state === 'over') {
         this.record.set('state', 'over');
@@ -69,7 +69,7 @@ export class GameComponent implements OnInit {
         this.record.set('winner', this.game.winner);
       }
     }
-    if (this.game.state === 'in progress' && this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
+    if (this.game.state === 'in progress' && this.isPlayer && this.game.isAgainstAI && !this.isMyTurn) {
       setTimeout(() => {
         this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
       }, 500);
@@ -81,21 +81,20 @@ export class GameComponent implements OnInit {
       this.board.clear();
       this.game.reset();
       this.newGameBtnClicked = false;
-      if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAi) {
+      if (this.user.id === this.game.players.red.id || this.isPlayer && this.game.isAgainstAI) {
         this.record.set('moves', []);
         this.record.set('redMovesFirst', this.game.redMovesFirst);
-        if (this.isPlayer && this.game.isAgainstAi && !this.isMyTurn) {
-          setTimeout(() => {
-            this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
-          }, 500);
-        }
+      }
+      if (this.isPlayer && this.game.isAgainstAI && this.game.activePlayer === Bot) {
+        setTimeout(() => {
+          this.client.event.emit(`moves/${this.game.id}`, this.game.nextBestMove());
+        }, 500);
       }
     }
-    this.game.state = state;
   }
 
   onClickNewGame() {
-    if (this.isPlayer && this.game.isAgainstAi) {
+    if (this.isPlayer && this.game.isAgainstAI) {
       this.record.set('state', 'in progress');
     } else {
       this.newGameBtnClicked = true;

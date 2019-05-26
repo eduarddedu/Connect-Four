@@ -84,25 +84,30 @@ export class NewGameService {
     modal.componentInstance.user = user;
     modal.result.then(async (option: string) => {
       user = userRecord.get();
-      if (user.status === 'Online') {
-        if (option === 'Accept') {
-          switch (message.topic) {
-            case 'Create Game':
+      if (option === 'Accept') {
+        switch (message.topic) {
+          case 'Create Game':
+            if (user.status === 'Online') {
               const gameId = await this.createGame(this.user, user);
               this.getList('games').addEntry(gameId);
               this.send(user.id, new Message(this.user.id, 'Accept', { gameId: gameId }));
               this.loadGame.next(gameId);
-              break;
-            case 'Rematch':
+            } else {
+              this.getRecord(this.user.id).set('status', 'Online');
+              this.notification.update(`${user.name} is not available`, 'warning');
+            }
+            break;
+          case 'Rematch':
+            if (user.status === 'In game') {
               this.getRecord(message.details.gameId).set('state', 'in progress');
-          }
-        } else {
-          this.send(user.id, new Message(this.user.id, 'Reject'));
-          this.getRecord(this.user.id).set('status', 'Online');
+            } else {
+              this.getRecord(this.user.id).set('status', 'Online');
+              this.notification.update(`${user.name} is not available`, 'warning');
+            }
         }
       } else {
+        this.send(user.id, new Message(this.user.id, 'Reject'));
         this.getRecord(this.user.id).set('status', 'Online');
-        this.notification.update(`${user.name} is not available`, 'warning');
       }
     });
   }
