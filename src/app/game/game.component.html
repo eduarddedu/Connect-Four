@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="c4-card">
-        <div id="gameInfo">
+        <div style="margin-bottom: 16px;">
             <div *ngIf="game.state === 'in progress'" class="flex-row">
                 <span id="turnInfo">{{turnMessage}}</span>
                 <app-timer [startDate]="game.startDate"></app-timer>
@@ -23,7 +23,7 @@
 
         <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onBoardClick($event)"></app-board>
 
-        <div style="text-align: center" [ngStyle]="newGameButtonStyle">
+        <div style="text-align: center" *ngIf="isPlayer && game.state === 'over' && record">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New
                 game</button>
         </div>

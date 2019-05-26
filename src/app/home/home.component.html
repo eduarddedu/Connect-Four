@@ -18,7 +18,7 @@
   <main>
     <div class="content">
       <section style="margin-bottom: -1em;">
-          <app-notification></app-notification>
+        <app-notification></app-notification>
       </section>
       <section>
         <div [ngStyle]="{'display' : showPanels ? 'initial' : 'none'}">
@@ -27,9 +27,11 @@
             <app-panel-games (loadGame)="loadGame($event)"></app-panel-games>
           </div>
         </div>
-        <app-game [user]="user"></app-game>
       </section>
       <section>
+        <div style="display: flex; justify-content: center;">
+          <app-game [user]="user"></app-game>
+        </div>
       </section>
     </div>
   </main>

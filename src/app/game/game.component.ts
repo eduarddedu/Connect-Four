@@ -103,11 +103,6 @@ export class GameComponent implements OnInit {
     }
   }
 
-  get newGameButtonStyle(): { [key: string]: string } {
-    return this.isPlayer && this.game.state === 'over' && this.record ?
-      { visibility: 'visible' } : { visibility: 'hidden' };
-  }
-
   get isMyTurn() {
     return this.isPlayer && this.game.state === 'in progress' && this.game.activePlayer.id === this.user.id;
   }

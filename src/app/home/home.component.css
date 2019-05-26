@@ -35,6 +35,7 @@ header>.profile>.icon {
     position: absolute;
     top: 42px;
     right: 2px;
+    z-index: 10000;
     box-sizing: border-box;
     background-color: white;
     border-radius: 3px;
@@ -92,12 +93,11 @@ main {
 @media (min-width: 576px) {
 
     main {
-        padding: 30px 10px 0;
+        padding: 10px 10px 0;
     }
 
     .content {
         display: grid;
-       /*  grid-template-columns: 1fr 2fr 1fr; */
         grid-gap: 10px;
     }
 
