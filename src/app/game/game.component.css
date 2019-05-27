@@ -1,9 +1,22 @@
 .c4-card {
-    padding: 8px;
-    margin-bottom: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
 }
 
-.flex-row {
+.gameArea {
+    margin-bottom: 48px;
+}
+
+.newGameBtn {
+    margin-top: -38px;
+    text-align: center;
+}
+
+.gameMessage {
+    margin-bottom: 6px;
+}
+
+.spaceBetween {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
@@ -15,14 +28,24 @@
     line-height: 2;
 }
 
-.score>.player>img {
-    display: none;
-}
-
 .score>.player:last-child {
     text-align: right;
 }
 
+.score>.player>img {
+    display: none;
+}
+
+@media(min-width: 576px) {
+    .score>.player>img {
+        display: initial;
+        width: 30px;
+        height: 30px;
+        border-radius: 15px;
+    }
+}
+
+/* not used but useful to have */
 .bullet {
     position: relative;
     top: 1px;
@@ -31,18 +54,4 @@
     height: 15px;
     border-radius: 7.5px;
     margin: 0 2px;
-}
-
-@media(min-width: 576px) {
-    .c4-card {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-
-    .score>.player>img {
-        display: initial;
-        width: 30px;
-        height: 30px;
-        border-radius: 15px;
-    }
 }

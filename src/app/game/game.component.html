@@ -11,20 +11,22 @@
         </div>
     </div>
     <div class="c4-card">
-        <div style="margin-bottom: 16px;">
-            <div *ngIf="game.state === 'in progress'" class="flex-row">
-                <span id="turnInfo">{{turnMessage}}</span>
-                <app-timer [startDate]="game.startDate"></app-timer>
+        <div class="gameArea">
+            <div class="gameMessage">
+                <div *ngIf="game.state === 'in progress'" class="spaceBetween">
+                    <span id="turnInfo">{{turnMessage}}</span>
+                    <app-timer [startDate]="game.startDate"></app-timer>
+                </div>
+                <div *ngIf="gameOverMessage" style="text-align: center">
+                    {{gameOverMessage}}
+                </div>
             </div>
-            <div *ngIf="gameOverMessage" style="text-align: center">
-                {{gameOverMessage}}
-            </div>
+
+            <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onBoardClick($event)">
+            </app-board>
         </div>
 
-        <app-board [activeColor]="game.activeColor" [isMyTurn]="isMyTurn" (boardClick)="onBoardClick($event)">
-        </app-board>
-
-        <div style="text-align: center" *ngIf="isPlayer && game.state === 'over' && record">
+        <div class="newGameBtn" *ngIf="isPlayer && game.state === 'over' && record">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New
                 game</button>
         </div>
