@@ -19,7 +19,7 @@
     background-color: var(--gray-dark);
 }
 
-@media(min-width: 576px) {
+@media(min-width: 992px) {
     .c4-container {
         font-weight: lighter;
     }
