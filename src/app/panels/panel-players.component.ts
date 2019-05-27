@@ -1,19 +1,19 @@
 import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
 
-import { User, Bot } from '../../util/user';
-import { DeepstreamService } from '../../deepstream.service';
+import { User } from '../util/user';
+import { DeepstreamService } from '../deepstream.service';
 import { NewGameService } from 'src/app/new-game.service';
 
 
 @Component({
   selector: 'app-panel-players',
   templateUrl: './panel-players.component.html',
-  styleUrls: ['./panel-players.component.css', '../panels-styles.css']
+  styleUrls: ['./panel-players.component.css']
 })
 
 export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
-  players: Map<string, User> = new Map([[Bot.id, Bot]]);
+  players: Map<string, User> = new Map();
   private client: deepstreamIO.Client;
 
   constructor(private cdr: ChangeDetectorRef, private newGame: NewGameService, deepstream: DeepstreamService) {
@@ -29,11 +29,7 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   onClick(user: User) {
-    if (user === Bot) {
-      this.newGame.loadAIGame();
-    } else {
-      this.newGame.invite(user);
-    }
+    this.newGame.invite(user);
   }
 
   private addPlayer(userId: string) {

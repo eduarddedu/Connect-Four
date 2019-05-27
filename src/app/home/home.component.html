@@ -26,6 +26,17 @@
             <app-panel-players [user]="user"></app-panel-players>
             <app-panel-games (loadGame)="loadGame($event)"></app-panel-games>
           </div>
+          <div class="c4-card">
+            <div class="c4-card-header">Play against AI</div>
+            <div class="c4-card-body">
+              <div class="c4-card-row" (click)="onClickAI()">
+                <div class="c4-card-row-item">
+                  <img [src]="Bot.imgUrl" /> {{Bot.name}}
+                </div>
+                <div class="c4-card-row-item">Online</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       <section>

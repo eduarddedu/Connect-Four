@@ -16,12 +16,6 @@
     margin-bottom: 6px;
 }
 
-.spaceBetween {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
-}
-
 .score {
     display: grid;
     grid-template-columns: 1fr auto 1fr;

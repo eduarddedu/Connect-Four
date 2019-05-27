@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService } from '../auth.service';
-import { User } from '../util/user';
+import { User, Bot } from '../util/user';
 import { DeepstreamService } from '../deepstream.service';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit {
   showPanels = true;
   showPopoverMenu = false;
   client: deepstreamIO.Client;
+  Bot: User = Bot;
 
   constructor(
     private modalService: NgbModal,
@@ -53,6 +54,10 @@ export class HomeComponent implements OnInit {
       }
     };
     record.subscribe(loadOnce, true);
+  }
+
+  onClickAI() {
+    this.newGame.loadAIGame();
   }
 
   onGameRecordDelete(gameId: string) {

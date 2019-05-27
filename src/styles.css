@@ -4,7 +4,7 @@
     min-height: 100vh;
     min-width: 318px;
     padding: 0 0 16px 0;
-    background-image: linear-gradient(to bottom, #006994, #fff) !important; 
+    background-image: linear-gradient(to bottom, #006994, #fff) !important;
     color: #f0ece7;
 }
 
@@ -17,10 +17,47 @@
 .c4-card {
     border-radius: 3px;
     background-color: var(--gray-dark);
+    overflow: hidden;
+}
+
+.c4-card-header {
+    text-align: center;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.158);
+    padding: 10px 0;
+}
+
+.c4-card-row {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    height: 50px;
+    padding: 0 10px;
+}
+
+.c4-card-row:hover {
+    background-color: #3e4249;
+    cursor: pointer;
+}
+
+.c4-card-row-item>img {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
 }
 
 @media(min-width: 992px) {
     .c4-container {
         font-weight: lighter;
     }
+}
+
+/* Utils */
+
+.spaceBetween {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
 }

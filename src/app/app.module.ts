@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppRoutingModule } from './app-routing.module';
+import * as _ from 'deepstream.io-client-js';
+
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { PolicyAcceptComponent } from './policy-accept/policy-accept.component';
@@ -10,13 +12,12 @@ import { HomeComponent } from './home/home.component';
 import { GameComponent } from './game/game.component';
 import { BoardComponent } from './game/board/board.component';
 import { TimerComponent } from './timer/timer.component';
-import { PanelPlayersComponent } from './panels/panel-players/panel-players.component';
-import { PanelGamesComponent } from './panels/panel-games/panel-games.component';
+import { PanelPlayersComponent } from './panels//panel-players.component';
+import { PanelGamesComponent } from './panels/panel-games.component';
 import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
 import { ParseFirstWordPipe } from './util/parseFirstWord';
-import * as _ from 'deepstream.io-client-js';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
 
 

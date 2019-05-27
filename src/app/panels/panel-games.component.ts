@@ -1,12 +1,12 @@
 import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 
-import { Game } from '../../game/game';
-import { DeepstreamService } from '../../deepstream.service';
+import { Game } from '../game/game';
+import { DeepstreamService } from '../deepstream.service';
 
 @Component({
   selector: 'app-panel-games',
   templateUrl: './panel-games.component.html',
-  styleUrls: ['./panel-games.component.css', '../panels-styles.css']
+  styleUrls: ['./panel-players.component.css']
 })
 export class PanelGamesComponent implements OnInit {
   @Output() loadGame: EventEmitter<string> = new EventEmitter();
