@@ -1,38 +1,47 @@
 import { browser, element, by, ProtractorBrowser } from 'protractor';
-import { signUserIn, signUserOut } from './actions';
+import { signIn, signOut } from './actions';
 
 describe('PanelPlayers', () => {
     const browser2: ProtractorBrowser = browser.forkNewDriverInstance(false);
+    const browser3: ProtractorBrowser = browser.forkNewDriverInstance(false);
 
     beforeEach(async function () {
         browser.ignoreSynchronization = true;
         browser2.ignoreSynchronization = true;
-        await signUserIn(browser, 'Galapagogol');
-        await signUserIn(browser2, 'Eduard');
+        browser3.ignoreSynchronization = true;
+        await signIn(browser, 'User1');
+        await signIn(browser2, 'User2');
+        await signIn(browser3, 'User3');
+        await browser3.get('/');
         await browser2.get('/');
-        await browser.get('/');
+        await browser.get('/'); // actually we cannot control which browser gets '/' first
     });
 
-
-    it('should display all online users', async function () {
-        element.all(by.css('tr')).then(rows => {
-            expect(rows.length).toBe(2);
-            rows[0].all(by.css('td')).then(cells => {
-                expect(cells[0].getText()).toBe('Bobiță');
-            });
-            rows[1].all(by.css('td')).then(cells => {
-                expect(cells[0].getText()).toBe('Eduard');
-            });
+    it('should show online users - entry order cannot be tested', async () => {
+        const list = element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
+        list.then(items => {
+            expect(items.length).toEqual(2);
+            let name = items[0].element(by.css('.c4-card-row-item')).getText();
+            expect(name).toMatch('User(3|2)');
+            name = items[1].element(by.css('.c4-card-row-item')).getText();
+            expect(name).toMatch('User(3|2)');
         });
-        await signUserOut(browser);
-        await signUserOut(browser2);
+        await signOut(browser);
+        await signOut(browser2);
+        await signOut(browser3);
     });
 
-    it('should update when a user goes offline', async function () {
-        await signUserOut(browser2);
-        browser2.sleep(200);
-        element.all(by.css('tr')).then(rows => expect(rows.length).toBe(1));
-        await signUserOut(browser);
+
+    it('should update when a user goes offline', async () => {
+        await signOut(browser2);
+        const list = element(by.css('#panelPlayers')).element(by.css('.c4-card-body')).all(by.css('.c4-card-row'));
+        list.then(items => {
+            expect(items.length).toEqual(1);
+            const name = items[0].element(by.css('.c4-card-row-item')).getText();
+            expect(name).toEqual('User3');
+        });
+        await signOut(browser3);
+        await signOut(browser);
     });
 
 });

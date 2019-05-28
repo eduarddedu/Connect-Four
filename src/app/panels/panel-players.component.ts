@@ -8,12 +8,13 @@ import { NewGameService } from 'src/app/new-game.service';
 @Component({
   selector: 'app-panel-players',
   templateUrl: './panel-players.component.html',
-  styleUrls: ['./panel-players.component.css']
+  styleUrls: ['./panel-players.component.css', './styles.component.css']
 })
 
 export class PanelPlayersComponent implements OnInit {
   @Input() user: User;
   players: Map<string, User> = new Map();
+  private _players: Map<string, User> = new Map();
   private client: deepstreamIO.Client;
 
   constructor(private cdr: ChangeDetectorRef, private newGame: NewGameService, deepstream: DeepstreamService) {
@@ -34,12 +35,19 @@ export class PanelPlayersComponent implements OnInit {
 
   private addPlayer(userId: string) {
     if (userId !== this.user.id) {
-      this.client.record.getRecord(userId).subscribe((user: User) => {
+      const record = this.client.record.getRecord(userId);
+      const loadOnce = (user: User) => {
         if (user.id) {
           this.players.set(user.id, user);
           this.cdr.detectChanges();
+          record.unsubscribe(loadOnce);
+          record.subscribe('status', (status: 'Online' | 'Busy' | 'In game') => {
+            this.players.get(userId).status = status;
+            this.cdr.detectChanges();
+          });
         }
-      }, true);
+      };
+      record.subscribe(loadOnce, true);
     }
   }
 

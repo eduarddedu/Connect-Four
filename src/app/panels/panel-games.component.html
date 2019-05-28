@@ -1,8 +1,8 @@
-<div class="c4-card">
+<div id="panelGames" class="c4-card">
   <div class="c4-card-header">Watch</div>
   <div class="c4-card-body">
-    <div class="c4-card-row" *ngIf="games.length == 0">No games yet</div>
-    <div class="c4-card-row" *ngFor="let game of games" (click)="onClickGame(game.id)">
+    <div class="placeholder" *ngIf="games.length == 0">No games</div>
+    <div class="c4-card-row" *ngFor="let game of games | reverse" (click)="onClickGame(game.id)">
       <div>
         {{game.players.red.name}}
       </div>

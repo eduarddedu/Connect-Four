@@ -17,7 +17,7 @@ import { PanelGamesComponent } from './panels/panel-games.component';
 import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
-import { ParseFirstWordPipe } from './util/parseFirstWord';
+import { FirstWordPipe, ReversePipe } from './util/pipes';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
 
 
@@ -35,8 +35,9 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
     GameInvitationComponent,
     NotificationComponent,
     QuitGameComponent,
-    ParseFirstWordPipe,
-    PolicyPageComponent
+    PolicyPageComponent,
+    FirstWordPipe,
+    ReversePipe
   ],
   imports: [
     BrowserModule,

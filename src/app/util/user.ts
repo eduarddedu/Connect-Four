@@ -4,7 +4,7 @@ export interface User {
     imgUrl: string;
     email: string;
     authProvider: 'Google' | 'Facebook' | null;
-    status: 'Online' | 'Busy' | 'Playing';
+    status: 'Online' | 'Busy' | 'In game';
 }
 export const Bot: User = {
     id: '0',

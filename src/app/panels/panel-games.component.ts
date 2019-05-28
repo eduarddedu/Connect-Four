@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 import { Game } from '../game/game';
 import { DeepstreamService } from '../deepstream.service';
@@ -6,14 +6,14 @@ import { DeepstreamService } from '../deepstream.service';
 @Component({
   selector: 'app-panel-games',
   templateUrl: './panel-games.component.html',
-  styleUrls: ['./panel-players.component.css']
+  styleUrls: ['./panel-games.component.css', './styles.component.css']
 })
 export class PanelGamesComponent implements OnInit {
   @Output() loadGame: EventEmitter<string> = new EventEmitter();
   games: Game[] = [];
   private client: deepstreamIO.Client;
 
-  constructor(private cdr: ChangeDetectorRef, deepstream: DeepstreamService) {
+  constructor(deepstream: DeepstreamService) {
     this.client = deepstream.getInstance();
   }
 
@@ -25,25 +25,25 @@ export class PanelGamesComponent implements OnInit {
     });
   }
 
+
   onClickGame(gameId: string) {
     this.loadGame.emit(gameId);
   }
 
   private addGame(gameId: string) {
     this.client.record.getRecord(gameId).whenReady(record => {
-      const game = record.get();
+      let game = record.get();
       this.games.push(game);
-      this.cdr.detectChanges();
+      this.games = [...this.games];
       record.subscribe('points', data => {
         game.points = data;
-        this.cdr.detectChanges();
+        game = Object.assign(game, {points: data});
       });
     });
   }
 
   private removeGame(gameId: any) {
     this.games = this.games.filter(game => game.id !== gameId);
-    this.cdr.detectChanges();
   }
 
 }
