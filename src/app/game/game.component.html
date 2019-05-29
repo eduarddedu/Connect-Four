@@ -17,7 +17,7 @@
                     <span id="turnInfo">{{turnMessage}}</span>
                     <app-timer [startDate]="game.startDate"></app-timer>
                 </div>
-                <div *ngIf="gameOverMessage" style="text-align: center">
+                <div id="gameOverMessage" *ngIf="gameOverMessage" style="text-align: center">
                     {{gameOverMessage}}
                 </div>
             </div>

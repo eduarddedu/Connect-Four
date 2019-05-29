@@ -24,19 +24,51 @@ describe('GameComponent', () => {
         assertNoBrowserError(browser3);
     });
 
-    it('should display { Waiting for username... } message', async () => {
-        // starts game between User2 and User3
+    it('should display correct message on each turn and on win (game watcher perspective)', async () => {
+        // convenience methods
+        function getTurnInfoMessage() {
+            return element(by.css('#turnInfo')).getText();
+        }
+        function getGameOverMessage() {
+            return element(by.css('#gameOverMessage')).getText();
+        }
+        function browser3Move(id: number) {
+            move(browser3, id);
+        }
+        function browser2Move(id: number) {
+            move(browser2, id);
+        }
+        function move(browserInstance: ProtractorBrowser, id: number) {
+            browserInstance.element(by.css(`input[name="${id}"]`)).click();
+        }
+
+        // let's play a game between User2 and User3
         const list = browser2.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
         list.then(async rows => {
             expect(rows.length).toEqual(2);
             await rows[0].click();
+            browser2.sleep(200); // wait until user3 browser shows the invitation
             const button = browser3.element(by.buttonText('Join Game'));
+            browser.wait(button.isPresent(), 5000);
             await button.click();
             // User1 joins game as watcher
             const game = element(by.css('#panelGames>.c4-card-body>.c4-card-row'));
             await game.click();
-            const message = element(by.css('#turnInfo')).getText();
-            expect(message).toEqual('Waiting for User3...');
+            // User1 should see initial message
+            expect(getTurnInfoMessage()).toEqual('Waiting for User3...');
+            // User3 moves
+            browser3Move(67);
+            // User1 should see next turn message
+            expect(getTurnInfoMessage()).toEqual('Waiting for User2...');
+            // let's continue moving until user3 wins
+            [66, 57, 56, 47, 46, 37, 36, 27].forEach((value, index) => {
+                if (index % 2 === 0) {
+                    browser2Move(value);
+                } else {
+                    browser3Move(value);
+                }
+            });
+            expect(getGameOverMessage()).toMatch('User3 wins');
             await signOut(browser3);
             await signOut(browser);
             await signOut(browser2);
