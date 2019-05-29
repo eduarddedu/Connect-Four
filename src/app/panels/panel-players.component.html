@@ -1,13 +1,13 @@
 <div id="panelPlayers" class="c4-card">
   <div class="c4-card-header">Invite</div>
   <div class="c4-card-body">
-    <div class="placeholder" *ngIf="players.size == 0">No one is online</div>
-    <div class="c4-card-row" *ngFor="let player of players | keyvalue | reverse" (click)="onClick(player.value)">
+    <div class="placeholder" *ngIf="users.size == 0">No one is online</div>
+    <div class="c4-card-row" *ngFor="let user of users | keyvalue | reverse" (click)="onClick(user.value)">
       <div class="c4-card-row-item">
-        <img [src]="player.value.imgUrl" alt="User icon" width="30" height="30"> {{player.value.name}}
+        <img [src]="user.value.imgUrl" alt="User icon" width="30" height="30"> {{user.value.name}}
       </div>
-      <div>
-        {{player.value.status}}
+      <div class="c4-card-row-item">
+        {{user.value.status}}
       </div>
     </div>
   </div>

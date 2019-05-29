@@ -1,8 +1,9 @@
-import { Component, OnInit, Input, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { User } from '../util/user';
 import { DeepstreamService } from '../deepstream.service';
 import { NewGameService } from 'src/app/new-game.service';
+import { Game } from '../game/game';
 
 
 @Component({
@@ -11,22 +12,44 @@ import { NewGameService } from 'src/app/new-game.service';
   styleUrls: ['./panel-players.component.css', './styles.component.css']
 })
 
-export class PanelPlayersComponent implements OnInit {
+export class PanelPlayersComponent implements OnInit, OnDestroy {
   @Input() user: User;
-  players: Map<string, User> = new Map();
-  private _players: Map<string, User> = new Map();
+  users: Map<string, User> = new Map();
+  private game: Game;
   private client: deepstreamIO.Client;
 
-  constructor(private cdr: ChangeDetectorRef, private newGame: NewGameService, deepstream: DeepstreamService) {
+  constructor(private cdr: ChangeDetectorRef, private newGame: NewGameService, private deepstream: DeepstreamService) {
     this.client = deepstream.getInstance();
+    this.newGame.subject.subscribe((game: Game) => this.game = game);
   }
 
   ngOnInit() {
     this.client.record.getList('users').whenReady((list: any) => {
+      if (!list.getEntries().includes(this.user.id)) {
+        list.addEntry(this.user.id);
+        this.deepstream.getRecord(this.user.id).set(this.user);
+        window.addEventListener('beforeunload', this.signOut.bind(this));
+      }
       list.getEntries().forEach(this.addPlayer.bind(this));
       list.on('entry-added', this.addPlayer.bind(this));
       list.on('entry-removed', this.removePlayer.bind(this));
     });
+  }
+
+  ngOnDestroy() {
+    this.signOut();
+  }
+
+  private signOut() {
+    this.deepstream.getRecord(this.user.id).delete();
+    this.deepstream.getList('users').removeEntry(this.user.id);
+    if (this.game && this.game.ourUserPlays) {
+      this.deepstream.getRecord(this.game.id).delete();
+      this.deepstream.getList('games').removeEntry(this.game.id);
+      if (!this.game.isAgainstAi) {
+        this.deepstream.getRecord(this.game.opponent.id).set('status', 'Online');
+      }
+    }
   }
 
   onClick(user: User) {
@@ -38,11 +61,11 @@ export class PanelPlayersComponent implements OnInit {
       const record = this.client.record.getRecord(userId);
       const loadOnce = (user: User) => {
         if (user.id) {
-          this.players.set(user.id, user);
+          this.users.set(user.id, user);
           this.cdr.detectChanges();
           record.unsubscribe(loadOnce);
-          record.subscribe('status', (status: 'Online' | 'Busy' | 'In game') => {
-            this.players.get(userId).status = status;
+          record.subscribe('status', status => {
+            this.users.get(userId).status = status;
             this.cdr.detectChanges();
           });
         }
@@ -52,7 +75,7 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   private removePlayer(userId: string) {
-    this.players.delete(userId);
+    this.users.delete(userId);
     this.cdr.detectChanges();
   }
 

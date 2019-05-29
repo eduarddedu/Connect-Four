@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 
 import { environment } from '../environments/environment';
 import { AuthService } from './auth.service';
@@ -9,20 +9,38 @@ declare var deepstream: any;
   providedIn: 'root'
 })
 export class DeepstreamService {
-  private deepstream: deepstreamIO.Client;
+  private client: deepstreamIO.Client;
 
-  constructor(auth: AuthService) {
-    const user: User = auth.user;
-    this.deepstream = deepstream(environment.deepstreamUrl, { maxReconnectAttempts: 5 }).login({ username: user.name });
-    this.deepstream.on('error', (error: any, event: any, topic: any) => {
+  constructor(auth: AuthService, ngZone: NgZone) {
+    ngZone.runOutsideAngular(this.init.bind(this, auth.user));
+  }
+
+  private init(user: User) {
+    this.client = deepstream(environment.deepstreamUrl, { maxReconnectAttempts: 5 });
+    this.client.login({ username: user.name });
+    this.client.on('connectionStateChanged', connectionState => {
+      if (connectionState === 'OPEN') {
+        console.log('Deepstream connection open');
+      }
+      if (connectionState === 'CLOSED') {
+        console.log('Deepstream connection closed');
+      }
+    });
+    this.client.on('error', (error: any, event: any, topic: any) => {
       console.log(error, event, topic);
     });
-    console.log('Deepstream init...');
   }
 
   getInstance() {
-    return this.deepstream;
+    return this.client;
   }
 
+  getRecord(recordname: string): deepstreamIO.Record {
+    return this.client.record.getRecord(recordname);
+  }
+
+  getList(listname: string): deepstreamIO.List {
+    return this.client.record.getList(listname);
+  }
 
 }

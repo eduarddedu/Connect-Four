@@ -1,85 +1,74 @@
-import { browser, element, by, ProtractorBrowser, logging } from 'protractor';
-import { signIn, signOut } from './actions';
+import { browser, element, by, ProtractorBrowser } from 'protractor';
+
+import { signIn, signOut, startGameBetweenUsers } from './actions';
+import { assertNoBrowserError } from './assertions';
 
 
 describe('GameComponent', () => {
-    const browser2: ProtractorBrowser = browser.forkNewDriverInstance(false);
-    const browser3: ProtractorBrowser = browser.forkNewDriverInstance(false);
-
-    beforeEach(async function () {
-        browser.ignoreSynchronization = true;
-        browser2.ignoreSynchronization = true;
-        browser3.ignoreSynchronization = true;
-        await signIn(browser, 'User1');
-        await browser.get('/');
-        await signIn(browser2, 'User2');
-        await browser2.get('/');
-        await signIn(browser3, 'User3');
-        await browser3.get('/');
-    });
+    const browserJohn: ProtractorBrowser = browser.forkNewDriverInstance(false);
+    const browserJane: ProtractorBrowser = browser.forkNewDriverInstance(false);
 
     afterEach(() => {
         assertNoBrowserError(browser);
-        assertNoBrowserError(browser2);
-        assertNoBrowserError(browser3);
+        assertNoBrowserError(browserJohn);
+        assertNoBrowserError(browserJane);
     });
 
-    it('should display correct message on each turn and on win (game watcher perspective)', async () => {
-        // convenience methods
-        function getTurnInfoMessage() {
-            return element(by.css('#turnInfo')).getText();
-        }
-        function getGameOverMessage() {
-            return element(by.css('#gameOverMessage')).getText();
-        }
-        function browser3Move(id: number) {
-            move(browser3, id);
-        }
-        function browser2Move(id: number) {
-            move(browser2, id);
-        }
-        function move(browserInstance: ProtractorBrowser, id: number) {
-            browserInstance.element(by.css(`input[name="${id}"]`)).click();
-        }
-
-        // let's play a game between User2 and User3
-        const list = browser2.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
-        list.then(async rows => {
-            expect(rows.length).toEqual(2);
-            await rows[0].click();
-            browser2.sleep(200); // wait until user3 browser shows the invitation
-            const button = browser3.element(by.buttonText('Join Game'));
-            browser.wait(button.isPresent(), 5000);
-            await button.click();
-            // User1 joins game as watcher
-            const game = element(by.css('#panelGames>.c4-card-body>.c4-card-row'));
-            await game.click();
-            // User1 should see initial message
-            expect(getTurnInfoMessage()).toEqual('Waiting for User3...');
-            // User3 moves
-            browser3Move(67);
-            // User1 should see next turn message
-            expect(getTurnInfoMessage()).toEqual('Waiting for User2...');
-            // let's continue moving until user3 wins
-            [66, 57, 56, 47, 46, 37, 36, 27].forEach((value, index) => {
-                if (index % 2 === 0) {
-                    browser2Move(value);
-                } else {
-                    browser3Move(value);
-                }
-            });
-            expect(getGameOverMessage()).toMatch('User3 wins');
-            await signOut(browser3);
-            await signOut(browser);
-            await signOut(browser2);
-        });
+    it('should setup the game', async () => {
+        await signIn(browser, 'Spectator');
+        await signIn(browserJohn, 'John');
+        await signIn(browserJane, 'Jane');
+        await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
+        const gameRow = element(by.css('#panelGames>.c4-card-body>.c4-card-row'));
+        await gameRow.click(); // Spectator joins game
     });
 
-    async function assertNoBrowserError(browserInstance: ProtractorBrowser) {
-        const logs = await browserInstance.manage().logs().get(logging.Type.BROWSER);
-        expect(logs).not.toContain(jasmine.objectContaining({
-            level: logging.Level.SEVERE,
-        } as logging.Entry));
-    }
+    it('should display correct message on first turn', async () => {
+        expect(await turnMessage(browser)).toEqual('Waiting for Jane...');
+        expect(await turnMessage(browserJane)).toEqual('Your turn');
+        expect(await turnMessage(browserJohn)).toEqual('Waiting for Jane...');
+    });
 
+    it('should display correct message on second turn', async () => {
+        await move(browserJane, 67);
+        expect(await turnMessage(browser)).toEqual('Waiting for John...');
+        expect(await turnMessage(browserJane)).toEqual('Waiting for John...');
+        expect(await turnMessage(browserJohn)).toEqual('Your turn');
+    });
+
+    it('should display correct message on game end', async () => {
+        let index = 0;
+        for (const id of [66, 57, 56, 47, 46, 37, 36, 27]) {
+            if (index % 2 === 0) {
+                await move(browserJohn, id);
+                browserJane.sleep(100);
+            } else {
+                await move(browserJane, id);
+                browserJohn.sleep(100);
+            }
+            index++;
+        }
+        expect(await gameOverMessage(browser)).toMatch('Jane wins');
+        expect(await gameOverMessage(browserJohn)).toMatch('You lose');
+        expect(await gameOverMessage(browserJane)).toMatch('You win');
+    });
+
+    it('should sign out', async () => {
+        await signOut(browser);
+        await signOut(browserJane);
+        await signOut(browserJohn);
+    });
 });
+
+// convenience methods
+async function turnMessage(browserInstance: ProtractorBrowser) {
+    return await browserInstance.element(by.id('turnMessage')).getText();
+}
+async function gameOverMessage(browserInstance: ProtractorBrowser) {
+    return await browserInstance.element(by.id('gameOverMessage')).getText();
+}
+async function move(browserInstance: ProtractorBrowser, id: number) {
+    await browserInstance.element(by.css(`input[name="${id}"]`)).click();
+}
+
+

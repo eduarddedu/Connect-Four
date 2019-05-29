@@ -1,7 +1,8 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
 
 import { Game } from '../game/game';
 import { DeepstreamService } from '../deepstream.service';
+import { NewGameService } from '../new-game.service';
 
 @Component({
   selector: 'app-panel-games',
@@ -9,11 +10,11 @@ import { DeepstreamService } from '../deepstream.service';
   styleUrls: ['./panel-games.component.css', './styles.component.css']
 })
 export class PanelGamesComponent implements OnInit {
-  @Output() loadGame: EventEmitter<string> = new EventEmitter();
-  games: Game[] = [];
+  games: Set<Game> = new Set();
   private client: deepstreamIO.Client;
 
-  constructor(deepstream: DeepstreamService) {
+  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone,
+    private newGame: NewGameService, deepstream: DeepstreamService) {
     this.client = deepstream.getInstance();
   }
 
@@ -25,25 +26,32 @@ export class PanelGamesComponent implements OnInit {
     });
   }
 
-
   onClickGame(gameId: string) {
-    this.loadGame.emit(gameId);
+    this.newGame.pushGame(gameId);
   }
 
   private addGame(gameId: string) {
-    this.client.record.getRecord(gameId).whenReady(record => {
-      let game = record.get();
-      this.games.push(game);
-      this.games = [...this.games];
-      record.subscribe('points', data => {
-        game.points = data;
-        game = Object.assign(game, {points: data});
-      });
-    });
+    const record = this.client.record.getRecord(gameId);
+    const loadOnce = (game: Game) => {
+      if (game.id) {
+        record.unsubscribe(loadOnce);
+        this.ngZone.run(() => this.games.add(game));
+        record.subscribe('points', data => {
+          game.points = data;
+          this.cdr.detectChanges();
+        });
+      }
+    };
+    record.subscribe(loadOnce, true);
   }
 
-  private removeGame(gameId: any) {
-    this.games = this.games.filter(game => game.id !== gameId);
+  private removeGame(id: any) {
+    this.games.forEach((game: Game) => {
+      if (game.id === id) {
+        this.ngZone.run(() => this.games.delete(game));
+        this.cdr.detectChanges();
+      }
+    });
   }
 
 }

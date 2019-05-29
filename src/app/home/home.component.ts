@@ -6,8 +6,9 @@ import { User, Bot } from '../util/user';
 import { DeepstreamService } from '../deepstream.service';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
-import { GameComponent } from '../game/game.component';
 import { NewGameService } from '../new-game.service';
+import { Game } from '../game/game';
+import { GameComponent } from '../game/game.component';
 
 @Component({
   selector: 'app-home',
@@ -15,103 +16,70 @@ import { NewGameService } from '../new-game.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  @ViewChild(GameComponent) gc: GameComponent;
   user: User;
-  showPanels = true;
-  showPopoverMenu = false;
-  client: deepstreamIO.Client;
+  game: Game;
   Bot: User = Bot;
+  showPopoverMenu = false;
+  showPanels = true;
+  @ViewChild(GameComponent) gameComponent: GameComponent;
 
   constructor(
     private modalService: NgbModal,
     private auth: AuthService,
-    private deepstream: DeepstreamService,
     private notification: NotificationService,
-    private newGame: NewGameService) {
+    private newGame: NewGameService, private deepstream: DeepstreamService) {
   }
 
   ngOnInit() {
     this.user = this.auth.user;
-    this.client = this.deepstream.getInstance();
-    this.client.record.getList('users').whenReady(list => {
-      if (!list.getEntries().includes(this.user.id)) {
-        list.addEntry(this.user.id);
-        this.client.record.getRecord(this.user.id).set(this.user);
-        window.addEventListener('beforeunload', this.signoutDeepstream.bind(this));
+    this.newGame.subject.subscribe((game: Game) => {
+      this.game = game;
+      this.showPanels = false;
+    });
+    this.deepstream.getList('games').on('entry-removed', id => {
+      const gameAbandonedByOther = this.game !== null && this.game.id === id;
+      if (gameAbandonedByOther) {
+        this.showPanels = true;
+        this.game = null;
+        this.notification.update(`Game abandoned by player`, 'danger');
       }
     });
-    this.client.record.getList('games').on('entry-removed', this.onGameRecordDelete.bind(this));
-    this.newGame.loadGame.subscribe(this.loadGame.bind(this));
   }
 
-  loadGame(gameId: string) {
-    const record = this.client.record.getRecord(gameId);
-    const loadOnce = (data: any) => {
-      if (data.id) {
-        this.showPanels = false;
-        this.gc.loadGame(data);
-        record.unsubscribe(loadOnce);
-      }
-    };
-    record.subscribe(loadOnce, true);
-  }
-
-  onClickAI() {
-    this.newGame.loadAIGame();
-  }
-
-  onGameRecordDelete(gameId: string) {
-    if (this.gc.game && this.gc.game.id === gameId) {
-      this.notification.update(`Game abandoned by player`, 'danger');
-      this.gc.record = null;
-    }
+  onClickBot() {
+    this.newGame.pushAiGame();
   }
 
   closeGameView() {
-    if (this.gc.game && this.gc.isPlayer && this.gc.record) {
-      this.confirmGameQuit();
-    } else {
-      this.gc.unloadGame();
-      this.showPanels = true;
-    }
-  }
-
-  confirmGameQuit() {
-    const modal = this.modalService.open(QuitGameComponent);
-    modal.result.then((option: string) => {
-      if (option === 'Quit') {
-        const game = this.gc.game;
-        this.gc.unloadGame();
-        this.showPanels = true;
-        this.client.record.getRecord(this.user.id).set('status', 'Online');
-        if (!game.isAgainstAI) {
-          this.client.record.getRecord(this.gc.opponent.id).set('status', 'Online');
+    if (!this.game) { return; }
+    if (this.game.ourUserPlays) {
+      const modal = this.modalService.open(QuitGameComponent);
+      modal.result.then((option: string) => {
+        if (option === 'Quit') {
+          const game = this.game;
+          this.game = null;
+          this.showPanels = true;
+          this.deepstream.getRecord(this.user.id).set('status', 'Online');
+          if (!game.isAgainstAi) {
+            this.deepstream.getRecord(game.opponent.id).set('status', 'Online');
+          }
+          this.deepstream.getList('games').removeEntry(game.id);
+          this.deepstream.getRecord(game.id).delete();
         }
-        this.client.record.getList('games').removeEntry(game.id);
-        this.client.record.getRecord(game.id).delete();
-      }
-    });
+      });
+    } else {
+      this.game = null;
+      this.showPanels = true;
+      this.gameComponent.quitGame();
+    }
   }
 
   signout() {
     this.auth.signout();
-    this.signoutDeepstream();
   }
-
-  signoutDeepstream() {
-    this.client.record.getRecord(this.user.id).delete();
-    this.client.record.getList('users').removeEntry(this.user.id);
-    if (this.gc.game && this.gc.isPlayer && this.gc.record) {
-      this.client.record.getRecord(this.gc.game.id).delete();
-      this.client.record.getList('games').removeEntry(this.gc.game.id);
-      this.client.record.getRecord(this.gc.opponent.id).set('status', 'Online');
-    }
-    this.client.close();
-  }
-
 }
 
 /**
- * HomeComponent handles disruptive events such as user signout, user closing the browser window or user navigating
- * out of the game view.
+ * HomeComponent handles disruptive events such as signout, user closing the browser window or the
+ * game view.
  */

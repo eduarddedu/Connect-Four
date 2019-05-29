@@ -1,5 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
+import { Game } from '../game';
+
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
@@ -7,36 +9,36 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 })
 export class BoardComponent {
   @Input() activeColor: string;
-  @Input() isMyTurn: boolean;
-  @Output() boardClick: EventEmitter<string> = new EventEmitter();
+  @Input() allowMove: boolean;
+  @Output() userMoved: EventEmitter<string> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
 
   onMouseoverInput(id: string) {
-    if (!this.input(id).checked && this.isMyTurn) {
+    if (!this.input(id).checked && this.allowMove) {
       this.hoistDisc(id);
     }
   }
 
   onMouseleaveInput(id: string) {
-    if (!this.input(id).checked && this.isMyTurn) {
+    if (!this.input(id).checked && this.allowMove) {
       this.hideDisc(id);
     }
   }
 
   onClickInput(event: any) {
-    if (this.isMyTurn) {
+    if (this.allowMove) {
       const id = event.target.name;
       const disc = this.disc(id);
       if (disc.classList.contains('disc-initial')) {
         this.hoistDisc(id);
         setTimeout(() => {
           this.dropDisc(id);
-          this.boardClick.emit(id);
+          this.userMoved.emit(id);
         }, 100);
       } else {
         this.dropDisc(id);
-        this.boardClick.emit(id);
+        this.userMoved.emit(id);
       }
     } else {
       event.preventDefault();
@@ -54,8 +56,10 @@ export class BoardComponent {
     }
   }
 
-  replayGame(moves: string[] = [], redMovesFirst: boolean) {
-    let colorClass = redMovesFirst ? 'red' : 'yellow';
+  replayGame(game: Game) {
+    this.clear();
+    let colorClass = game.redMovesFirst ? 'red' : 'yellow';
+    const moves = game.moves.map(id => `${id}`);
     for (let i = 0; i < moves.length; i++) {
       const id = moves[i];
       const input = this.input(id);

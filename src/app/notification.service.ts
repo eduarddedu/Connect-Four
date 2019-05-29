@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-
+import { Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 export interface Msg {
@@ -16,12 +15,14 @@ export class NotificationService {
 
   msg = this._msgSource.asObservable();
 
+  constructor(private ngZone: NgZone) {}
+
   update(content: string, style: 'danger' | 'info' | 'success' | 'warning') {
     const msg: Msg = { content, style };
-    this._msgSource.next(msg);
+    this.ngZone.run(() =>  this._msgSource.next(msg));
   }
 
   clear() {
-    this._msgSource.next(null);
+    this.ngZone.run(() =>  this._msgSource.next(null));
   }
 }

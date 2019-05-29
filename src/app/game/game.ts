@@ -1,6 +1,7 @@
 /**
- * The Game class contains the whole game state. The methods to determine
- * win/draw or the next best move for a player are delegated to the GameModel helper class.
+ * The Game class contains the static and dynamic properties of the game,
+ * including "intelligent" methods to determin win or draw or the next best move.
+ * The more complicated methods delegated to the GameModel helper class.
  */
 
 import { User } from '../util/user';
@@ -21,13 +22,15 @@ export interface Game {
     moves: number[];
     redMovesFirst: boolean;
     winner?: User;
-    isAgainstAI: boolean;
+    ourUserPlays: boolean;
+    isAgainstAi: boolean;
+    opponent: User;
 }
 
 export class Game implements Game {
     private model: GameModel;
 
-    constructor(data: any) {
+    constructor(data: any, user: User) {
         this.id = data.id;
         this.startDate = new Date(data.startDate);
         this.players = data.players;
@@ -36,7 +39,10 @@ export class Game implements Game {
         this.winner = data.winner;
         this.redMovesFirst = data.redMovesFirst;
         this.moves = data.moves;
-        this.isAgainstAI = this.players.red.id === '0' || this.players.yellow.id === '0';
+        const ids = [this.players.red, this.players.yellow].map(player => player.id);
+        this.isAgainstAi = ids.includes('0');
+        this.ourUserPlays = ids.includes(user.id);
+        this.opponent = this.players.red.id === user.id ? this.players.yellow : this.players.red;
         this.model = new GameModel(this.redMovesFirst, data.moves);
     }
 

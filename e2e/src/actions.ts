@@ -9,6 +9,7 @@ export async function signIn(browserInstance: ProtractorBrowser, username: strin
         localStorage.setItem('id', uid);
         localStorage.setItem('username', name);
     }, id, username);
+    await browserInstance.get('/');
 }
 
 export async function signOut(browserInstance: ProtractorBrowser) {
@@ -21,6 +22,28 @@ export async function signOut(browserInstance: ProtractorBrowser) {
 export async function startAiGame(browserInstance: ProtractorBrowser) {
     const row = browserInstance.element(by.css('#AiPanel>.c4-card-body>.c4-card-row'));
     await row.click();
+}
+
+export async function startGameBetweenUsers(
+    browserInvitor: ProtractorBrowser, browserInvitee: ProtractorBrowser, usernameInvitee: string): Promise<any> {
+    return new Promise(resolve => {
+        const list = browserInvitor.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
+        list.then(async rows => {
+            expect(rows.length).toBeGreaterThan(1);
+            let userPresent = false;
+            for (const row of rows) {
+                const username = await row.all(by.css('.c4-card-row-item')).first().getText();
+                if (username === usernameInvitee) {
+                    userPresent = true;
+                    await row.click();
+                }
+            }
+            expect(userPresent).toBe(true);
+            const button = browserInvitee.element(by.buttonText('Join Game'));
+            await button.click();
+            resolve();
+        });
+    });
 }
 
 
