@@ -9,7 +9,7 @@ export class FirstWordPipe implements PipeTransform {
 
 @Pipe({ name: 'reverse' })
 export class ReversePipe implements PipeTransform {
-  transform(value: unknown[]) {
-    return value.slice().reverse();
+  transform(array: unknown[]) {
+    return array.slice().reverse();
   }
 }

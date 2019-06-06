@@ -2,12 +2,12 @@
   <div class="c4-card-header">Invite</div>
   <div class="c4-card-body">
     <div class="placeholder" *ngIf="users.size == 0">No one is online</div>
-    <div class="c4-card-row" *ngFor="let user of users | keyvalue | reverse" (click)="onClick(user.value)">
+    <div class="c4-card-row" *ngFor="let item of users | keyvalue: descendingSort" (click)="onClick(item.value)">
       <div class="c4-card-row-item">
-        <img [src]="user.value.imgUrl" alt="User icon" width="30" height="30"> {{user.value.name}}
+        <img [src]="item.value.imgUrl" alt="User icon" width="30" height="30"> {{item.value.name}}
       </div>
       <div class="c4-card-row-item">
-        {{user.value.status}}
+        {{item.value.status}}
       </div>
     </div>
   </div>

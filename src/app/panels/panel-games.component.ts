@@ -10,7 +10,7 @@ import { NewGameService } from '../new-game.service';
   styleUrls: ['./panel-games.component.css', './styles.component.css']
 })
 export class PanelGamesComponent implements OnInit {
-  games: Set<Game> = new Set();
+  games: Array<Game> = [];
   private client: deepstreamIO.Client;
 
   constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone,
@@ -35,7 +35,10 @@ export class PanelGamesComponent implements OnInit {
     const loadOnce = (game: Game) => {
       if (game.id) {
         record.unsubscribe(loadOnce);
-        this.ngZone.run(() => this.games.add(game));
+        this.ngZone.run(() => {
+          this.games.push(game);
+          this.games = Array.from(this.games);
+        });
         record.subscribe('points', data => {
           game.points = data;
           this.cdr.detectChanges();
@@ -46,17 +49,14 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private removeGame(id: any) {
-    this.games.forEach((game: Game) => {
-      if (game.id === id) {
-        this.ngZone.run(() => this.games.delete(game));
-        this.cdr.detectChanges();
-      }
+    this.ngZone.run(() => {
+      this.games = this.games.filter((game: Game) => game.id !== id);
     });
   }
 
 }
 
 /**
- * PanelGames displays and updates the list of on-going games.
+ * PanelGames shows the list of on-going games in LIFO order and updates the score of each game.
  */
 

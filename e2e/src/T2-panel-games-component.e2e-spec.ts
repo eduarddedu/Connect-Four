@@ -1,33 +1,84 @@
-import { browser, element, by, ProtractorBrowser } from 'protractor';
+import { browser, element, by, ProtractorBrowser, ElementFinder } from 'protractor';
 
-import { signIn, signOut, startAiGame } from './actions';
+import { signIn, signOut, startAiGame, quitGame, startGameBetweenUsers } from './actions';
 import { assertNoBrowserError } from './assertions';
 
 describe('PanelGames', () => {
-    const browser2: ProtractorBrowser = browser.forkNewDriverInstance(false);
-    const browser3: ProtractorBrowser = browser.forkNewDriverInstance(false);
-
-    beforeEach(async function () {
-        await signIn(browser, 'User');
-        await signIn(browser2, 'User2');
-        await signIn(browser3, 'User3');
-    });
+    const browserJohn: ProtractorBrowser = browser.forkNewDriverInstance(false);
+    const browserJane: ProtractorBrowser = browser.forkNewDriverInstance(false);
 
     afterEach(() => {
         assertNoBrowserError(browser);
-        assertNoBrowserError(browser2);
-        assertNoBrowserError(browser3);
+        assertNoBrowserError(browserJohn);
+        assertNoBrowserError(browserJane);
     });
 
     it('should show ongoing games', async () => {
-        await startAiGame(browser2);
-        await startAiGame(browser3);
-        const list = element(by.css('#panelGames>.c4-card-body')).all(by.css('.c4-card-row'));
-        list.then(async rows => {
+        await signIn(browser, 'Spectator');
+        await signIn(browserJohn, 'John');
+        await signIn(browserJane, 'Jane');
+        await startAiGame(browserJohn);
+        await startAiGame(browserJane);
+        gamesList(browser).then(async rows => {
             expect(rows.length).toEqual(2);
-            await signOut(browser);
-            await signOut(browser2);
-            await signOut(browser3);
+            expect(redPlayerName(rows[0])).toEqual('Jane');
+            expect(redPlayerName(rows[1])).toEqual('John');
         });
     });
+
+    it('should update when a game is removed', async () => {
+        await quitGame(browserJohn);
+        gamesList(browser).then(async rows => {
+            expect(rows.length).toEqual(1);
+            expect(redPlayerName(rows[0])).toEqual('Jane');
+        });
+        await quitGame(browserJane);
+        expect(element(by.css('#panelGames>.c4-card-body>.placeholder')).isPresent()).toBe(true);
+    });
+
+    it('should update the score', async () => {
+        await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
+        let index = 0;
+        for (const id of [67, 66, 57, 56, 47, 46, 37, 36, 27]) {
+            if (index % 2 === 0) {
+                await move(browserJane, id);
+                browserJohn.sleep(100);
+            } else {
+                await move(browserJohn, id);
+                browserJane.sleep(100);
+            }
+            index++;
+        }
+        gamesList(browser).then(async rows => {
+            expect(rows.length).toEqual(1);
+            expect(redPlayerName(rows[0])).toEqual('Jane');
+            expect(yellowPlayerName(rows[0])).toEqual('John');
+            expect(score(rows[0])).toEqual('1 - 0');
+        });
+    });
+
+    it('sign out', async () => {
+        [browser, browserJohn, browserJane].forEach(async (protractorBrowser) => await signOut(protractorBrowser));
+    });
+
+
+    function gamesList(browserInstance: ProtractorBrowser) {
+        return browserInstance.element(by.css('#panelGames>.c4-card-body')).all(by.css('.c4-card-row'));
+    }
+
+    async function redPlayerName(row: ElementFinder) {
+        return await row.all(by.css('div')).first().getText();
+    }
+
+    async function yellowPlayerName(row: ElementFinder) {
+        return await row.all(by.css('div')).get(2).getText();
+    }
+
+    async function score(row: ElementFinder) {
+        return await row.all(by.css('div')).get(1).getText();
+    }
+
+    async function move(browserInstance: ProtractorBrowser, id: number) {
+        await browserInstance.element(by.css(`input[name="${id}"]`)).click();
+    }
 });

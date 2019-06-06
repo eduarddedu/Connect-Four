@@ -53,7 +53,7 @@ describe('GameComponent', () => {
         expect(await gameOverMessage(browserJane)).toMatch('You win');
     });
 
-    it('should sign out', async () => {
+    it('sign out', async () => {
         await signOut(browser);
         await signOut(browserJane);
         await signOut(browserJohn);

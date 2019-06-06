@@ -46,5 +46,14 @@ export async function startGameBetweenUsers(
     });
 }
 
+export async function quitGame(browserInstance: ProtractorBrowser) {
+    const homeButton = browserInstance.element(by.css('.brand'));
+    expect(homeButton.isPresent()).toBe(true);
+    await homeButton.click();
+    const modalClose = browserInstance.element(by.buttonText('Quit'));
+    expect(modalClose.isPresent()).toBe(true);
+    await modalClose.click();
+}
+
 
 

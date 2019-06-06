@@ -37,7 +37,7 @@ export class HomeComponent implements OnInit {
       this.showPanels = false;
     });
     this.deepstream.getList('games').on('entry-removed', id => {
-      const gameAbandonedByOther = this.game !== null && this.game.id === id;
+      const gameAbandonedByOther = this.game && this.game.id === id;
       if (gameAbandonedByOther) {
         this.showPanels = true;
         this.game = null;
