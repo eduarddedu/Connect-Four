@@ -1,8 +1,9 @@
-import { Component, OnInit, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { Game } from '../game/game';
-import { DeepstreamService } from '../deepstream.service';
-import { NewGameService } from '../new-game.service';
+import { RealtimeService } from '../realtime.service';
+import { WatchGameService } from '../watch-game.service';
+import { IntegerSequenceGenerator } from '../util/generators';
 
 @Component({
   selector: 'app-panel-games',
@@ -10,48 +11,43 @@ import { NewGameService } from '../new-game.service';
   styleUrls: ['./panel-games.component.css', './styles.component.css']
 })
 export class PanelGamesComponent implements OnInit {
-  games: Array<Game> = [];
-  private client: deepstreamIO.Client;
+  private ascendingIntegers: Generator;
+  games: Map<string, Game> = new Map();
 
-  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone,
-    private newGame: NewGameService, deepstream: DeepstreamService) {
-    this.client = deepstream.getInstance();
+  constructor(private watchGame: WatchGameService, private realtime: RealtimeService) {
+    this.ascendingIntegers = IntegerSequenceGenerator(0);
   }
 
   ngOnInit() {
-    this.client.record.getList('games').whenReady((list: any) => {
-      list.getEntries().forEach(this.addGame.bind(this));
-      list.on('entry-added', this.addGame.bind(this));
-      list.on('entry-removed', this.removeGame.bind(this));
+    this.realtime.games.all.subscribe((games: Game[]) => {
+      games.forEach(this.add.bind(this));
     });
+    this.realtime.games.added.subscribe(this.add.bind(this));
+    this.realtime.games.removed.subscribe(this.remove.bind(this));
   }
 
   onClickGame(gameId: string) {
-    this.newGame.pushGame(gameId);
+    this.realtime.games.get(gameId).subscribe((game: Game) => this.watchGame.push(game));
   }
 
-  private addGame(gameId: string) {
-    const record = this.client.record.getRecord(gameId);
-    const loadOnce = (game: Game) => {
-      if (game.id) {
-        record.unsubscribe(loadOnce);
-        this.ngZone.run(() => {
-          this.games.push(game);
-          this.games = Array.from(this.games);
-        });
-        record.subscribe('points', data => {
-          game.points = data;
-          this.cdr.detectChanges();
-        });
-      }
-    };
-    record.subscribe(loadOnce, true);
+  private add(game: Game) {
+    this.games.set(game.id, Object.assign(game, { index: this.ascendingIntegers.next().value }));
+    this.realtime.games.onGamePointsUpdate(game.id, this.onGamePointsChanged, this);
   }
 
-  private removeGame(id: any) {
-    this.ngZone.run(() => {
-      this.games = this.games.filter((game: Game) => game.id !== id);
-    });
+  private remove(gameId: any) {
+    this.games.delete(gameId);
+  }
+
+  private onGamePointsChanged(gameId: string, points: {red: number, yellow: number}) {
+    const game = this.games.get(gameId);
+    if (game) {
+      game.points = points;
+    }
+  }
+
+  descendingSort(a: { key: string, value: Game & { index: number } }, b: { key: string, value: Game & { index: number } }): number {
+    return a.value.index < b.value.index ? 1 : -1;
   }
 
 }

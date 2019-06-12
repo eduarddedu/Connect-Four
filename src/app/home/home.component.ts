@@ -1,14 +1,19 @@
+/**
+ * HomeComponent handles disruptive events such as signout, user closing the browser window or the
+ * game view.
+ */
+
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService } from '../auth.service';
-import { User, Bot } from '../util/user';
-import { DeepstreamService } from '../deepstream.service';
+import { User, Bot } from '../util/models';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
-import { NewGameService } from '../new-game.service';
 import { Game } from '../game/game';
 import { GameComponent } from '../game/game.component';
+import { RealtimeService } from '../realtime.service';
+import { WatchGameService } from '../watch-game.service';
 
 @Component({
   selector: 'app-home',
@@ -27,16 +32,23 @@ export class HomeComponent implements OnInit {
     private modalService: NgbModal,
     private auth: AuthService,
     private notification: NotificationService,
-    private newGame: NewGameService, private deepstream: DeepstreamService) {
+    private realtime: RealtimeService,
+    private watchGame: WatchGameService) {
   }
 
   ngOnInit() {
     this.user = this.auth.user;
-    this.newGame.subject.subscribe((game: Game) => {
+    this.realtime.games.added.subscribe((game: Game) => {
+      if (game.ourUserPlays) {
+        this.game = game;
+        this.showPanels = false;
+      }
+    });
+    this.watchGame.selected.subscribe((game: Game) => {
       this.game = game;
       this.showPanels = false;
     });
-    this.deepstream.getList('games').on('entry-removed', id => {
+    this.realtime.games.removed.subscribe(id => {
       const gameAbandonedByOther = this.game && this.game.id === id;
       if (gameAbandonedByOther) {
         this.showPanels = true;
@@ -47,26 +59,23 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
-    this.newGame.pushAiGame();
+    this.realtime.games.createGame(this.user, Bot);
   }
 
-  closeGameView() {
+  async closeGameView() {
     if (!this.game) { return; }
     if (this.game.ourUserPlays) {
-      const modal = this.modalService.open(QuitGameComponent);
-      modal.result.then((option: string) => {
-        if (option === 'Quit') {
-          const game = this.game;
-          this.game = null;
-          this.showPanels = true;
-          this.deepstream.getRecord(this.user.id).set('status', 'Online');
-          if (!game.isAgainstAi) {
-            this.deepstream.getRecord(game.opponent.id).set('status', 'Online');
-          }
-          this.deepstream.getList('games').removeEntry(game.id);
-          this.deepstream.getRecord(game.id).delete();
+      const option = await this.quitGameResponse();
+      if (option === 'Quit') {
+        const game = this.game;
+        this.game = null;
+        this.showPanels = true;
+        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        if (!game.isAgainstAi) {
+          this.realtime.users.setUserStatus(game.opponent.id, 'Online');
         }
-      });
+        this.realtime.games.remove(game.id);
+      }
     } else {
       this.game = null;
       this.showPanels = true;
@@ -74,12 +83,14 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  private quitGameResponse(): Promise<string> {
+    return new Promise(resolve => {
+      const modal = this.modalService.open(QuitGameComponent);
+      modal.result.then((option: string) => resolve(option));
+    });
+  }
+
   signout() {
     this.auth.signout();
   }
 }
-
-/**
- * HomeComponent handles disruptive events such as signout, user closing the browser window or the
- * game view.
- */

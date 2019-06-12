@@ -1,52 +1,61 @@
-import { Component, OnInit, Input, ChangeDetectorRef, OnDestroy, NgZone } from '@angular/core';
+/**
+ * PanelPlayers shows online users, updating details such as the status.
+ * PanelPlayers also manages game create/rematch invitations.
+ */
 
-import { User } from '../util/user';
-import { DeepstreamService } from '../deepstream.service';
-import { NewGameService } from 'src/app/new-game.service';
+import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+
+import { User } from '../util/models';
+import { IntegerSequenceGenerator } from '../util/generators';
 import { Game } from '../game/game';
+import { NotificationService } from '../notification.service';
+import { GameInvitationComponent } from '../modals/game-invitation/game-invitation.component';
+import { RealtimeService } from '../realtime.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
   selector: 'app-panel-players',
   templateUrl: './panel-players.component.html',
-  styleUrls: ['./panel-players.component.css', './styles.component.css']
+  styleUrls: ['./panel-players.component.css', './styles.component.css'],
 })
 
 export class PanelPlayersComponent implements OnInit, OnDestroy {
-  @Input() user: User;
-  users: Map<string, User> = new Map();
   private game: Game;
-  private client: deepstreamIO.Client;
-  private index = (function () {
-    const Generator = function* () {
-      let counter = 0;
-      while (true) {
-        yield counter++;
-      }
-    };
-    return Generator();
-  })();
+  private ascendingIntegers: Generator;
+  @Input() user: User;
+  @Input() users: Map<string, User> = new Map();
 
-  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone,
-    private newGame: NewGameService, private deepstream: DeepstreamService) {
-    this.client = deepstream.getInstance();
-    this.newGame.subject.subscribe((game: Game) => this.game = game);
+  constructor(
+    private realtime: RealtimeService, private modalService: NgbModal, private notification: NotificationService) {
+    this.ascendingIntegers = IntegerSequenceGenerator(0);
   }
 
   ngOnInit() {
-    this.client.record.getList('users').whenReady(async (list: any) => {
-      const ids: string[] = list.getEntries();
-      for (const userId of ids) {
-        await this.addUser(userId);
-      }
-      list.on('entry-added', this.addUser.bind(this));
-      list.on('entry-removed', this.removeUser.bind(this));
-      if (!ids.includes(this.user.id)) {
-        list.addEntry(this.user.id);
-        this.deepstream.getRecord(this.user.id).set(this.user);
+    this.realtime.users.all.subscribe((users: User[]) => {
+      users.forEach(this.addUser.bind(this));
+      const userSignedInAnotherDevice = users.map(user => user.id).includes(this.user.id);
+      if (!userSignedInAnotherDevice) {
+        this.realtime.users.add(this.user);
         window.addEventListener('beforeunload', this.signOut.bind(this));
       }
     });
+    this.realtime.users.added.subscribe(this.addUser.bind(this));
+    this.realtime.users.removed.subscribe(this.removeUser.bind(this));
+    this.realtime.games.added.subscribe((game: Game) => {
+      if (game.ourUserPlays) {
+        this.game = game;
+      }
+    });
+    this.realtime.games.removed.subscribe((gameId: string) => {
+      if (this.game && this.game.id === gameId) {
+        this.game = null;
+      }
+    });
+    this.realtime.messages.createGameMessage.subscribe(this.handleCreateGameMessage.bind(this));
+    this.realtime.messages.resetGameMessage.subscribe(this.handleResetGameMessage.bind(this));
+    this.realtime.messages.acceptMessage.subscribe(this.handleAcceptMessage.bind(this));
+    this.realtime.messages.rejectMessage.subscribe(this.handleRejectMessage.bind(this));
   }
 
   ngOnDestroy() {
@@ -54,46 +63,95 @@ export class PanelPlayersComponent implements OnInit, OnDestroy {
   }
 
   private signOut() {
-    this.deepstream.getRecord(this.user.id).delete();
-    this.deepstream.getList('users').removeEntry(this.user.id);
-    if (this.game && this.game.ourUserPlays) {
-      this.deepstream.getRecord(this.game.id).delete();
-      this.deepstream.getList('games').removeEntry(this.game.id);
-      if (!this.game.isAgainstAi) {
-        this.deepstream.getRecord(this.game.opponent.id).set('status', 'Online');
+    this.realtime.users.remove(this.user.id);
+    const gameInProgress = this.game && this.game.ourUserPlays;
+    if (gameInProgress) {
+      this.realtime.games.remove(this.game.id);
+      if (this.game && !this.game.isAgainstAi) {
+        this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
       }
     }
   }
 
   onClick(user: User) {
-    this.newGame.invite(user);
+    if (user.status === 'Online') {
+      this.realtime.messages.sendCreateGameMessage(user.id);
+      this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
+    }
   }
 
-  private addUser(userId: string): Promise<any> {
-    return new Promise(resolve => {
-      if (userId !== this.user.id) {
-        const record = this.client.record.getRecord(userId);
-        const loadOnce = (user: User) => {
-          if (user.id) {
-            this.ngZone.run(() => {
-              this.users.set(user.id, Object.assign(user, { index: this.index.next().value }));
-              resolve();
-            });
-            record.unsubscribe(loadOnce);
-            record.subscribe('status', status => {
-              this.users.get(userId).status = status;
-              this.cdr.detectChanges();
-            });
-          }
-        };
-        record.subscribe(loadOnce, true);
-      }
-    });
+  private addUser(user: User) {
+    if (user.id !== this.user.id) {
+      this.users.set(user.id, Object.assign(user, { index: this.ascendingIntegers.next().value }));
+      this.realtime.users.onUserStatusChange(user.id, this.onUserStatusChanged, this);
+    }
   }
 
   private removeUser(userId: string) {
-    this.users.delete(userId);
-    this.cdr.detectChanges();
+    if (userId !== this.user.id) {
+      this.users.delete(userId);
+    }
+  }
+
+  private onUserStatusChanged(userId: string, status: 'Online' | 'Busy' | 'In game') {
+    const user = this.users.get(userId);
+    if (user) {
+      user.status = status;
+    }
+  }
+
+  private async handleCreateGameMessage(senderId: string) {
+    let sender: User = this.users.get(senderId);
+    const option = await this.getUserResponse(sender);
+    sender = this.users.get(senderId);
+    if (option === 'Accept') {
+      if (sender && sender.status === 'Online') {
+        this.realtime.messages.sendAcceptMessage(sender.id);
+        this.realtime.users.setUserStatus(this.user.id, 'In game');
+        this.realtime.users.setUserStatus(sender.id, 'In game');
+        this.realtime.games.createGame(this.user, sender);
+      } else {
+        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        this.notification.update(`${sender.name} is not available`, 'warning');
+      }
+    } else if (option === 'Reject' && sender.status === 'Online') {
+      this.realtime.messages.sendRejectMessage(senderId);
+    }
+  }
+
+  private async handleResetGameMessage() {
+    let sender: User = this.game.opponent;
+    const option = await this.getUserResponse(sender);
+    sender = this.users.get(sender.id);
+    if (option === 'Accept') {
+      if (sender && sender.status === 'In game') {
+        this.realtime.games.updateGameState(this.game.id, 'in progress');
+      } else {
+        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        this.notification.update(`${sender.name} is not available`, 'warning');
+      }
+    } else if (option === 'Reject' && sender.status === 'In game') {
+      this.realtime.messages.sendRejectMessage(sender.id);
+    }
+  }
+
+  private handleAcceptMessage(senderId: string) {
+    const sender = this.users.get(senderId);
+    this.notification.update(`${sender.name} has accepted your invitation`, 'success');
+  }
+
+  private handleRejectMessage(senderId: string) {
+    const sender = this.users.get(senderId);
+    this.notification.update(`${sender.name} has rejected your invitation`, 'warning');
+  }
+
+  private getUserResponse(sender: User): Promise<string> {
+    this.realtime.users.setUserStatus(this.user.id, 'Busy');
+    return new Promise(resolve => {
+      const modal = this.modalService.open(GameInvitationComponent);
+      modal.componentInstance.user = sender;
+      modal.result.then((option: string) => resolve(option));
+    });
   }
 
   descendingSort(a: { key: string, value: User & { index: number } }, b: { key: string, value: User & { index: number } }): number {
@@ -101,9 +159,3 @@ export class PanelPlayersComponent implements OnInit, OnDestroy {
   }
 
 }
-
-/**
- * PanelPlayers displays online players and their status in a list which also provides the UI for sending game invitations.
- */
-
-

@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable, race } from 'rxjs';
 
-import { User } from './util/user';
+import { User } from './util/models';
 import { environment } from '../environments/environment';
 
 /* Global entry points to OAuth APIs */

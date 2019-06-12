@@ -26,9 +26,9 @@
             </app-board>
         </div>
 
-        <div class="newGameBtn" *ngIf="game.isPlayer && game.state === 'over'">
+        <div class="newGameBtn" *ngIf="game.ourUserPlays && game.state === 'over'">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New
-                game</button>
+                Game</button>
         </div>
     </div>
 

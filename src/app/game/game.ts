@@ -4,7 +4,7 @@
  * The more complicated methods delegated to the GameModel helper class.
  */
 
-import { User } from '../util/user';
+import { User } from '../util/models';
 import { GameModel } from './game-model';
 
 export interface Game {

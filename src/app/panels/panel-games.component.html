@@ -1,11 +1,11 @@
 <div id="panelGames" class="c4-card">
   <div class="c4-card-header">Watch</div>
   <div class="c4-card-body">
-    <div class="placeholder" *ngIf="games.length == 0">No games</div>
-    <div class="c4-card-row" *ngFor="let game of games | reverse" (click)="onClickGame(game.id)">
-      <div> {{game.players.red.name}} </div>
-      <div> {{game.points.red}} - {{game.points.yellow}} </div>
-      <div> {{game.players.yellow.name}} </div>
+    <div class="placeholder" *ngIf="games.size == 0">No games</div>
+    <div class="c4-card-row" *ngFor="let item of games | keyvalue: descendingSort" (click)="onClickGame(item.value.id)">
+      <div> {{item.value.players.red.name}} </div>
+      <div> {{item.value.points.red}} - {{item.value.points.yellow}} </div>
+      <div> {{item.value.players.yellow.name}} </div>
     </div>
   </div>
 </div>

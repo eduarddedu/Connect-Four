@@ -42,16 +42,18 @@ describe('PanelPlayers', () => {
         await signOut(browser);
     });
 
-    it('should show user status "In game"', async () => {
+    it('should show user status - in game and not disturb user', async () => {
         await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
-        panelRows(browser).then(rows => {
+        panelRows(browser).then(async rows => {
             expect(rows.length).toEqual(2);
             expect(status(rows[0])).toEqual('In game');
             expect(status(rows[1])).toEqual('In game');
+            await rows[0].click();
+            expect(status(rows[0])).toEqual('In game');
+            await signOut(browser);
+            await signOut(browserJohn);
+            await signOut(browserJane);
         });
-        await signOut(browser);
-        await signOut(browserJohn);
-        await signOut(browserJane);
     });
 
     function panelRows(browserInstance: ProtractorBrowser) {

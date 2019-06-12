@@ -53,6 +53,33 @@ describe('GameComponent', () => {
         expect(await gameOverMessage(browserJane)).toMatch('You win');
     });
 
+    it('should display new game button on game end', async () => {
+        expect((await newGameButton(browserJane)).isPresent()).toBe(true);
+        expect((await newGameButton(browserJohn)).isPresent()).toBe(true);
+    });
+
+    it('should display new game invitation to the other player', async () => {
+        const newGameBtn = await newGameButton(browserJane);
+        await newGameBtn.click();
+        browserJane.sleep(100);
+        const acceptButton = await browserJohn.element(by.buttonText('Join Game'));
+        expect(acceptButton.isPresent()).toBe(true);
+        await acceptButton.click();
+    });
+
+    it('should display correct messages on first turn - after game reset ', async () => {
+        expect(await turnMessage(browser)).toEqual('Waiting for John...');
+        expect(await turnMessage(browserJohn)).toEqual('Your turn');
+        expect(await turnMessage(browserJane)).toEqual('Waiting for John...');
+    });
+
+    it('should display correct message on second turn - after game reset', async () => {
+        await move(browserJohn, 67);
+        expect(await turnMessage(browser)).toEqual('Waiting for Jane...');
+        expect(await turnMessage(browserJohn)).toEqual('Waiting for Jane...');
+        expect(await turnMessage(browserJane)).toEqual('Your turn');
+    });
+
     it('sign out', async () => {
         await signOut(browser);
         await signOut(browserJane);
@@ -71,4 +98,6 @@ async function move(browserInstance: ProtractorBrowser, id: number) {
     await browserInstance.element(by.css(`input[name="${id}"]`)).click();
 }
 
-
+function newGameButton(browserInstance: ProtractorBrowser) {
+    return browserInstance.element(by.buttonText('New Game'));
+}
