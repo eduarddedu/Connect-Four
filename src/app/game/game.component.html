@@ -1,5 +1,10 @@
-<div *ngIf="game">
-    <div class="c4-card">
+<div id="wrapper" *ngIf="game">
+    <div style="display: flex; justify-content: center">
+        <div class="timer">
+            <app-timer [startDate]="game.startDate"></app-timer>
+        </div>
+    </div>
+    <div class="c4-card" style="margin-bottom: 10px">
         <div class="score">
             <div class="player">
                 <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | firstWord }}
@@ -15,7 +20,6 @@
             <div class="gameMessage">
                 <div *ngIf="game.state === 'in progress'" class="spaceBetween">
                     <span id="turnMessage">{{turnMessage}}</span>
-                    <!-- <app-timer [startDate]="game.startDate"></app-timer> -->
                 </div>
                 <div id="gameOverMessage" *ngIf="game.state === 'over'" style="text-align: center">
                     {{gameOverMessage}}
@@ -26,7 +30,7 @@
             </app-board>
         </div>
 
-        <div class="newGameBtn" *ngIf="game.ourUserPlays && game.state === 'over'">
+        <div class="newGameBtn" *ngIf="showNewGameButton">
             <button type="button" class="btn btn-primary" (click)="onClickNewGame()" [disabled]="newGameBtnClicked">New
                 Game</button>
         </div>

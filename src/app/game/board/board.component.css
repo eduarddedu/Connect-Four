@@ -40,6 +40,7 @@ Board styles by Roman Empire: https://css-tricks.com/roman-empire-made-pure-css-
     flex-flow: column wrap;
     min-width: 420px;
     height: 360px;
+    background-color: #3a332c9c;
 }
 
 .column {
@@ -140,11 +141,11 @@ input:indeterminate {
 }
 
 .red {
-    color: #ff010b;
+    color: #ff2701;
 }
 
 .yellow {
-    color: #ffd918;
+    color: #ffd816fb;
 }
 
 @media(max-width: 991.999px) {

@@ -1,13 +1,15 @@
-<div class="modal-header">
-  <h4 class="modal-title">Game Invitation</h4>
-  <button type="button" class="close" aria-label="Close" (click)="activeModal.close('Reject')">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<div class="modal-body" *ngIf="user">
-  <img [src]="user.imgUrl" alt="User icon" width="40" height="40"> {{user.name}} invites you to play
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Accept')" ngbAutofocus>Join
-    Game</button>
+<div class="c4-card"> 
+  <div class="c4-modal-header">
+    <h4 class="modal-title">Game Invitation</h4>
+    <button type="button" class="close" aria-label="Close" (click)="activeModal.close('Reject')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body" *ngIf="user">
+    <img [src]="user.imgUrl" alt="User icon" width="40" height="40"> {{user.name}} invites you to play
+  </div>
+  <div class="c4-modal-footer">
+    <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Accept')" ngbAutofocus>Join
+      Game</button>
+  </div>
 </div>

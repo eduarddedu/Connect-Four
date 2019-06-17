@@ -104,11 +104,11 @@ export class GameComponent implements OnInit {
     }
   }
 
-  get isOurTurn() {
+  get isOurTurn(): boolean {
     return this.game.ourUserPlays && this.game.state === 'in progress' && this.game.activePlayer.id === this.user.id;
   }
 
-  get turnMessage() {
+  get turnMessage(): string | undefined {
     const username = this.game.activePlayer.name.replace(/ .*/, '');
     if (this.game.ourUserPlays) {
       return this.isOurTurn ? 'Your turn' : `Waiting for ${username}...`;
@@ -116,7 +116,7 @@ export class GameComponent implements OnInit {
     return `Waiting for ${username}...`;
   }
 
-  get gameOverMessage() {
+  get gameOverMessage(): string | undefined {
     if (this.game.state === 'over') {
       if (this.game.ourUserPlays) {
         return this.newGameBtnClicked ? `Invitation sent. Waiting for ${this.game.opponent.name}` :
@@ -125,6 +125,10 @@ export class GameComponent implements OnInit {
       }
       return this.game.winner ? `${this.game.winner.name} wins!` : `It's a draw 🤔`;
     }
+  }
+
+  get showNewGameButton(): boolean {
+    return this.game && this.game.ourUserPlays && this.game.state === 'over';
   }
 
 }

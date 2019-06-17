@@ -1,6 +1,14 @@
+
+.timer {
+    background-color: var(--gray-dark);
+    color: var(--main-text-color);
+    padding: 4px 6px;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: -6px;
+}
+
 .c4-card {
-    padding: 16px;
-    margin-bottom: 12px;
+    padding: 12px;
 }
 
 .gameArea {

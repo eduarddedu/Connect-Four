@@ -6,9 +6,10 @@ import { Observable } from 'rxjs';
   styles: [`
     span {
       display: inline-block;
-      width: 66px;
+      width: 67px;
       font-size: 16px;
       line-height: normal;
+      font-family: 'Nunito', sans-serif;
     }`
   ]
 })

@@ -1,11 +1,15 @@
+:root {
+    --main-text-color: #f0ece7;
+}
+
 .c4-container {
     display: flex;
     flex-flow: column nowrap;
     min-height: 100vh;
     min-width: 318px;
     padding: 0 0 16px 0;
+    color: var(--main-text-color);
     background-image: linear-gradient(to bottom, #006994, #fff) !important;
-    color: #f0ece7;
 }
 
 .c4-container>header {
@@ -15,9 +19,12 @@
 }
 
 .c4-card {
-    border-radius: 3px;
     background-color: var(--gray-dark);
+    border-radius: 3px;
     overflow: hidden;
+    user-select: none;
+    font-family: 'Nunito', sans-serif;
+    color: var(--main-text-color);
 }
 
 .c4-card-header {
@@ -51,6 +58,42 @@
     height: 30px;
     border-radius: 15px;
 }
+
+/** Bootstrap modal overrides **/
+
+.c4-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1rem 1rem;
+    background-color: var(--gray-dark);
+    border-bottom: 1px solid #222;
+    border-top-left-radius: .3rem;
+    border-top-right-radius: .3rem;
+}
+
+.c4-modal-body {
+    position: relative;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    padding: 1rem;
+  }
+
+.c4-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 1rem;
+    border-top: 1px solid #222;
+    border-bottom-right-radius: 0.3rem;
+    border-bottom-left-radius: 0.3rem;
+}
+
+.c4-modal-footer>button {
+    margin-left: 10px;
+}
+
+/** Responsive styles **/
 
 @media(min-width: 992px) {
     .c4-container {
