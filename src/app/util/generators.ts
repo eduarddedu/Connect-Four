@@ -9,5 +9,11 @@ export function* IntegerSequenceGenerator(startInteger: number, isAscending = tr
     }
 }
 
+export function* UIDGenerator() {
+    while (true) {
+        return Math.random().toString(16).substring(2);
+    }
+}
+
 
 

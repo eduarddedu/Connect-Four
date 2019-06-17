@@ -2,6 +2,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable, race } from 'rxjs';
 
 import { User } from './util/models';
+import { UIDGenerator } from './util/generators';
 import { environment } from '../environments/environment';
 
 /* Global entry points to OAuth APIs */
@@ -15,6 +16,7 @@ export class AuthService {
   public signin: Subject<any> = new Subject();
   private _user: User;
   private GoogleAuth: any;
+  private uidGen = UIDGenerator();
 
   constructor(zone: NgZone) {
     if (environment.production) {
@@ -39,7 +41,7 @@ export class AuthService {
     const getUser = (googleUser: any): User => {
       const profile = googleUser.getBasicProfile();
       return <User>{
-        id: profile.getId(),
+        id: this.uidGen.next().value,
         name: profile.getName(),
         imgUrl: profile.getImageUrl(),
         email: profile.getEmail(),
@@ -78,7 +80,7 @@ export class AuthService {
     const user = new Subject<User>();
     const getUser = (profile: any): User => {
       return {
-        id: profile.id,
+        id: this.uidGen.next().value,
         name: profile.name,
         imgUrl: profile.picture.data.url,
         email: profile.email,
