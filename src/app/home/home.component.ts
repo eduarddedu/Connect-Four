@@ -59,6 +59,7 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
+    this.realtime.users.setUserStatus(this.user.id, 'In game');
     this.realtime.games.createGame(this.user, Bot);
   }
 
