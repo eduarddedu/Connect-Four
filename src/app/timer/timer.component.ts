@@ -1,8 +1,8 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, NgZone, AfterViewInit } from '@angular/core';
 import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
-  template: `<span *ngIf="observable | async as time">{{time}}</span>`,
+  template: `<span id="hourMinSec">00:00:00</span>`,
   styles: [`
     span {
       display: inline-block;
@@ -13,9 +13,9 @@ import { Observable } from 'rxjs';
     }`
   ]
 })
-export class TimerComponent implements OnInit, OnDestroy {
+export class TimerComponent implements AfterViewInit, OnDestroy {
   @Input() startDate: Date;
-  observable: Observable<string>;
+  updates: Observable<string>;
   updateInterval: any;
   formatter = new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
@@ -25,10 +25,17 @@ export class TimerComponent implements OnInit, OnDestroy {
     timeZone: 'UTC'
   });
 
-  ngOnInit() {
-    this.observable = new Observable(subscriber => {
+  constructor(private ngZone: NgZone) {}
+
+  ngAfterViewInit() {
+    this.updates = new Observable(subscriber => {
       subscriber.next(this.getHourMinuteSecondStr());
       this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondStr()), 1000);
+    });
+    this.ngZone.runOutsideAngular(() => {
+      this.updates.subscribe(value => {
+        document.getElementById('hourMinSec').innerHTML = value;
+      });
     });
   }
 
