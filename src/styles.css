@@ -1,5 +1,6 @@
 :root {
     --main-text-color: #f0ece7;
+    --secondary-text-color: coral;
 }
 
 .c4-container {
@@ -59,41 +60,7 @@
     border-radius: 15px;
 }
 
-/** Bootstrap modal overrides **/
-
-.c4-modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 1rem 1rem;
-    background-color: var(--gray-dark);
-    border-bottom: 1px solid #222;
-    border-top-left-radius: .3rem;
-    border-top-right-radius: .3rem;
-}
-
-.c4-modal-body {
-    position: relative;
-    -ms-flex: 1 1 auto;
-    flex: 1 1 auto;
-    padding: 1rem;
-  }
-
-.c4-modal-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 1rem;
-    border-top: 1px solid #222;
-    border-bottom-right-radius: 0.3rem;
-    border-bottom-left-radius: 0.3rem;
-}
-
-.c4-modal-footer>button {
-    margin-left: 10px;
-}
-
-/** Responsive styles **/
+/** Desktop devices **/
 
 @media(min-width: 992px) {
     .c4-container {
@@ -107,4 +74,10 @@
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
+}
+
+.hcentered {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
 }

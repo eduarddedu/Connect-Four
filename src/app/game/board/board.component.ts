@@ -10,6 +10,7 @@ import { Game } from '../game';
 export class BoardComponent {
   @Input() activeColor: string;
   @Input() allowMove: boolean;
+  @Input() connectedCells: number[];
   @Output() userMoved: EventEmitter<string> = new EventEmitter();
   rows = [1, 2, 3, 4, 5, 6];
   columns = [1, 2, 3, 4, 5, 6, 7];
@@ -81,6 +82,7 @@ export class BoardComponent {
     const inputs = [].slice.call(document.querySelectorAll('input'));
     inputs.forEach((input: any) => input.checked = false);
   }
+
 
   private hoistDisc(id: string) {
     const disc = this.disc(id);

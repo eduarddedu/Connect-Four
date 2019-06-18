@@ -15,15 +15,6 @@
     margin-bottom: 48px;
 }
 
-.newGameBtn {
-    margin-top: -38px;
-    text-align: center;
-}
-
-.gameMessage {
-    margin-bottom: 6px;
-}
-
 .score {
     display: grid;
     grid-template-columns: 1fr auto 1fr;

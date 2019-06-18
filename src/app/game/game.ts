@@ -1,20 +1,22 @@
 /**
- * The Game class contains the static and dynamic properties of the game,
- * including "intelligent" methods to determin win or draw or the next best move.
- * The more complicated methods delegated to the GameModel helper class.
+ * The Game class contains the game as a whole and
+ * performs all of the dynamic computations which determine the game state as seen by both players and watchers.
+ * The more complicated methods are delegated to the GameModel helper class.
  */
 
 import { User } from '../util/models';
-import { GameModel } from './game-model';
+import { GameModel } from './model';
 
-export interface Game {
+export class Game {
+    private model: GameModel;
+    private user: User;
     id: string;
     startDate: Date;
     players: {
         red: User;
         yellow: User;
     };
-    state: 'in progress' | 'over';
+    state: 'in progress' | 'over' | 'on hold';
     points: {
         red: number;
         yellow: number;
@@ -25,12 +27,10 @@ export interface Game {
     ourUserPlays: boolean;
     isAgainstAi: boolean;
     opponent: User;
-}
-
-export class Game implements Game {
-    private model: GameModel;
+    status = '';
 
     constructor(data: any, user: User) {
+        this.user = user;
         this.id = data.id;
         this.startDate = new Date(data.startDate);
         this.players = data.players;
@@ -44,6 +44,7 @@ export class Game implements Game {
         this.ourUserPlays = ids.includes(user.id);
         this.opponent = this.players.red.id === user.id ? this.players.yellow : this.players.red;
         this.model = new GameModel(this.redMovesFirst, data.moves);
+        this.updateStatus();
     }
 
     get activeColor() {
@@ -65,10 +66,33 @@ export class Game implements Game {
         return this.activePlayer === this.players.red ? this.players.yellow : this.players.red;
     }
 
-    update(id: string) {
+    get isOurTurn() {
+        return this.ourUserPlays && this.state === 'in progress' && this.activePlayer.id === this.user.id;
+    }
+
+    updateMoves(id: string) {
         this.moves.push(+id);
         this.model.move(+id);
         this.checkGame();
+    }
+
+    updateStatus() {
+        const firstName = (str: string) => str.replace(/ .*/, '');
+        switch (this.state) {
+            case 'over':
+                this.status = `Game over`;
+                break;
+            case 'in progress':
+                if (this.ourUserPlays) {
+                    this.status = this.isOurTurn ? 'Your turn' : `Waiting for ${firstName(this.activePlayer.name)}...`;
+                } else {
+                    this.status = `Waiting for ${firstName(this.activePlayer.name)}...`;
+                }
+                break;
+            case 'on hold':
+                this.status = 'Waiting for players...';
+
+        }
     }
 
     nextBestMove() {
@@ -77,15 +101,6 @@ export class Game implements Game {
 
     randomMove() {
         return this.model.randomMove();
-    }
-
-    reset() {
-        if (this.winner) {
-            this.redMovesFirst = this.winner.id === this.players.yellow.id;
-        }
-        this.moves = [];
-        this.state = 'in progress';
-        this.model = new GameModel(this.redMovesFirst, []);
     }
 
     private checkGame() {
@@ -100,6 +115,8 @@ export class Game implements Game {
                 this.points.yellow += 1;
             }
         }
+        this.updateStatus();
     }
+
 }
 

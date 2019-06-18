@@ -1,3 +1,7 @@
+/**
+ * PanelGames shows the list of on-going games in LIFO order and updates the score of each game.
+ */
+
 import { Component, OnInit } from '@angular/core';
 
 import { Game } from '../game/game';
@@ -52,7 +56,4 @@ export class PanelGamesComponent implements OnInit {
 
 }
 
-/**
- * PanelGames shows the list of on-going games in LIFO order and updates the score of each game.
- */
 

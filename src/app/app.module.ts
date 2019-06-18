@@ -19,6 +19,7 @@ import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
 import { FirstWordPipe, ReversePipe } from './util/pipes';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
+import { GameOverComponent } from './modals/game-over/game-over.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
     QuitGameComponent,
     PolicyPageComponent,
     FirstWordPipe,
-    ReversePipe
+    ReversePipe,
+    GameOverComponent
   ],
   imports: [
     BrowserModule,
@@ -46,7 +48,7 @@ import { PolicyPageComponent } from './policy-page/policy-page.component';
     AppRoutingModule
   ],
   providers: [],
-  entryComponents: [GameInvitationComponent, QuitGameComponent],
+  entryComponents: [GameInvitationComponent, QuitGameComponent, GameOverComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

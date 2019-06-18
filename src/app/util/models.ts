@@ -14,3 +14,4 @@ export const Bot: User = {
     authProvider: null,
     status: 'Online'
 };
+

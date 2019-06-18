@@ -1,0 +1,19 @@
+<div class="modal-header">
+  <h4 class="modal-title"> Game over </h4>
+</div>
+<div class="modal-body" id="gameResult">
+  <div *ngIf="game.winner" class="hcentered">
+    <p>🏆🏆🏆 Winner 🏆🏆🏆</p>
+    <span> <img [src]="game.winner.imgUrl" alt="User icon" width="40" height="40" style="border-radius: 20px"></span>
+    <span>{{game.winner.name | firstWord}}</span>
+  </div>
+  <p *ngIf="!game.winner">Game ended in a draw 🤔</p>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-danger" (click)="activeModal.close('Quit')" style="float:left">Quit
+    Game</button>
+
+  <button type="button" class="btn btn-success" aria-label="Close" (click)="activeModal.close('Rematch')" ngbAutofocus>
+    Play another round
+  </button>
+</div>

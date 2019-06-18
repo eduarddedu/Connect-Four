@@ -1,6 +1,6 @@
 import { browser, element, by, ProtractorBrowser, ElementFinder } from 'protractor';
 
-import { signIn, signOut, startAiGame, quitGame, startGameBetweenUsers } from './actions';
+import { signIn, signOut, startAiGame, quitGameDuringPlay, startGameBetweenUsers, quitGameOnGameEnd } from './actions';
 import { assertNoBrowserError } from './assertions';
 
 describe('PanelGames', () => {
@@ -27,19 +27,19 @@ describe('PanelGames', () => {
     });
 
     it('should update when a game is removed', async () => {
-        await quitGame(browserJohn);
+        await quitGameDuringPlay(browserJohn);
         gamesList(browser).then(async rows => {
             expect(rows.length).toEqual(1);
             expect(redPlayerName(rows[0])).toEqual('Jane');
         });
-        await quitGame(browserJane);
+        await quitGameDuringPlay(browserJane);
         expect(element(by.css('#panelGames>.c4-card-body>.placeholder')).isPresent()).toBe(true);
     });
 
     it('should update the score', async () => {
         await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
         let index = 0;
-        for (const id of [67, 66, 57, 56, 47, 46, 37, 36, 27]) {
+        for (const id of [67, 66, 57, 56, 47, 46, 37]) {
             if (index % 2 === 0) {
                 await move(browserJane, id);
                 browserJohn.sleep(100);
@@ -55,10 +55,14 @@ describe('PanelGames', () => {
             expect(yellowPlayerName(rows[0])).toEqual('John');
             expect(score(rows[0])).toEqual('1 - 0');
         });
+        await quitGameOnGameEnd(browserJane);
+        await quitGameOnGameEnd(browserJohn);
     });
 
     it('sign out', async () => {
-        [browser, browserJohn, browserJane].forEach(async (protractorBrowser) => await signOut(protractorBrowser));
+        await signOut(browser);
+        await signOut(browserJane);
+        await signOut(browserJohn);
     });
 
 

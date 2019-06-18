@@ -1,13 +1,12 @@
 /**
- * PanelPlayers shows online users, updating details such as the status.
- * PanelPlayers also manages game create/rematch invitations.
+ * PanelPlayers shows online users, updating details such as the status and
+ * provides the mechanism to initiate a game, by clicking on a user in list.
  */
 
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 import { User } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
-import { Game } from '../game/game';
 import { NotificationService } from '../notification.service';
 import { GameInvitationComponent } from '../modals/game-invitation/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
@@ -20,8 +19,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./panel-players.component.css', './styles.component.css'],
 })
 
-export class PanelPlayersComponent implements OnInit, OnDestroy {
-  private game: Game;
+export class PanelPlayersComponent implements OnInit {
   private ascendingIntegers: Generator;
   @Input() user: User;
   @Input() users: Map<string, User> = new Map();
@@ -32,45 +30,14 @@ export class PanelPlayersComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.realtime.users.all.subscribe((users: User[]) => {
-      users.forEach(this.addUser.bind(this));
-      const userSignedInAnotherDevice = users.map(user => user.id).includes(this.user.id);
-      if (!userSignedInAnotherDevice) {
-        this.realtime.users.add(this.user);
-        window.addEventListener('beforeunload', this.signOut.bind(this));
-      }
-    });
+    this.realtime.users.add(this.user);
+    window.addEventListener('beforeunload', () => this.realtime.users.remove(this.user.id));
+    this.realtime.users.all.subscribe((users: User[]) => users.forEach(this.addUser.bind(this)));
     this.realtime.users.added.subscribe(this.addUser.bind(this));
     this.realtime.users.removed.subscribe(this.removeUser.bind(this));
-    this.realtime.games.added.subscribe((game: Game) => {
-      if (game.ourUserPlays) {
-        this.game = game;
-      }
-    });
-    this.realtime.games.removed.subscribe((gameId: string) => {
-      if (this.game && this.game.id === gameId) {
-        this.game = null;
-      }
-    });
     this.realtime.messages.createGameMessage.subscribe(this.handleCreateGameMessage.bind(this));
-    this.realtime.messages.resetGameMessage.subscribe(this.handleResetGameMessage.bind(this));
     this.realtime.messages.acceptMessage.subscribe(this.handleAcceptMessage.bind(this));
     this.realtime.messages.rejectMessage.subscribe(this.handleRejectMessage.bind(this));
-  }
-
-  ngOnDestroy() {
-    this.signOut();
-  }
-
-  private signOut() {
-    this.realtime.users.remove(this.user.id);
-    const gameInProgress = this.game && this.game.ourUserPlays;
-    if (gameInProgress) {
-      this.realtime.games.remove(this.game.id);
-      if (this.game && !this.game.isAgainstAi) {
-        this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
-      }
-    }
   }
 
   onClick(user: User) {
@@ -116,22 +83,7 @@ export class PanelPlayersComponent implements OnInit, OnDestroy {
       }
     } else if (option === 'Reject' && sender.status === 'Online') {
       this.realtime.messages.sendRejectMessage(senderId);
-    }
-  }
-
-  private async handleResetGameMessage() {
-    let sender: User = this.game.opponent;
-    const option = await this.getUserResponse(sender);
-    sender = this.users.get(sender.id);
-    if (option === 'Accept') {
-      if (sender && sender.status === 'In game') {
-        this.realtime.games.updateGameState(this.game.id, 'in progress');
-      } else {
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
-        this.notification.update(`${sender.name} is not available`, 'warning');
-      }
-    } else if (option === 'Reject' && sender.status === 'In game') {
-      this.realtime.messages.sendRejectMessage(sender.id);
+      this.realtime.users.setUserStatus(this.user.id, 'Online');
     }
   }
 
@@ -148,7 +100,7 @@ export class PanelPlayersComponent implements OnInit, OnDestroy {
   private getUserResponse(sender: User): Promise<string> {
     this.realtime.users.setUserStatus(this.user.id, 'Busy');
     return new Promise(resolve => {
-      const modal = this.modalService.open(GameInvitationComponent);
+      const modal = this.modalService.open(GameInvitationComponent, { backdrop: 'static' });
       modal.componentInstance.user = sender;
       modal.result.then((option: string) => resolve(option));
     });

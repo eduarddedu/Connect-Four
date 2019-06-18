@@ -15,5 +15,12 @@ export function* UIDGenerator() {
     }
 }
 
+export function* ArrayGenerator(source: any[]) {
+    let counter = 0;
+    while (true) {
+        yield source[counter++ % source.length];
+    }
+}
+
 
 

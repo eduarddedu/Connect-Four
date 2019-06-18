@@ -46,13 +46,25 @@ export async function startGameBetweenUsers(
     });
 }
 
-export async function quitGame(browserInstance: ProtractorBrowser) {
+export async function quitGameDuringPlay(browserInstance: ProtractorBrowser) {
     const homeButton = browserInstance.element(by.css('.brand'));
     expect(homeButton.isPresent()).toBe(true);
     await homeButton.click();
-    const modalClose = browserInstance.element(by.buttonText('Quit'));
+    const modalClose = browserInstance.element(by.buttonText('Quit Game'));
     expect(modalClose.isPresent()).toBe(true);
     await modalClose.click();
+}
+
+export async function quitGameOnGameEnd(browserInstance: ProtractorBrowser) {
+    const modalCloseButton = browserInstance.element(by.buttonText('Quit Game'));
+    expect(modalCloseButton.isPresent()).toBe(true);
+    await modalCloseButton.click();
+}
+
+export async function quitWatchingGame(browserInstance: ProtractorBrowser) {
+    const homeButton = browserInstance.element(by.css('.brand'));
+    expect(homeButton.isPresent()).toBe(true);
+    await homeButton.click();
 }
 
 

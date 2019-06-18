@@ -7,7 +7,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   styles: []
 })
 export class QuitGameComponent {
-  constructor(public activeModal: NgbActiveModal) {
-  }
+
+  constructor(public activeModal: NgbActiveModal) { }
 
 }

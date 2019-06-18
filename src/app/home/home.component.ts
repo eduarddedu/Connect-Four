@@ -49,11 +49,9 @@ export class HomeComponent implements OnInit {
       this.showPanels = false;
     });
     this.realtime.games.removed.subscribe(id => {
-      const gameAbandonedByOther = this.game && this.game.id === id;
-      if (gameAbandonedByOther) {
+      if (this.game && this.game.id === id) {
         this.showPanels = true;
         this.game = null;
-        this.notification.update(`Game abandoned by player`, 'danger');
       }
     });
   }
@@ -75,6 +73,7 @@ export class HomeComponent implements OnInit {
         if (!game.isAgainstAi) {
           this.realtime.users.setUserStatus(game.opponent.id, 'Online');
         }
+        this.gameComponent.quitGame();
         this.realtime.games.remove(game.id);
       }
     } else {

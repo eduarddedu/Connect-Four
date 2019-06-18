@@ -40,7 +40,8 @@ class DeepstreamService {
     this.client.on('connectionStateChanged', (connectionState: string) => {
       switch (connectionState) {
         case 'OPEN':
-          console.log('Deepstream connection open'); break;
+          console.log('Deepstream connection open');
+          break;
         case 'CLOSED':
           console.log('Deepstream connection closed');
       }
@@ -183,7 +184,7 @@ class ServiceGames {
     this.ds.setRecordPaths(gameId, data);
   }
 
-  updateGameState(gameId: string, state: 'in progress' | 'over') {
+  updateGameState(gameId: string, state: 'in progress' | 'over' | 'on hold') {
     this.ds.client.record.getRecord(gameId).set('state', state);
   }
 
@@ -195,12 +196,16 @@ class ServiceGames {
     record.set('moves', moves);
   }
 
-  onGameMovesUpdate(gameId: string, callback: (moveId: string) => void) {
-    this.ds.client.event.subscribe(`moves/${gameId}`, callback);
+  onGameMovesUpdate(gameId: string, callback: (moveId: string) => void, thisArg: any) {
+    this.ds.client.event.subscribe(`moves/${gameId}`, moveId => {
+      this.ngZone.run(callback.bind(thisArg, moveId));
+    });
   }
 
-  onGameStateUpdate(gameId: string, callback: (status: string) => void) {
-    this.ds.client.record.getRecord(gameId).subscribe('state', callback);
+  onGameStateUpdate(gameId: string, callback: (status: string) => void, thisArg: any) {
+    this.ds.client.record.getRecord(gameId).subscribe('state', state => {
+      this.ngZone.run(callback.bind(thisArg, state));
+    });
   }
 
   onGamePointsUpdate(gameId: string, callback: (gameId: string, points: { red: number, yellow: number }) => void, thisArg: any) {
@@ -209,8 +214,9 @@ class ServiceGames {
     });
   }
 
-  unsubscribeFromStateAndMovesUpdates(gameId: string) {
-    this.ds.client.record.getRecord(gameId).unsubscribe('state', undefined);
+  unsubscribeFromUpdates(gameId: string) {
+    const record = this.ds.client.record.getRecord(gameId);
+    record.unsubscribe('state', undefined);
     this.ds.client.event.unsubscribe(`moves/${gameId}`, undefined);
   }
 
@@ -231,16 +237,12 @@ class ServiceGames {
 
 class ServiceMessages {
   createGameMessage: Subject<string> = new Subject();
-  resetGameMessage: Subject<string> = new Subject();
   acceptMessage: Subject<string> = new Subject();
   rejectMessage: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
     this.ds.client.event.subscribe(`${this.user.id}/createGame`, (senderId: string) => {
       this.ngZone.run(() => this.createGameMessage.next(senderId));
-    });
-    this.ds.client.event.subscribe(`${this.user.id}/resetGame`, (senderId: string) => {
-      this.ngZone.run(() => this.resetGameMessage.next(senderId));
     });
     this.ds.client.event.subscribe(`${this.user.id}/accept`, (senderId: string) => {
       this.ngZone.run(() => this.acceptMessage.next(senderId));
@@ -258,10 +260,6 @@ class ServiceMessages {
     this.sendMessage(recipientId, 'createGame');
   }
 
-  sendRematchMessage(recipientId: string) {
-    this.sendMessage(recipientId, 'resetGame');
-  }
-
   sendAcceptMessage(recipientId: string) {
     this.sendMessage(recipientId, 'accept');
   }
@@ -271,4 +269,4 @@ class ServiceMessages {
   }
 }
 
-type MessageTopic = 'createGame' | 'resetGame' | 'accept' | 'reject';
+type MessageTopic = 'createGame' | 'accept' | 'reject';

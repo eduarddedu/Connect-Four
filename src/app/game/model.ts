@@ -1,3 +1,5 @@
+import { ArrayGenerator } from '../util/generators';
+
 export class GameModel {
     private game: Game;
     private PLIES = 4;
@@ -166,15 +168,9 @@ class Game {
     moves: number[] = [];
     _win = false;
     _draw = false;
+
     constructor(redMovesFirst: boolean, previousMoves: number[]) {
-        const Generator = function* () {
-            let redMove = redMovesFirst;
-            while (true) {
-                yield redMove ? 'red' : 'yellow';
-                redMove = !redMove;
-            }
-        };
-        this.color = Generator();
+        this.color = redMovesFirst ? ArrayGenerator(['red', 'yellow']) : ArrayGenerator(['yellow', 'red']);
         this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
         previousMoves.forEach(id => {
             this.moves.push(id);
@@ -225,12 +221,12 @@ class Game {
             return;
         }
         const lastMoveColor = this.color.next() && this.color.next().value;
-        const check: (array: number[]) => boolean = (array: number[]) => {
-            if (array.length < 4) {
+        const checkCells: (cells: number[]) => boolean = (cells: number[]) => {
+            if (cells.length < 4) {
                 return false;
             }
             let connected = [];
-            for (const id of array) {
+            for (const id of cells) {
                 if (this.map.get(id) === lastMoveColor) {
                     connected.push(id);
                 } else {
@@ -242,22 +238,22 @@ class Game {
             }
             return false;
         };
-        const move = this.moves[this.moves.length - 1];
-        const row = Math.floor(move / 10), col = move % 10;
+        const moveId = this.moves[this.moves.length - 1];
+        const row = Math.floor(moveId / 10), col = moveId % 10;
 
         const checkRow = () => {
-            const arr = [];
+            const cells = [];
             for (let c = 1; c <= 7; c++) {
-                arr.push(row * 10 + c);
+                cells.push(row * 10 + c);
             }
-            return check(arr);
+            return checkCells(cells);
         };
         const checkColumn = () => {
-            const arr = [];
+            const cells = [];
             for (let r = 1; r <= 6; r++) {
-                arr.push(r * 10 + col);
+                cells.push(r * 10 + col);
             }
-            return check(arr);
+            return checkCells(cells);
         };
         const checkDiagonals = () => {
             const mainDiagonal = [row * 10 + col];
@@ -284,7 +280,7 @@ class Game {
             while (++r <= 6 && --c >= 1) {
                 counterDiagonal.push(r * 10 + c);
             }
-            return check(mainDiagonal) || check(counterDiagonal);
+            return checkCells(mainDiagonal) || checkCells(counterDiagonal);
         };
 
         if (checkRow() || checkColumn() || checkDiagonals()) {

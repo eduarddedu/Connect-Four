@@ -106,7 +106,7 @@ export class AuthService {
 
   private mockUser(): User {
     return {
-      id: localStorage.getItem('id'),
+      id: this.uidGen.next().value,
       name: localStorage.getItem('username'),
       imgUrl: 'assets/img/user.png',
       email: null,

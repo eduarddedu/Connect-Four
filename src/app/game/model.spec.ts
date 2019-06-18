@@ -1,4 +1,4 @@
-import { GameModel } from './game-model';
+import { GameModel } from './model';
 const matrix = [
     [11, 12, 13, 14, 15, 16, 17],
     [21, 22, 23, 24, 25, 26, 27],
