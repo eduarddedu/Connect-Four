@@ -140,14 +140,6 @@ input:indeterminate {
     display: initial;
 }
 
-.red {
-    color: #ff2701;
-}
-
-.yellow {
-    color: #ffd816fb;
-}
-
 @media(max-width: 991.999px) {
     #board {
         width: 300px;

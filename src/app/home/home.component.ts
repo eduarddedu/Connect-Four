@@ -1,6 +1,6 @@
 /**
- * HomeComponent handles disruptive events such as signout, user closing the browser window or the
- * game view.
+ * HomeComponent initates a game against the AI and handles disruptive events such as signout, closing the browser window
+ * or navigating out of the game view and back to the home page.
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -8,6 +8,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService } from '../auth.service';
 import { User, Bot } from '../util/models';
+import { CreateGameComponent } from '../modals/create-game/create-game.component';
 import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
 import { NotificationService } from '../notification.service';
 import { Game } from '../game/game';
@@ -31,7 +32,6 @@ export class HomeComponent implements OnInit {
   constructor(
     private modalService: NgbModal,
     private auth: AuthService,
-    private notification: NotificationService,
     private realtime: RealtimeService,
     private watchGame: WatchGameService) {
   }
@@ -57,8 +57,19 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
-    this.realtime.users.setUserStatus(this.user.id, 'In game');
-    this.realtime.games.createGame(this.user, Bot);
+    const modal = this.modalService.open(CreateGameComponent, { backdrop: 'static' });
+    modal.componentInstance.user = this.user;
+    modal.componentInstance.opponent = Bot;
+    modal.componentInstance.userPlaysRed = true;
+    modal.result.then((option: any) => {
+      if (typeof option === 'object') {
+        this.realtime.users.setUserStatus(this.user.id, 'In game');
+        switch (option.userPlaysRed) {
+          case true: this.realtime.games.createGame(this.user, Bot, true); break;
+          case false: this.realtime.games.createGame(Bot, this.user, false);
+        }
+      }
+    });
   }
 
   async closeGameView() {

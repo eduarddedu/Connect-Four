@@ -162,11 +162,11 @@ class ServiceGames {
     });
   }
 
-  createGame(red: User, yellow: User): Game {
+  createGame(red: User, yellow: User, redMovesFirst: boolean): Game {
     const data = {
       startDate: Date.now(),
       players: { red: red, yellow: yellow },
-      redMovesFirst: true,
+      redMovesFirst: redMovesFirst,
       state: 'in progress',
       moves: [],
       points: { red: 0, yellow: 0 }
@@ -236,28 +236,28 @@ class ServiceGames {
 }
 
 class ServiceMessages {
-  createGameMessage: Subject<string> = new Subject();
+  createGameMessage: Subject<{senderId: string, senderPlaysRed: boolean}> = new Subject();
   acceptMessage: Subject<string> = new Subject();
   rejectMessage: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
-    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (senderId: string) => {
-      this.ngZone.run(() => this.createGameMessage.next(senderId));
+    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: {senderId: string, senderPlaysRed: boolean}) => {
+      this.ngZone.run(() => this.createGameMessage.next(data));
     });
-    this.ds.client.event.subscribe(`${this.user.id}/accept`, (senderId: string) => {
-      this.ngZone.run(() => this.acceptMessage.next(senderId));
+    this.ds.client.event.subscribe(`${this.user.id}/accept`, (data: {senderId: string}) => {
+      this.ngZone.run(() => this.acceptMessage.next(data.senderId));
     });
-    this.ds.client.event.subscribe(`${this.user.id}/reject`, (senderId: string) => {
-      this.ngZone.run(() => this.rejectMessage.next(senderId));
+    this.ds.client.event.subscribe(`${this.user.id}/reject`, (data: {senderId: string}) => {
+      this.ngZone.run(() => this.rejectMessage.next(data.senderId));
     });
   }
 
-  private sendMessage(recipientId: string, topic: MessageTopic) {
-    this.ds.client.event.emit(`${recipientId}/${topic}`, this.user.id);
+  private sendMessage(recipientId: string, topic: MessageTopic, data = {}) {
+    this.ds.client.event.emit(`${recipientId}/${topic}`, Object.assign({senderId: this.user.id}, data));
   }
 
-  sendCreateGameMessage(recipientId: string) {
-    this.sendMessage(recipientId, 'createGame');
+  sendCreateGameMessage(recipientId: string, senderPlaysRed: boolean) {
+    this.sendMessage(recipientId, 'createGame', {senderPlaysRed: senderPlaysRed});
   }
 
   sendAcceptMessage(recipientId: string) {

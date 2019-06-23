@@ -22,6 +22,9 @@ export async function signOut(browserInstance: ProtractorBrowser) {
 export async function startAiGame(browserInstance: ProtractorBrowser) {
     const row = browserInstance.element(by.css('#AiPanel>.c4-card-body>.c4-card-row'));
     await row.click();
+    const createGameButton = browserInstance.element(by.buttonText('Start'));
+    expect(createGameButton.isPresent()).toBe(true);
+    await createGameButton.click();
 }
 
 export async function startGameBetweenUsers(
@@ -39,6 +42,9 @@ export async function startGameBetweenUsers(
                 }
             }
             expect(userPresent).toBe(true);
+            const createGameButton = browserInvitor.element(by.buttonText('Send invitation'));
+            expect(createGameButton.isPresent()).toBe(true);
+            await createGameButton.click();
             const button = browserInvitee.element(by.buttonText('Join Game'));
             await button.click();
             resolve();

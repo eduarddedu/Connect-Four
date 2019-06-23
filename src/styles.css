@@ -70,6 +70,14 @@
 
 /* Utils */
 
+.red {
+    color: #ff2701;
+}
+
+.yellow {
+    color: #ffd816fb;
+}
+
 .spaceBetween {
     display: flex;
     flex-flow: row nowrap;

@@ -8,6 +8,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { User } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
 import { NotificationService } from '../notification.service';
+import { CreateGameComponent } from '../modals/create-game/create-game.component';
 import { GameInvitationComponent } from '../modals/game-invitation/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -42,8 +43,15 @@ export class PanelPlayersComponent implements OnInit {
 
   onClick(user: User) {
     if (user.status === 'Online') {
-      this.realtime.messages.sendCreateGameMessage(user.id);
-      this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
+      const modal = this.modalService.open(CreateGameComponent);
+      modal.componentInstance.user = this.user;
+      modal.componentInstance.opponent = user;
+      modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
+        if (typeof option === 'object') {
+          this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
+          this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
+        }
+      });
     }
   }
 
@@ -67,22 +75,26 @@ export class PanelPlayersComponent implements OnInit {
     }
   }
 
-  private async handleCreateGameMessage(senderId: string) {
-    let sender: User = this.users.get(senderId);
+  private async handleCreateGameMessage(data: { senderId: string, senderPlaysRed: boolean }) {
+    let sender: User = this.users.get(data.senderId);
     const option = await this.getUserResponse(sender);
-    sender = this.users.get(senderId);
+    sender = this.users.get(data.senderId);
     if (option === 'Accept') {
       if (sender && sender.status === 'Online') {
         this.realtime.messages.sendAcceptMessage(sender.id);
         this.realtime.users.setUserStatus(this.user.id, 'In game');
         this.realtime.users.setUserStatus(sender.id, 'In game');
-        this.realtime.games.createGame(this.user, sender);
+        if (data.senderPlaysRed) {
+          this.realtime.games.createGame(sender, this.user, false);
+        } else {
+          this.realtime.games.createGame(this.user, sender, true);
+        }
       } else {
         this.realtime.users.setUserStatus(this.user.id, 'Online');
         this.notification.update(`${sender.name} is not available`, 'warning');
       }
     } else if (option === 'Reject' && sender.status === 'Online') {
-      this.realtime.messages.sendRejectMessage(senderId);
+      this.realtime.messages.sendRejectMessage(data.senderId);
       this.realtime.users.setUserStatus(this.user.id, 'Online');
     }
   }

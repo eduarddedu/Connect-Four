@@ -1,0 +1,36 @@
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.grid>div:last-child {
+    text-align: right;
+}
+
+.player>img {
+    border-radius: 20px;
+}
+
+.details {
+    display: flex;
+    flex-flow: column;
+    margin: 0 3px;
+}
+
+.left {
+    float: right;
+}
+
+.right {
+    float: left;
+    align-items: flex-end;
+}
+
+.details>span:last-child {
+    font-size: 80%;
+    cursor: pointer;
+}
+
+.details>span:first-child {
+    user-select: none;
+}

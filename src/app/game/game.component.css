@@ -37,14 +37,3 @@
         border-radius: 15px;
     }
 }
-
-/* not used but useful to have */
-.bullet {
-    position: relative;
-    top: 1px;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border-radius: 7.5px;
-    margin: 0 2px;
-}
