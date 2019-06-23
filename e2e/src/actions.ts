@@ -22,7 +22,7 @@ export async function signOut(browserInstance: ProtractorBrowser) {
 export async function startAiGame(browserInstance: ProtractorBrowser) {
     const row = browserInstance.element(by.css('#AiPanel>.c4-card-body>.c4-card-row'));
     await row.click();
-    const createGameButton = browserInstance.element(by.buttonText('Start'));
+    const createGameButton = browserInstance.element(by.css('button.btn-outline-success'));
     expect(createGameButton.isPresent()).toBe(true);
     await createGameButton.click();
 }
@@ -42,7 +42,7 @@ export async function startGameBetweenUsers(
                 }
             }
             expect(userPresent).toBe(true);
-            const createGameButton = browserInvitor.element(by.buttonText('Send invitation'));
+            const createGameButton = browserInvitor.element(by.css('button.btn-outline-success'));
             expect(createGameButton.isPresent()).toBe(true);
             await createGameButton.click();
             const button = browserInvitee.element(by.buttonText('Join Game'));
@@ -56,13 +56,13 @@ export async function quitGameDuringPlay(browserInstance: ProtractorBrowser) {
     const homeButton = browserInstance.element(by.css('.brand'));
     expect(homeButton.isPresent()).toBe(true);
     await homeButton.click();
-    const modalClose = browserInstance.element(by.buttonText('Quit Game'));
+    const modalClose = browserInstance.element(by.css('button.btn-outline-danger'));
     expect(modalClose.isPresent()).toBe(true);
     await modalClose.click();
 }
 
 export async function quitGameOnGameEnd(browserInstance: ProtractorBrowser) {
-    const modalCloseButton = browserInstance.element(by.buttonText('Quit Game'));
+    const modalCloseButton = browserInstance.element(by.css('button.btn-outline-danger'));
     expect(modalCloseButton.isPresent()).toBe(true);
     await modalCloseButton.click();
 }
