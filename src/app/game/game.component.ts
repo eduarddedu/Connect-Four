@@ -12,6 +12,7 @@ import { WatchGameService } from '../watch-game.service';
 import { RealtimeService } from '../realtime.service';
 import { GameOverComponent } from '../modals/game-over/game-over.component';
 import { NotificationService } from '../notification.service';
+import { CookieService } from '../cookie.service';
 
 @Component({
   selector: 'app-game',
@@ -24,7 +25,7 @@ export class GameComponent implements OnInit {
   game: Game;
 
   constructor(private ngbModal: NgbModal, private notification: NotificationService,
-    private realtime: RealtimeService, private watchGame: WatchGameService) {
+    private realtime: RealtimeService, private watchGame: WatchGameService, private cookieService: CookieService) {
   }
 
   ngOnInit() {
@@ -110,6 +111,9 @@ export class GameComponent implements OnInit {
         points: this.game.points,
         winner: this.game.winner
       });
+    }
+    if (this.game.winner.id === this.user.id) {
+      this.cookieService.setItem('points', `${+this.cookieService.getItem('points') + 1}`, 3650);
     }
     if (this.game.ourUserPlays) {
       const option = await this.getUserOptionOnGameEnd();

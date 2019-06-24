@@ -5,6 +5,7 @@ export interface User {
     email: string;
     authProvider: 'Google' | 'Facebook' | null;
     status: 'Online' | 'Busy' | 'In game';
+    points?: number;
 }
 export const Bot: User = {
     id: '0',

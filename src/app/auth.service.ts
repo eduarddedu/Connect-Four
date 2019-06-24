@@ -4,6 +4,7 @@ import { Subject, Observable, race } from 'rxjs';
 import { User } from './util/models';
 import { UIDGenerator } from './util/generators';
 import { environment } from '../environments/environment';
+import { CookieService } from './cookie.service';
 
 /* Global entry points to OAuth APIs */
 declare const gapi: any;
@@ -18,7 +19,7 @@ export class AuthService {
   private GoogleAuth: any;
   private uidGen = UIDGenerator();
 
-  constructor(zone: NgZone) {
+  constructor(zone: NgZone, private cookieService: CookieService) {
     if (environment.production) {
       race(this.googleUserSigned(), this.facebookUserSigned())
         .subscribe((user: User) => {
@@ -47,7 +48,8 @@ export class AuthService {
         email: profile.getEmail(),
         idToken: googleUser.getAuthResponse().id_token,
         authProvider: 'Google',
-        status: 'Online'
+        status: 'Online',
+        points: this.getUserPoints()
       };
     };
     gapi.load('auth2', () => {
@@ -85,7 +87,8 @@ export class AuthService {
         imgUrl: profile.picture.data.url,
         email: profile.email,
         authProvider: 'Facebook',
-        status: 'Online'
+        status: 'Online',
+        points: this.getUserPoints()
       };
     };
     const onFacebookUserStatusChange = (response: any) => {
@@ -111,7 +114,19 @@ export class AuthService {
       imgUrl: 'assets/img/user.png',
       email: null,
       authProvider: null,
-      status: 'Online'
+      status: 'Online',
+      points: this.getUserPoints()
     };
+  }
+
+  private getUserPoints(): number {
+    let points: number;
+    if (this.cookieService.hasItem('points')) {
+      points = +this.cookieService.getItem('points');
+    } else {
+      points = 0;
+      this.cookieService.setItem('points', '0', 3650);
+    }
+    return points;
   }
 }
