@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { CookieService } from '../cookie.service';
 
@@ -10,19 +9,18 @@ import { CookieService } from '../cookie.service';
 })
 export class PolicyAcceptComponent implements OnInit {
   showComponent = true;
-  readonly COOKIE_NAME = 'policy_accept';
+  private readonly POLICY_COOKIE_NAME = 'policy_accept';
 
-  constructor(private router: Router, private cookieService: CookieService) { }
+  constructor(private cookieService: CookieService) { }
 
   ngOnInit() {
-    const policyCookie = this.cookieService.getCookieValue(this.COOKIE_NAME);
-    if (policyCookie) {
+    if (this.cookieService.hasItem(this.POLICY_COOKIE_NAME)) {
       this.showComponent = false;
     }
   }
 
   onClickAcceptBtn() {
-    this.cookieService.setCookie(this.COOKIE_NAME, 'true', 365);
+    this.cookieService.setItem(this.POLICY_COOKIE_NAME, 'true', 365);
     this.showComponent = false;
   }
 

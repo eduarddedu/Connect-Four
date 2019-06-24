@@ -7,17 +7,38 @@ import { environment } from '../environments/environment';
 })
 export class CookieService {
 
-  public setCookie(cname: string, cvalue: string, exdays: number) {
-    let cookie = `${cname}=${cvalue};`;
-    const attrs: Map<string, string> = new Map();
-    attrs.set('domain', environment.origin);
-    attrs.set('path', '/');
-    attrs.set('expires', new Date(Date.now() + exdays * 24 * 60 * 60 * 1000).toUTCString());
-    attrs.forEach((value: string, key: string) => cookie += `${key}=${value};`);
-    document.cookie = cookie;
+  public setItem(cname: string, cvalue: string, exdays: number) {
+    document.cookie = new CookieBuilder(cname, cvalue, exdays).get();
   }
 
-  public getCookieValue(cname: string): string {
+  public getItem(cname: string): string {
+    return CookieReader.get(cname);
+  }
+
+  public hasItem(cname: string): boolean {
+    return !!CookieReader.get(cname);
+  }
+}
+
+class CookieBuilder {
+  private cookieAttrs: Map<string, string> = new Map();
+  private _cookie: string;
+
+  constructor(cname: string, cvalue: string, exdays: number) {
+    this._cookie = `${encodeURIComponent(cname)}=${encodeURIComponent(cvalue)};`;
+    this.cookieAttrs.set('domain', environment.origin);
+    this.cookieAttrs.set('path', '/');
+    this.cookieAttrs.set('expires', new Date(Date.now() + exdays * 24 * 60 * 60 * 1000).toUTCString());
+    this.cookieAttrs.forEach((value: string, key: string) => this._cookie += `${key}=${value};`);
+  }
+
+  get() {
+    return this._cookie;
+  }
+}
+
+class CookieReader {
+  static get(cname: string): string {
     const name = cname + '=';
     const decodedCookie = decodeURIComponent(document.cookie);
     const ca = decodedCookie.split(';');
@@ -28,5 +49,4 @@ export class CookieService {
       }
     }
   }
-
 }
