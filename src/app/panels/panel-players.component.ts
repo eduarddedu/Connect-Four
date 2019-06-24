@@ -4,6 +4,7 @@
  */
 
 import { Component, OnInit, Input } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { User } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
@@ -11,7 +12,6 @@ import { NotificationService } from '../notification.service';
 import { CreateGameComponent } from '../modals/create-game/create-game.component';
 import { GameInvitationComponent } from '../modals/game-invitation/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 
 @Component({
@@ -36,21 +36,23 @@ export class PanelPlayersComponent implements OnInit {
     this.realtime.users.all.subscribe((users: User[]) => users.forEach(this.addUser.bind(this)));
     this.realtime.users.added.subscribe(this.addUser.bind(this));
     this.realtime.users.removed.subscribe(this.removeUser.bind(this));
-    this.realtime.messages.createGameMessage.subscribe(this.handleCreateGameMessage.bind(this));
-    this.realtime.messages.acceptMessage.subscribe(this.handleAcceptMessage.bind(this));
-    this.realtime.messages.rejectMessage.subscribe(this.handleRejectMessage.bind(this));
+    this.realtime.messages.createGame.subscribe(this.handleCreateGameMessage.bind(this));
+    this.realtime.messages.accept.subscribe(this.handleAcceptMessage.bind(this));
+    this.realtime.messages.reject.subscribe(this.handleRejectMessage.bind(this));
   }
 
   onClick(user: User) {
     if (user.status === 'Online') {
+      this.realtime.users.setUserStatus(this.user.id, 'Busy');
       const modal = this.modalService.open(CreateGameComponent);
       modal.componentInstance.user = this.user;
       modal.componentInstance.opponent = user;
       modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
         if (typeof option === 'object') {
           this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
-          this.notification.update(`Invitation sent. Waiting for ${user.name}`, 'success');
+          this.notification.update(`Invitation sent. Waiting for ${user.name}...`, 'success');
         }
+        this.realtime.users.setUserStatus(this.user.id, 'Online');
       });
     }
   }

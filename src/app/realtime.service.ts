@@ -1,3 +1,17 @@
+/**
+ * RealtimeService provides the realtime data-sync functionality which high-level GUI components depend on.
+ *
+ * This class wraps around the Deepstream JavaScript client library, so the rest of the app can be separated from it.
+ *
+ * The goal is to:
+ *  - specify our app concerns/needs in an abstract way (ideally an interface should be used)
+ *  - separate app policy from implementation details
+ *  - allow external dependencies such as Deepstream to be replaced in future, if necessary.
+ *
+ *
+ * For clarity, the API is split into three distinct namespaces: 'users', 'games' and 'messages'.
+ */
+
 import { Injectable, NgZone } from '@angular/core';
 import { Observable, Subscriber, Subject } from 'rxjs';
 
@@ -6,27 +20,30 @@ import { AuthService } from './auth.service';
 import { User } from './util/models';
 import { Game } from './game/game';
 
-declare var deepstream: any;
 
 @Injectable({
   providedIn: 'root'
 })
 export class RealtimeService {
   private user: User;
-  private socketService: DeepstreamService;
-  users: ServiceUsers;
-  games: ServiceGames;
-  messages: ServiceMessages;
+  private ds: DeepstreamService;
+
+  public users: ServiceUsers;
+  public games: ServiceGames;
+  public messages: ServiceMessages;
 
   constructor(private ngZone: NgZone, auth: AuthService) {
     this.user = auth.user;
-    this.socketService = new DeepstreamService(this.ngZone, this.user);
-    this.users = new ServiceUsers(this.ngZone, this.socketService);
-    this.games = new ServiceGames(this.ngZone, this.user, this.socketService);
-    this.messages = new ServiceMessages(this.ngZone, this.user, this.socketService);
+    this.ds = new DeepstreamService(this.ngZone, this.user);
+    this.users = new ServiceUsers(this.ngZone, this.ds);
+    this.games = new ServiceGames(this.ngZone, this.user, this.ds);
+    this.messages = new ServiceMessages(this.ngZone, this.user, this.ds);
   }
 
 }
+
+declare var deepstream: Function;
+
 class DeepstreamService {
   client: deepstreamIO.Client;
 
@@ -52,12 +69,13 @@ class DeepstreamService {
   }
 
   /**
-   * Retrieve data from a newly created Deepstream record
-   * and return it as a Promise.
+   * Retrieves data from an Deepstream record and returns it as Promise
+   * The Promise will only complete if/when the record contains a non-empty
+   * data object.
    * @param recordName name of the record
    */
 
-  awaitRecordData(recordName: string): Promise<any> {
+  getRecordData(recordName: string): Promise<any> {
     return new Promise(resolve => {
       const record = this.client.record.getRecord(recordName);
       const loadOnce = (data: any) => {
@@ -70,11 +88,17 @@ class DeepstreamService {
     });
   }
 
-  setRecordPaths(recordName: string, paths: { [key: string]: any }) {
+  /**
+   * Set multiple paths in a Deepstream record at once
+   * @param recordName name of record
+   * @param data a data container object whose properties will be persisted to the record
+   */
+
+  setRecordKeys(recordName: string, data: { [key: string]: any }) {
     const record = this.client.record.getRecord(recordName);
-    Object.keys(paths).forEach(pathName => {
-      const pathValue = paths[pathName];
-      record.set(pathName, pathValue);
+    Object.keys(data).forEach(key => {
+      const value = data[key];
+      record.set(key, value);
     });
   }
 }
@@ -87,7 +111,7 @@ class ServiceUsers {
   constructor(private ngZone: NgZone, private ds: DeepstreamService) {
     this.usersList = this.ds.client.record.getList('users');
     this.usersList.on('entry-added', async (id) => {
-      const user: User = await this.ds.awaitRecordData(id);
+      const user: User = await this.ds.getRecordData(id);
       this.ngZone.run(() => this.added.next(user));
     });
     this.usersList.on('entry-removed', userId => this.ngZone.run(() => this.removed.next(userId)));
@@ -108,7 +132,7 @@ class ServiceUsers {
       this.usersList.whenReady(async (list: deepstreamIO.List) => {
         const users: Array<User> = [];
         for (const userId of list.getEntries()) {
-          users.push(await this.ds.awaitRecordData(userId));
+          users.push(await this.ds.getRecordData(userId));
         }
         this.ngZone.run(() => subscriber.next(users));
       });
@@ -135,7 +159,7 @@ class ServiceGames {
   constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
     this.gamesList = this.ds.client.record.getList('games');
     this.gamesList.on('entry-added', async gameId => {
-      const data = await this.ds.awaitRecordData(gameId);
+      const data = await this.ds.getRecordData(gameId);
       const game: Game = new Game(data, this.user);
       this.ngZone.run(() => this.added.next(game));
     });
@@ -180,8 +204,8 @@ class ServiceGames {
     this.ds.client.record.getRecord(gameId).delete();
   }
 
-  updateGameData(gameId: string, data: { [key: string]: any }) {
-    this.ds.setRecordPaths(gameId, data);
+  updateGameDataProperties(gameId: string, properties: { [key: string]: any }) {
+    this.ds.setRecordKeys(gameId, properties);
   }
 
   updateGameState(gameId: string, state: 'in progress' | 'over' | 'on hold') {
@@ -225,7 +249,7 @@ class ServiceGames {
       const games: Game[] = [];
       this.gamesList.whenReady(async (list: deepstreamIO.List) => {
         for (const gameId of list.getEntries()) {
-          const data = await this.ds.awaitRecordData(gameId);
+          const data = await this.ds.getRecordData(gameId);
           const game = new Game(data, this.user);
           games.push(game);
         }
@@ -236,19 +260,19 @@ class ServiceGames {
 }
 
 class ServiceMessages {
-  createGameMessage: Subject<{senderId: string, senderPlaysRed: boolean}> = new Subject();
-  acceptMessage: Subject<string> = new Subject();
-  rejectMessage: Subject<string> = new Subject();
+  createGame: Subject<{senderId: string, senderPlaysRed: boolean}> = new Subject();
+  accept: Subject<string> = new Subject();
+  reject: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
     this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: {senderId: string, senderPlaysRed: boolean}) => {
-      this.ngZone.run(() => this.createGameMessage.next(data));
+      this.ngZone.run(() => this.createGame.next(data));
     });
     this.ds.client.event.subscribe(`${this.user.id}/accept`, (data: {senderId: string}) => {
-      this.ngZone.run(() => this.acceptMessage.next(data.senderId));
+      this.ngZone.run(() => this.accept.next(data.senderId));
     });
     this.ds.client.event.subscribe(`${this.user.id}/reject`, (data: {senderId: string}) => {
-      this.ngZone.run(() => this.rejectMessage.next(data.senderId));
+      this.ngZone.run(() => this.reject.next(data.senderId));
     });
   }
 

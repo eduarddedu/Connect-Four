@@ -6,7 +6,7 @@ import { User } from '../../util/models';
 @Component({
   selector: 'app-game-invitation',
   templateUrl: './game-invitation.component.html',
-  styles: []
+  styleUrls: ['./game-invitation.component.css']
 })
 export class GameInvitationComponent {
   @Input() user: User;

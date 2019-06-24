@@ -35,7 +35,7 @@ export async function startGameBetweenUsers(
             expect(rows.length).toBeGreaterThan(1);
             let userPresent = false;
             for (const row of rows) {
-                const username = await row.all(by.css('.c4-card-row-item')).first().getText();
+                const username = await row.all(by.css('.c4-card-row-item>span')).first().getText();
                 if (username === usernameInvitee) {
                     userPresent = true;
                     await row.click();
@@ -45,7 +45,7 @@ export async function startGameBetweenUsers(
             const createGameButton = browserInvitor.element(by.css('button.btn-outline-success'));
             expect(createGameButton.isPresent()).toBe(true);
             await createGameButton.click();
-            const button = browserInvitee.element(by.buttonText('Join Game'));
+            const button = browserInvitee.element(by.css('button.btn-outline-success'));
             await button.click();
             resolve();
         });

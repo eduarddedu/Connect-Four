@@ -4,8 +4,9 @@
     <div class="placeholder" *ngIf="users.size == 0">No one is online</div>
     <div class="c4-card-row" *ngFor="let item of users | keyvalue: descendingSort" (click)="onClick(item.value)">
       <div class="c4-card-row-item" style="position: relative">
-        <img [src]="item.value.imgUrl" alt="User icon"> {{item.value.name}} 
-        <span class="userPoints">Points {{item.value.points}}</span>
+        <img [src]="item.value.imgUrl" alt="User icon"> 
+        <span> {{item.value.name}} </span>
+        <span class="userPoints"> Points {{item.value.points}}</span>
       </div>
       <div class="c4-card-row-item">
         {{item.value.status}}

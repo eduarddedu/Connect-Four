@@ -84,7 +84,7 @@ export class GameComponent implements OnInit {
         this.board.clear();
         this.resetGame();
         if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
-          this.realtime.games.updateGameData(this.game.id, {
+          this.realtime.games.updateGameDataProperties(this.game.id, {
             moves: [],
             redMovesFirst: this.game.redMovesFirst
           });
@@ -106,7 +106,7 @@ export class GameComponent implements OnInit {
 
   private async handleGameOver() {
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
-      this.realtime.games.updateGameData(this.game.id, {
+      this.realtime.games.updateGameDataProperties(this.game.id, {
         state: 'over',
         points: this.game.points,
         winner: this.game.winner

@@ -61,7 +61,7 @@ describe('PanelPlayers', () => {
     }
 
     async function username(row: ElementFinder): Promise<string> {
-        return await row.all(by.css('.c4-card-row-item')).first().getText();
+        return await row.all(by.css('.c4-card-row-item>span')).first().getText();
     }
 
     async function status(row: ElementFinder): Promise<string> {
