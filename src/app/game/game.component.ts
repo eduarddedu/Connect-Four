@@ -70,11 +70,7 @@ export class GameComponent implements OnInit {
         this.handleGameOver();
         break;
       case 'in progress':
-        if (this.game.ourUserPlays && this.game.isAgainstAi && !this.game.isOurTurn) {
-          setTimeout(() => {
-            this.realtime.games.updateGameMoves(this.game.id, this.game.nextBestMove());
-          }, 600);
-        }
+        this.handleBotMove();
     }
   }
 
@@ -83,17 +79,7 @@ export class GameComponent implements OnInit {
       case 'in progress':
         this.board.clear();
         this.resetGame();
-        if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
-          this.realtime.games.updateGameDataProperties(this.game.id, {
-            moves: [],
-            redMovesFirst: this.game.redMovesFirst
-          });
-        }
-        if (this.game.ourUserPlays && this.game.isAgainstAi && this.game.activePlayer === Bot) {
-          setTimeout(() => {
-            this.realtime.games.updateGameMoves(this.game.id, this.game.nextBestMove());
-          }, 500);
-        }
+        this.handleBotMove();
         break;
       case 'over':
         break;
@@ -103,10 +89,17 @@ export class GameComponent implements OnInit {
     }
   }
 
+  private handleBotMove() {
+    if (this.game.ourUserPlays && this.game.isAgainstAi && this.game.activePlayer.id === Bot.id) {
+      setTimeout(() => {
+        this.realtime.games.updateGameMoves(this.game.id, this.game.nextBestMove());
+      }, 600);
+    }
+  }
 
   private async handleGameOver() {
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
-      this.realtime.games.updateGameDataProperties(this.game.id, {
+      this.realtime.games.updateGameProperties(this.game.id, {
         state: 'over',
         points: this.game.points,
         winner: this.game.winner
@@ -116,7 +109,12 @@ export class GameComponent implements OnInit {
       this.cookieService.setItem('points', `${+this.cookieService.getItem('points') + 1}`, 3650);
     }
     if (this.game.ourUserPlays) {
-      const option = await this.getUserOptionOnGameEnd();
+      this.handleUserOptionOnGameEnd();
+    }
+  }
+
+  private async handleUserOptionOnGameEnd() {
+    const option = await this.getUserOptionOnGameEnd();
       switch (option) {
         case 'Rematch':
           if (this.game) {
@@ -126,8 +124,6 @@ export class GameComponent implements OnInit {
               if (this.game.state === 'on hold') {
                 this.realtime.games.updateGameState(this.game.id, 'in progress');
               } else {
-                this.game.state = 'on hold';
-                this.game.updateStatus();
                 this.realtime.games.updateGameState(this.game.id, 'on hold');
               }
             }
@@ -144,7 +140,6 @@ export class GameComponent implements OnInit {
             this.realtime.games.remove(gameId);
           }
       }
-    }
   }
 
   private getUserOptionOnGameEnd(): Promise<string> {
@@ -159,12 +154,19 @@ export class GameComponent implements OnInit {
   }
 
   private resetGame() {
-    this.game = new Game(Object.assign(this.game, {
+    const data = Object.assign(this.game, {
       moves: [],
       state: 'in progress',
       redMovesFirst: this.game.winner.id === this.game.players.yellow.id,
       winner: null
-    }), this.user);
+    });
+    this.game = new Game(data, this.user);
+    if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
+      this.realtime.games.updateGameProperties(this.game.id, {
+        moves: [],
+        redMovesFirst: this.game.redMovesFirst
+      });
+    }
   }
 
   private destroyGameOnWindowClose() {

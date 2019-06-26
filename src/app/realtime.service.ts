@@ -1,12 +1,12 @@
 /**
  * RealtimeService provides the realtime data-sync functionality which high-level GUI components depend on.
  *
- * This class wraps around the Deepstream JavaScript client library, so the rest of the app can be separated from it.
+ * This class wraps around the Deepstream JavaScript client library.
  *
  * The goal is to:
  *  - specify our app concerns/needs in an abstract way (ideally an interface should be used)
  *  - separate app policy from implementation details
- *  - allow external dependencies such as Deepstream to be replaced in future, if necessary.
+ *  - isolate the Deepstream external dependency, allowing it to be replaced in the future if necessary.
  *
  *
  * For clarity, the API is split into three distinct namespaces: 'users', 'games' and 'messages'.
@@ -204,7 +204,7 @@ class ServiceGames {
     this.ds.client.record.getRecord(gameId).delete();
   }
 
-  updateGameDataProperties(gameId: string, properties: { [key: string]: any }) {
+  updateGameProperties(gameId: string, properties: { [key: string]: any }) {
     this.ds.setRecordKeys(gameId, properties);
   }
 

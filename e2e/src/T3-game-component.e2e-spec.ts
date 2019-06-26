@@ -1,6 +1,6 @@
-import { browser, element, by, ProtractorBrowser } from 'protractor';
+import { browser, by, ProtractorBrowser } from 'protractor';
 
-import { signIn, signOut, startGameBetweenUsers, quitGameDuringPlay, quitWatchingGame, quitGameOnGameEnd } from './actions';
+import { signIn, signOut, startAiGame, startGameBetweenUsers, quitGameDuringPlay, quitWatchingGame, quitGameOnGameEnd } from './actions';
 import { assertNoBrowserError } from './assertions';
 
 
@@ -128,6 +128,26 @@ describe('GameComponent', () => {
         html = await browser.getPageSource();
         expect(html).toContain('Game abandoned by player');
         await signIn(browserJohn, 'John');
+    });
+
+    it('should see correct status during AI game', async () => {
+        await startAiGame(browserJane);
+        await watchFirstGameInList(browser);
+        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
+        expect(await statusMessage(browserJane)).toEqual('Your turn');
+        [67, 66, 57, 47].forEach(async id => {
+            browser.sleep(1100);
+            await move(browserJane, id);
+        });
+        browser.sleep(1100);
+        expect(await statusMessage(browser)).toMatch('Game over');
+    });
+
+    it('should see correct status during AI game - after game reset', async () => {
+        const restartGameButton = browserJane.element(by.css('button.btn-success'));
+        await restartGameButton.click();
+        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
+        expect(await statusMessage(browserJane)).toEqual('Your turn');
     });
 
     it('sign out', async () => {
