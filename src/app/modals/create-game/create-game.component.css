@@ -1,10 +1,25 @@
 .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr auto 1fr;
 }
 
-.grid>div:last-child {
-    text-align: right;
+.grid>div:nth-child(1) {
+    justify-self: start;
+}
+
+.grid>div:nth-child(2) {
+    justify-self: center;
+    align-self: end;
+}
+
+.grid>div:nth-child(3) {
+    justify-self: end;
+}
+
+.arrows>span {
+    cursor: pointer;
+    color: #666;
+    font-weight: bold;
 }
 
 .player>img {
@@ -15,6 +30,7 @@
     display: flex;
     flex-flow: column;
     margin: 0 3px;
+    user-select: none;
 }
 
 .left {
@@ -23,14 +39,9 @@
 
 .right {
     float: left;
-    align-items: flex-end;
 }
 
 .details>span:last-child {
     font-size: 80%;
-    cursor: pointer;
 }
 
-.details>span:first-child {
-    user-select: none;
-}
