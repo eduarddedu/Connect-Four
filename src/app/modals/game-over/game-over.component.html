@@ -3,9 +3,9 @@
 </div>
 <div class="modal-body" id="gameResult">
   <div *ngIf="game.winner" class="hcentered">
-    <p>🏆🏆🏆 Winner 🏆🏆🏆</p>
-    <span> <img [src]="game.winner.imgUrl" alt="User icon" width="40" height="40" style="border-radius: 20px"></span>
-    <span>{{game.winner.name | firstWord}}</span>
+    🏆🏆🏆 Winner 🏆🏆🏆
+    <img [src]="game.winner.imgUrl" alt="User icon" width="40" height="40" style="border-radius: 20px">
+    {{game.winner.name | firstWord}}
   </div>
   <p *ngIf="!game.winner">Game ended in a draw 🤔</p>
 </div>
