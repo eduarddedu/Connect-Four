@@ -13,6 +13,7 @@ import { RealtimeService } from '../realtime.service';
 import { GameOverComponent } from '../modals/game-over/game-over.component';
 import { NotificationService } from '../notification.service';
 import { CookieService } from '../cookie.service';
+import { LocalStorageService } from '../local-storage.service';
 
 @Component({
   selector: 'app-game',
@@ -24,8 +25,9 @@ export class GameComponent implements OnInit {
   @Input() user: User;
   game: Game;
 
-  constructor(private ngbModal: NgbModal, private notification: NotificationService,
-    private realtime: RealtimeService, private watchGame: WatchGameService, private cookieService: CookieService) {
+  constructor(private ngbModal: NgbModal,
+    private notification: NotificationService, private localStorageService: LocalStorageService,
+    private realtime: RealtimeService, private watchGame: WatchGameService) {
   }
 
   ngOnInit() {
@@ -106,7 +108,8 @@ export class GameComponent implements OnInit {
       });
     }
     if (this.game.winner.id === this.user.id) {
-      this.cookieService.setItem('points', `${+this.cookieService.getItem('points') + 1}`, 3650);
+      this.user.points += 1;
+      this.localStorageService.setPoints(this.user.points);
     }
     if (this.game.ourUserPlays) {
       this.handleUserOptionOnGameEnd();
@@ -115,31 +118,31 @@ export class GameComponent implements OnInit {
 
   private async handleUserOptionOnGameEnd() {
     const option = await this.getUserOptionOnGameEnd();
-      switch (option) {
-        case 'Rematch':
-          if (this.game) {
-            if (this.game.isAgainstAi) {
+    switch (option) {
+      case 'Rematch':
+        if (this.game) {
+          if (this.game.isAgainstAi) {
+            this.realtime.games.updateGameState(this.game.id, 'in progress');
+          } else {
+            if (this.game.state === 'on hold') {
               this.realtime.games.updateGameState(this.game.id, 'in progress');
             } else {
-              if (this.game.state === 'on hold') {
-                this.realtime.games.updateGameState(this.game.id, 'in progress');
-              } else {
-                this.realtime.games.updateGameState(this.game.id, 'on hold');
-              }
+              this.realtime.games.updateGameState(this.game.id, 'on hold');
             }
           }
-          break;
-        case 'Quit':
-          if (this.game) {
-            this.realtime.users.setUserStatus(this.user.id, 'Online');
-            if (!this.game.isAgainstAi) {
-              this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
-            }
-            const gameId = this.game.id;
-            this.game = null;
-            this.realtime.games.remove(gameId);
+        }
+        break;
+      case 'Quit':
+        if (this.game) {
+          this.realtime.users.setUserStatus(this.user.id, 'Online');
+          if (!this.game.isAgainstAi) {
+            this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
           }
-      }
+          const gameId = this.game.id;
+          this.game = null;
+          this.realtime.games.remove(gameId);
+        }
+    }
   }
 
   private getUserOptionOnGameEnd(): Promise<string> {

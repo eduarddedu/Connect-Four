@@ -2,8 +2,7 @@ export interface User {
     id: string;
     name: string;
     imgUrl: string;
-    email: string;
-    authProvider: 'Google' | 'Facebook' | null;
+    email?: string;
     status: 'Online' | 'Busy' | 'In game';
     points?: number;
 }
@@ -12,7 +11,6 @@ export const Bot: User = {
     name: 'Bobiță',
     imgUrl: 'assets/img/robot-dog-head.png',
     email: null,
-    authProvider: null,
     status: 'Online'
 };
 

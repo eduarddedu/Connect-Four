@@ -1,7 +1,4 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
-
-import { AuthService } from '../auth.service';
 
 declare const FB: any;
 
@@ -13,11 +10,7 @@ declare const FB: any;
 
 export class LoginComponent {
 
-  constructor(router: Router, auth: AuthService) {
-    auth.signin.subscribe(() => router.navigate(['/']));
-  }
-
-  openFBLogin() {
+  onClickFacebookLogin() {
     FB.login();
   }
 }

@@ -1,64 +1,70 @@
 import { Injectable, NgZone } from '@angular/core';
-import { Subject, Observable, race } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 
 import { User } from './util/models';
 import { UIDGenerator } from './util/generators';
 import { environment } from '../environments/environment';
-import { CookieService } from './cookie.service';
+import { LocalStorageService } from './local-storage.service';
 
-/* Global entry points to OAuth APIs */
-declare const gapi: any;
-declare const FB: any;
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  public signin: Subject<any> = new Subject();
+  public userSigned: Subject<undefined> = new Subject();
   private _user: User;
-  private GoogleAuth: any;
-  private uidGen = UIDGenerator();
+  private authProvider: AuthProvider;
 
-  constructor(zone: NgZone, private cookieService: CookieService) {
+  constructor(private zone: NgZone, private localStorageService: LocalStorageService) {
+    this.register(new MockUserAuth());
     if (environment.production) {
-      race(this.googleUserSigned(), this.facebookUserSigned())
-        .subscribe((user: User) => {
-          zone.run(() => {
-            this._user = user;
-            this.signin.next();
-          });
-        });
-    } else {
-      this._user = this.mockUser();
+      this.register(new FacebookAuth());
+      this.register(new GoogleAuth());
     }
   }
 
   get user() {
-    return Object.assign(this._user);
+    return this._user;
   }
 
-  private googleUserSigned(): Observable<User> {
+  signout() {
+    this.authProvider.signout();
+  }
+
+  private register(authProvider: AuthProvider) {
+    authProvider.getUser().subscribe((user: User) => {
+      this.zone.run(() => {
+        this._user = user;
+        this.user.points = this.localStorageService.getPoints();
+        this.authProvider = authProvider;
+        this.userSigned.next();
+      });
+    });
+  }
+}
+
+interface AuthProvider {
+  getUser: () => Observable<User>;
+  signout: () => void;
+}
+
+/* Entry points to OAuth APIs */
+declare const gapi: any;
+declare const FB: any;
+
+class GoogleAuth implements AuthProvider {
+  private GoogleAuth: any;
+  private uid = UIDGenerator();
+
+  getUser(): Observable<User> {
     const user = new Subject<User>();
-    const getUser = (googleUser: any): User => {
-      const profile = googleUser.getBasicProfile();
-      return <User>{
-        id: this.uidGen.next().value,
-        name: profile.getName(),
-        imgUrl: profile.getImageUrl(),
-        email: profile.getEmail(),
-        idToken: googleUser.getAuthResponse().id_token,
-        authProvider: 'Google',
-        status: 'Online',
-        points: this.getUserPoints()
-      };
-    };
     gapi.load('auth2', () => {
       this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
       this.GoogleAuth.then(() => {
         if (this.GoogleAuth.isSignedIn.get() === true) {
-          user.next(getUser(this.GoogleAuth.currentUser.get()));
+          user.next(this.createUser(this.GoogleAuth.currentUser.get()));
         } else {
-          this.GoogleAuth.attachClickHandler('g-login-btn', {}, (googleUser: any) => user.next(getUser(googleUser)));
+          this.GoogleAuth.attachClickHandler('g-login-btn', {}, (_user: any) => user.next(this.createUser(_user)));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);
@@ -69,64 +75,75 @@ export class AuthService {
 
   signout() {
     const openLoginPage = () => setTimeout(() => location.assign('/login'), 0);
-    if (this._user.authProvider === 'Google') {
-      this.GoogleAuth.signOut().then(openLoginPage);
-    } else if (this._user.authProvider === 'Facebook') {
-      FB.logout(openLoginPage);
-    } else {
-      openLoginPage();
-    }
+    this.GoogleAuth.signOut().then(openLoginPage);
   }
 
-  private facebookUserSigned(): Observable<User> {
-    const user = new Subject<User>();
-    const getUser = (profile: any): User => {
-      return {
-        id: this.uidGen.next().value,
-        name: profile.name,
-        imgUrl: profile.picture.data.url,
-        email: profile.email,
-        authProvider: 'Facebook',
-        status: 'Online',
-        points: this.getUserPoints()
-      };
+  private createUser(googleUser: any): User {
+    const profile = googleUser.getBasicProfile();
+    return {
+      id: this.uid.next().value,
+      name: profile.getName(),
+      imgUrl: profile.getImageUrl(),
+      status: 'Online'
     };
-    const onFacebookUserStatusChange = (response: any) => {
-      if (response.status === 'connected') {
-        FB.api(`/me?fields=id,name,email,picture`,
-          (profile: any) => user.next(getUser(profile)));
-      }
-    };
+  }
+}
+
+class FacebookAuth implements AuthProvider {
+  private uid = UIDGenerator();
+  private user = new Subject<User>();
+
+  getUser(): Observable<User> {
     FB.init({
       appId: '1260178800807045',
       xfbml: true,
       status: true,
       version: 'v3.2'
     });
-    FB.Event.subscribe('auth.authResponseChange', onFacebookUserStatusChange.bind(this));
-    return user.asObservable();
+    FB.Event.subscribe('auth.authResponseChange', this.onFacebookUserStatusChange.bind(this));
+    return this.user.asObservable();
   }
 
-  private mockUser(): User {
+  signout() {
+    const openLoginPage = () => setTimeout(() => location.assign('/login'), 0);
+    FB.logout(openLoginPage);
+  }
+
+  private onFacebookUserStatusChange(response: any) {
+    if (response.status === 'connected') {
+      FB.api(`/me?fields=id,name,email,picture`,
+        (profile: any) => this.user.next(this.createUser(profile)));
+    }
+  }
+
+  private createUser(profile: any): User {
     return {
-      id: this.uidGen.next().value,
-      name: localStorage.getItem('username'),
-      imgUrl: 'assets/img/user.png',
-      email: null,
-      authProvider: null,
-      status: 'Online',
-      points: this.getUserPoints()
+      id: this.uid.next().value,
+      name: profile.name,
+      imgUrl: profile.picture.data.url,
+      status: 'Online'
     };
   }
+}
 
-  private getUserPoints(): number {
-    let points: number;
-    if (this.cookieService.hasItem('points')) {
-      points = +this.cookieService.getItem('points');
-    } else {
-      points = 0;
-      this.cookieService.setItem('points', '0', 3650);
-    }
-    return points;
+class MockUserAuth implements AuthProvider {
+  private uid = UIDGenerator();
+
+  getUser(): Observable<User> {
+    return new Observable(subscriber => {
+      if (!environment.production) {
+        subscriber.next(<User>{
+          id: this.uid.next().value,
+          name: localStorage.getItem('username'),
+          imgUrl: 'assets/img/user.png',
+          status: 'Online'
+        });
+      }
+    });
+  }
+
+  signout() {
+    setTimeout(() => location.assign('/login'), 0);
   }
 }
+

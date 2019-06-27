@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from '../environments/environment';
+import { AuthService } from './auth.service';
 
 
 @Component({
@@ -9,11 +10,12 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnInit {
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private auth: AuthService) { }
 
   ngOnInit() {
     if (environment.production) {
       this.router.navigate(['/login']);
+      this.auth.userSigned.subscribe(() => this.router.navigate(['/']));
     }
   }
 }
