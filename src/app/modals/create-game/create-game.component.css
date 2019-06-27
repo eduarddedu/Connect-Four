@@ -9,17 +9,17 @@
 
 .grid>div:nth-child(2) {
     justify-self: center;
-    align-self: end;
+    align-self: center;
 }
 
 .grid>div:nth-child(3) {
     justify-self: end;
 }
 
-.arrows>span {
+.arrows>img {
     cursor: pointer;
-    color: #666;
-    font-weight: bold;
+    width: 20px;
+    opacity: .6;
 }
 
 .player>img {
