@@ -1,6 +1,6 @@
 .grid {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr 1fr;
 }
 
 .grid>div:nth-child(1) {
@@ -8,40 +8,25 @@
 }
 
 .grid>div:nth-child(2) {
-    justify-self: center;
-    align-self: center;
-}
-
-.grid>div:nth-child(3) {
     justify-self: end;
 }
 
-.arrows>img {
-    cursor: pointer;
-    width: 20px;
-    opacity: .6;
-}
-
 .player>img {
+    width: 40px;
+    height: 40px;
     border-radius: 20px;
+    vertical-align: top;
 }
 
 .details {
-    display: flex;
-    flex-flow: column;
-    margin: 0 3px;
+    display: inline-block;
     user-select: none;
+    height: 40px;
+    padding: 0 3px;
 }
 
-.left {
-    float: right;
-}
-
-.right {
-    float: left;
-}
-
-.details>span:last-child {
+.details>div:last-child {
     font-size: 80%;
+    cursor: pointer;
 }
 

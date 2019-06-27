@@ -7,26 +7,26 @@
 <div class="modal-body">
   <div class="grid">
     <div class="player">
-      <img [src]="user.imgUrl" alt="User icon" width="40" height="40">
-      <div class="details left">
-        <span>{{user.name | firstWord}}</span>
-        <span [ngClass]="{ 'red' : userPlaysRed, 'yellow': !userPlaysRed }">{{userPlaysRed ? 'Red' : 'Yellow'}}</span>
+      <img [src]="user.imgUrl" alt="User icon">
+      <div class="details">
+        <div>{{user.name | firstWord}}</div>
+        <div [ngClass]="{ 'red' : userPlaysRed, 'yellow': !userPlaysRed }" title="Switch colors"
+          (click)="switchColors()">{{userPlaysRed ? 'Red' : 'Yellow'}}</div>
       </div>
-    </div>
-    <div class="arrows">
-        <img src="assets/img/arrow-loop.png" title="Switch colors" (click)="switchColors()">
     </div>
     <div class="player">
-      <div class="details right">
-        <span>{{opponent.name | firstWord}} </span>
-        <span [ngClass]="{ 'yellow': userPlaysRed, 'red': !userPlaysRed }">{{userPlaysRed ? 'Yellow' : 'Red'}}</span>
+      <div class="details">
+        <div>{{opponent.name | firstWord}}</div>
+        <div [ngClass]="{ 'yellow': userPlaysRed, 'red': !userPlaysRed }" title="Switch colors"
+          (click)="switchColors()">{{userPlaysRed ? 'Yellow' : 'Red'}}</div>
       </div>
-      <img [src]="opponent.imgUrl" alt="User icon" width="40" height="40">
+      <img [src]="opponent.imgUrl" alt="User icon">
     </div>
   </div>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-outline-success" (click)="activeModal.close({userPlaysRed: userPlaysRed})" ngbAutofocus>
+  <button type="button" class="btn btn-outline-success" (click)="activeModal.close({userPlaysRed: userPlaysRed})"
+    ngbAutofocus>
     {{opponent.id === Bot.id ? 'OK' : 'Send invitation'}}
   </button>
 </div>
