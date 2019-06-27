@@ -1,10 +1,10 @@
-import { ArrayGenerator } from '../util/generators';
+import { ArrayLoopGenerator } from '../util/generators';
 
 export class GameModel {
     private game: Game;
-    private PLIES = 4;
+    private readonly PLIES = 1;
 
-    constructor(redMovesFirst: boolean, previousMoves: number[]) {
+    constructor(redMovesFirst: boolean, previousMoves: number[], private aiPlaysRed?: boolean) {
         this.game = new Game(redMovesFirst, previousMoves);
     }
 
@@ -37,6 +37,9 @@ export class GameModel {
         return this.minimaxRoot();
     }
 
+    /**
+     * AI is the minimising player.
+     */
     private minimaxRoot() {
         let bestMove = null;
         let minimum = Infinity;
@@ -44,14 +47,16 @@ export class GameModel {
             this.game.move(id);
             if (this.game.win) {
                 this.game.undo();
-                return id;
-            }
-            const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
-            if (value <= minimum) {
-                minimum = value;
                 bestMove = id;
+                break;
+            } else {
+                const value = this.minimax(this.PLIES, -Infinity, Infinity, true);
+                if (value <= minimum) {
+                    minimum = value;
+                    bestMove = id;
+                }
+                this.game.undo();
             }
-            this.game.undo();
         }
         return bestMove;
     }
@@ -149,9 +154,11 @@ export class GameModel {
             }
             return totalScore;
         };
-        return evaluateForColor('red') - evaluateForColor('yellow');
+        return this.aiPlaysRed ?
+            evaluateForColor('yellow') - evaluateForColor('red')
+            :
+            evaluateForColor('red') - evaluateForColor('yellow');
     }
-
 }
 
 class Game {
@@ -164,24 +171,25 @@ class Game {
         [51, 52, 53, 54, 55, 56, 57],
         [61, 62, 63, 64, 65, 66, 67]
     ];
-    color: IterableIterator<'red' | 'yellow'>;
+    turn: IterableIterator<'red' | 'yellow'>;
     moves: number[] = [];
     _win = false;
     _draw = false;
 
     constructor(redMovesFirst: boolean, previousMoves: number[]) {
-        this.color = redMovesFirst ? ArrayGenerator(['red', 'yellow']) : ArrayGenerator(['yellow', 'red']);
+        const sequence = redMovesFirst ? ['red', 'yellow'] : ['yellow', 'red'];
+        this.turn = ArrayLoopGenerator(sequence);
         this.matrix.forEach(row => row.forEach(id => this.map.set(id, null)));
         previousMoves.forEach(id => {
             this.moves.push(id);
-            this.map.set(id, this.color.next().value);
+            this.map.set(id, this.turn.next().value);
         });
         this.checkGame();
     }
 
     move(id: number) {
         this.moves.push(id);
-        this.map.set(id, this.color.next().value);
+        this.map.set(id, this.turn.next().value);
         this.checkGame();
     }
 
@@ -190,7 +198,7 @@ class Game {
             const id = this.moves.pop();
             this.map.set(id, null);
             this._draw = this._win = false;
-            this.color.next();
+            this.turn.next();
         }
     }
 
@@ -220,7 +228,7 @@ class Game {
         if (this.moves.length < 7) {
             return;
         }
-        const lastMoveColor = this.color.next() && this.color.next().value;
+        const lastMoveColor = this.turn.next() && this.turn.next().value;
         const checkCells: (cells: number[]) => boolean = (cells: number[]) => {
             if (cells.length < 4) {
                 return false;
@@ -292,13 +300,13 @@ class Game {
 }
 
 /*
-GameModel detects when a victory or draw event occurs and picks the id for a random move or for the next best move.
+GameModel detects when a victory or draw event occurs and selects the id for the next best move.
 
-The last method implements the minimax algorithm using alpha-beta pruning optimisation:
 https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
 
-The method builds a search tree of game states linked together and calls a value function
-which heuristically evaluates the terminal nodes of the tree.
+AI is the minimising player.
+
+The method builds a search tree of game states and calls a heuristic value function which evaluates the leaf nodes of the tree.
 
 The function scans the board map looking for arrays of four cells.
 
@@ -328,4 +336,3 @@ The -- c e e e -- array needs a minimum of 5 moves for the three empty cells to 
 Because the maximum of the minimum number of moves an array may need is 18, the score of an array is rounded off to
 S = (20 - k) x 10^n
 where n = array.length - 1 and k is the minimum number of moves until completion. */
-

@@ -43,7 +43,8 @@ export class Game {
         this.isAgainstAi = ids.includes('0');
         this.ourUserPlays = ids.includes(user.id);
         this.opponent = this.players.red.id === user.id ? this.players.yellow : this.players.red;
-        this.model = new GameModel(this.redMovesFirst, data.moves);
+        const aiPlaysRed = this.players.red.id === '0';
+        this.model = new GameModel(this.redMovesFirst, data.moves, aiPlaysRed);
         this.updateStatus();
     }
 
