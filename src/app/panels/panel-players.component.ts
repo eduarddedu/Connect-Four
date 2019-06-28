@@ -79,25 +79,30 @@ export class PanelPlayersComponent implements OnInit {
 
   private async handleCreateGameMessage(data: { senderId: string, senderPlaysRed: boolean }) {
     let sender: User = this.users.get(data.senderId);
+    const senderName = sender.name;
     const option = await this.getUserResponse(sender);
     sender = this.users.get(data.senderId);
-    if (option === 'Accept') {
-      if (sender && sender.status === 'Online') {
-        this.realtime.messages.sendAcceptMessage(sender.id);
-        this.realtime.users.setUserStatus(this.user.id, 'In game');
-        this.realtime.users.setUserStatus(sender.id, 'In game');
-        if (data.senderPlaysRed) {
-          this.realtime.games.createGame(sender, this.user, false);
+    switch (option) {
+      case 'Accept':
+        if (sender && sender.status === 'Online') {
+          this.realtime.messages.sendAcceptMessage(sender.id);
+          this.realtime.users.setUserStatus(this.user.id, 'In game');
+          this.realtime.users.setUserStatus(sender.id, 'In game');
+          if (data.senderPlaysRed) {
+            this.realtime.games.createGame(sender, this.user, false);
+          } else {
+            this.realtime.games.createGame(this.user, sender, true);
+          }
         } else {
-          this.realtime.games.createGame(this.user, sender, true);
+          this.realtime.users.setUserStatus(this.user.id, 'Online');
+          this.notification.update(`${senderName} is not available`, 'warning');
         }
-      } else {
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
-        this.notification.update(`${sender.name} is not available`, 'warning');
-      }
-    } else if (option === 'Reject' && sender.status === 'Online') {
-      this.realtime.messages.sendRejectMessage(data.senderId);
-      this.realtime.users.setUserStatus(this.user.id, 'Online');
+        break;
+      case 'Reject':
+        if (sender && sender.status === 'Online') {
+          this.realtime.messages.sendRejectMessage(data.senderId);
+          this.realtime.users.setUserStatus(this.user.id, 'Online');
+        }
     }
   }
 

@@ -1,5 +1,5 @@
 import { browser, by, ProtractorBrowser, ElementFinder } from 'protractor';
-import { signIn, signOut, startGameBetweenUsers } from './actions';
+import { signIn, signOut, startGameBetweenUsers, sendGameInvitation, acceptGameInvitation } from './actions';
 
 describe('PanelPlayers', () => {
     const browserJohn: ProtractorBrowser = browser.forkNewDriverInstance(false);
@@ -44,7 +44,7 @@ describe('PanelPlayers', () => {
 
     it('should show user status - in game and not disturb user', async () => {
         await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
-        panelRows(browser).then(async rows => {
+        await panelRows(browser).then(async rows => {
             expect(rows.length).toEqual(2);
             expect(status(rows[0])).toEqual('In game');
             expect(status(rows[1])).toEqual('In game');
@@ -55,6 +55,19 @@ describe('PanelPlayers', () => {
             await signOut(browserJane);
         });
     });
+
+    it('should see "User is unavailable" alert', async () => {
+        await signIn(browserJohn, 'John');
+        await signIn(browserJane, 'Jane');
+        const invitationSent = await sendGameInvitation(browserJohn, 'Jane');
+        expect(invitationSent).toBe(true);
+        await signOut(browserJohn);
+        await acceptGameInvitation(browserJane);
+        const html = await browserJane.getPageSource();
+        expect(html).toContain('John is not available');
+        await signOut(browserJane);
+    });
+
 
     function panelRows(browserInstance: ProtractorBrowser) {
         return browserInstance.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
