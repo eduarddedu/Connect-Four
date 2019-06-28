@@ -27,8 +27,12 @@ export async function startAiGame(browserInstance: ProtractorBrowser) {
     await createGameButton.click();
 }
 
-export async function startGameBetweenUsers(
-    browserInvitor: ProtractorBrowser, browserInvitee: ProtractorBrowser, usernameInvitee: string): Promise<any> {
+export async function startGameBetweenUsers(browserInvitor: ProtractorBrowser, browserInvitee: ProtractorBrowser, usernameInvitee: string) {
+    await sendGameInvitation(browserInvitor, usernameInvitee);
+    await acceptGameInvitation(browserInvitee);
+}
+
+export function sendGameInvitation(browserInvitor: ProtractorBrowser, usernameInvitee: string): Promise<boolean> {
     return new Promise(resolve => {
         const list = browserInvitor.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
         list.then(async rows => {
@@ -42,14 +46,17 @@ export async function startGameBetweenUsers(
                 }
             }
             expect(userPresent).toBe(true);
-            const createGameButton = browserInvitor.element(by.css('button.btn-outline-success'));
-            expect(createGameButton.isPresent()).toBe(true);
-            await createGameButton.click();
-            const button = browserInvitee.element(by.css('button.btn-outline-success'));
-            await button.click();
-            resolve();
+            const inviteButton = browserInvitor.element(by.css('button.btn-outline-success'));
+            expect(inviteButton.isPresent()).toBe(true);
+            await inviteButton.click();
+            resolve(true);
         });
     });
+}
+
+export async function acceptGameInvitation(browserInvitee: ProtractorBrowser) {
+    const button = browserInvitee.element(by.css('button.btn-outline-success'));
+    await button.click();
 }
 
 export async function quitGameDuringPlay(browserInstance: ProtractorBrowser) {
