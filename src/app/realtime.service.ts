@@ -110,8 +110,8 @@ class ServiceUsers {
 
   constructor(private ngZone: NgZone, private ds: DeepstreamService) {
     this.usersList = this.ds.client.record.getList('users');
-    this.usersList.on('entry-added', async (id) => {
-      const user: User = await this.ds.getRecordData(id);
+    this.usersList.on('entry-added', async userId => {
+      const user: User = await this.ds.getRecordData(userId);
       this.ngZone.run(() => this.added.next(user));
     });
     this.usersList.on('entry-removed', userId => this.ngZone.run(() => this.removed.next(userId)));

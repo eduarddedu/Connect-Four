@@ -16,10 +16,11 @@ export class AuthService {
   private authProvider: AuthProvider;
 
   constructor(private zone: NgZone, private localStorageService: LocalStorageService) {
-    this.register(new MockUserAuth());
     if (environment.production) {
-      this.register(new FacebookAuth());
-      this.register(new GoogleAuth());
+      this.registerProvider(new FacebookAuth());
+      this.registerProvider(new GoogleAuth());
+    } else {
+      this.registerProvider(new MockUserAuth());
     }
   }
 
@@ -31,7 +32,7 @@ export class AuthService {
     this.authProvider.signout();
   }
 
-  private register(authProvider: AuthProvider) {
+  private registerProvider(authProvider: AuthProvider) {
     authProvider.getUser().subscribe((user: User) => {
       this.zone.run(() => {
         this._user = user;

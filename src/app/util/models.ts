@@ -9,7 +9,7 @@ export interface User {
 export const Bot: User = {
     id: '0',
     name: 'Bobiță',
-    imgUrl: 'assets/img/robot-dog-head.png',
+    imgUrl: 'assets/img/robot-dog-head-resize.png',
     email: null,
     status: 'Online'
 };

@@ -14,8 +14,9 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     if (environment.production) {
-      this.router.navigate(['/login']);
       this.auth.userSigned.subscribe(() => this.router.navigate(['/']));
+      this.router.navigate(['/login']);
     }
   }
 }
+
