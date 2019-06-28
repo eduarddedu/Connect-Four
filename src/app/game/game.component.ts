@@ -12,7 +12,6 @@ import { WatchGameService } from '../watch-game.service';
 import { RealtimeService } from '../realtime.service';
 import { GameOverComponent } from '../modals/game-over/game-over.component';
 import { NotificationService } from '../notification.service';
-import { CookieService } from '../cookie.service';
 import { LocalStorageService } from '../local-storage.service';
 
 @Component({
@@ -149,7 +148,7 @@ export class GameComponent implements OnInit {
     return new Promise(resolve => {
       setTimeout(() => {
         const modal = this.ngbModal.open(GameOverComponent, { backdrop: 'static' });
-        modal.componentInstance.game = Object.assign(this.game, {});
+        modal.componentInstance.game = new Game(this.game, this.user);
         modal.componentInstance.user = this.user;
         modal.result.then((option: string) => resolve(option));
       }, 1000);
