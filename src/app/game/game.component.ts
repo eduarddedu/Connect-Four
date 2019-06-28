@@ -38,7 +38,7 @@ export class GameComponent implements OnInit {
     this.realtime.games.removed.subscribe(id => {
       if (this.game && this.game.id === id) {
         this.game = null;
-        this.notification.update(`Game abandoned by player`, 'danger');
+        this.notification.update(`Game abandoned by player`, 'warning');
       }
     });
     this.watchGame.selected.subscribe((game: Game) => this.setup(game));
