@@ -36,7 +36,7 @@ export class AuthService {
     authProvider.getUser().subscribe((user: User) => {
       this.zone.run(() => {
         this._user = user;
-        this.user.points = this.localStorageService.getPoints();
+        this.user.points = this.localStorageService.getUserPoints();
         this.authProvider = authProvider;
         this.userSigned.next();
       });

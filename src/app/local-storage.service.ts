@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class LocalStorageService {
 
-  getPoints(): number {
+  getUserPoints(): number {
     const points = localStorage.getItem('points');
     if (points) {
       return +points;
@@ -14,7 +14,7 @@ export class LocalStorageService {
     }
   }
 
-  setPoints(points: number) {
+  setUserPoints(points: number) {
     localStorage.setItem('points', `${points}`);
   }
 }

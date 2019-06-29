@@ -71,10 +71,23 @@ export class Game {
         return this.ourUserPlays && this.state === 'in progress' && this.activePlayer.id === this.user.id;
     }
 
-    updateMoves(id: string) {
-        this.moves.push(+id);
-        this.model.move(+id);
+    update(moveId: string) {
+        this.moves.push(+moveId);
+        this.model.move(+moveId);
         this.checkGame();
+    }
+
+    reset() {
+        const data = {
+            moves: [],
+            state: 'in progress',
+            redMovesFirst: this.winner.id === this.players.yellow.id,
+            winner: undefined
+          };
+          Object.assign(this, data);
+          this.updateStatus();
+          const aiPlaysRed = this.players.red.id === '0';
+          this.model = new GameModel(this.redMovesFirst, this.moves, aiPlaysRed);
     }
 
     updateStatus() {

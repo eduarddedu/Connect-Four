@@ -6,7 +6,7 @@ import { User } from 'src/app/util/models';
 @Component({
   selector: 'app-game-over',
   templateUrl: './game-over.component.html',
-  styleUrls: []
+  styleUrls: ['./game-over.component.css']
 })
 export class GameOverComponent {
   @Input() game: Game;

@@ -52,12 +52,17 @@ describe('GameComponent', () => {
         expect(await statusMessage(browserJane)).toMatch('Game over');
     });
 
-    it('should show gameover modal to players', async () => {
+    it('should see correct game winner - (1)', async () => {
+        browser.sleep(1000);
+        let text = await browserJane.element(by.css('#winnername')).getText();
+        expect(text).toContain('Jane');
+        text = await browserJohn.element(by.css('#winnername')).getText();
+        expect(text).toContain('Jane');
         expect((await playAnotherRoundBtn(browserJane)).isPresent()).toBe(true);
         expect((await playAnotherRoundBtn(browserJohn)).isPresent()).toBe(true);
     });
 
-    it('should correctly see a finished game', async () => {
+    it('should correctly join and see a finished game', async () => {
         await quitWatchingGame(browser);
         await watchFirstGameInList(browser);
         expect(await statusMessage(browser)).toMatch('Game over');
@@ -70,13 +75,13 @@ describe('GameComponent', () => {
         await playAnotherRoundBtn(browserJohn).click();
     });
 
-    it('should see correct status on first turn (after game reset)', async () => {
+    it('should see correct status on first turn', async () => {
         expect(await statusMessage(browser)).toEqual('Waiting for John...');
         expect(await statusMessage(browserJohn)).toEqual('Your turn');
         expect(await statusMessage(browserJane)).toEqual('Waiting for John...');
     });
 
-    it('should see correct status on second turn (after game reset)', async () => {
+    it('should see correct status on second turn', async () => {
         await move(browserJohn, 67);
         expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
         expect(await statusMessage(browserJohn)).toEqual('Waiting for Jane...');
@@ -97,20 +102,30 @@ describe('GameComponent', () => {
         expect(html).toContain('Game abandoned by player');
     });
 
-    it('should see game abandoned notification when player quits a finished game', async () => {
-        await startGameBetweenUsers(browserJane, browserJohn, 'John');
+    it('should see correct game winner - (2)', async () => {
+        await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
         await watchFirstGameInList(browser);
         let index = 0;
-        for (const id of [67, 66, 57, 56, 47, 46, 37]) {
+        for (const id of [61, 62, 51, 52, 41, 42, 67, 32]) {
             if (index % 2 === 0) {
-                await move(browserJohn, id);
-                browserJane.sleep(100);
-            } else {
                 await move(browserJane, id);
                 browserJohn.sleep(100);
+            } else {
+                await move(browserJohn, id);
+                browserJane.sleep(100);
             }
             index++;
         }
+        browser.sleep(1000);
+        let text = await browserJane.element(by.css('#winnername')).getText();
+        expect(text).toContain('John');
+        text = await browserJohn.element(by.css('#winnername')).getText();
+        expect(text).toContain('John');
+        expect((await playAnotherRoundBtn(browserJane)).isPresent()).toBe(true);
+        expect((await playAnotherRoundBtn(browserJohn)).isPresent()).toBe(true);
+    });
+
+    it('should see game abandoned notification when player quits a finished game', async () => {
         await quitGameOnGameEnd(browserJohn);
         let html = await browserJane.getPageSource();
         expect(html).toContain('Game abandoned by player');

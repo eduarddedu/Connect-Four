@@ -65,7 +65,7 @@ export class GameComponent implements OnInit {
 
   onMoveUpdate(id: string) {
     this.board.move(id);
-    this.game.updateMoves(id);
+    this.game.update(id);
     switch (this.game.state) {
       case 'over':
         this.handleGameOver();
@@ -78,16 +78,13 @@ export class GameComponent implements OnInit {
   onStateUpdate(state: 'in progress' | 'over' | 'on hold') {
     switch (state) {
       case 'in progress':
-        this.board.clear();
         this.resetGame();
-        this.handleBotMove();
-        break;
-      case 'over':
         break;
       case 'on hold':
         this.game.state = 'on hold';
         this.game.updateStatus();
     }
+    console.log(state);
   }
 
   private handleBotMove() {
@@ -98,17 +95,18 @@ export class GameComponent implements OnInit {
     }
   }
 
-  private async handleGameOver() {
+  private handleGameOver() {
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
-      this.realtime.games.updateGameProperties(this.game.id, {
-        state: 'over',
-        points: this.game.points,
-        winner: this.game.winner
-      });
+      setTimeout(() => {
+        this.realtime.games.updateGameProperties(this.game.id, {
+          state: 'over',
+          points: this.game.points,
+          winner: this.game.winner
+        });
+      }, 100);
     }
     if (this.game.winner.id === this.user.id) {
-      this.user.points += 1;
-      this.localStorageService.setPoints(this.user.points);
+      this.localStorageService.setUserPoints(++this.user.points);
     }
     if (this.game.ourUserPlays) {
       this.handleUserOptionOnGameEnd();
@@ -146,23 +144,17 @@ export class GameComponent implements OnInit {
 
   private getUserOptionOnGameEnd(): Promise<string> {
     return new Promise(resolve => {
-      setTimeout(() => {
-        const modal = this.ngbModal.open(GameOverComponent, { backdrop: 'static' });
-        modal.componentInstance.game = new Game(this.game, this.user);
-        modal.componentInstance.user = this.user;
-        modal.result.then((option: string) => resolve(option));
-      }, 1000);
+      const modal = this.ngbModal.open(GameOverComponent, { backdrop: 'static' });
+      modal.componentInstance.game = this.game;
+      modal.componentInstance.user = this.user;
+      modal.result.then((option: string) => resolve(option));
     });
   }
 
   private resetGame() {
-    const data = Object.assign(this.game, {
-      moves: [],
-      state: 'in progress',
-      redMovesFirst: this.game.winner.id === this.game.players.yellow.id,
-      winner: null
-    });
-    this.game = new Game(data, this.user);
+    this.board.clear();
+    this.game.reset();
+    this.handleBotMove();
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
       this.realtime.games.updateGameProperties(this.game.id, {
         moves: [],

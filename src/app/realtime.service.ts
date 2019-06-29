@@ -63,8 +63,9 @@ class DeepstreamService {
           console.log('Deepstream connection closed');
       }
     });
-    this.client.on('error', (error: any, event: any, topic: any) => {
+    this.client.on('error', (error: string, event: any, topic: any) => {
       console.log(error, event, topic);
+      throw new Error(`${error}, ${event}, ${topic}`);
     });
   }
 
