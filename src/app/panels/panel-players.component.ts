@@ -31,11 +31,16 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.realtime.users.add(this.user);
-    window.addEventListener('beforeunload', () => this.realtime.users.remove(this.user.id));
-    this.realtime.users.all.subscribe((users: User[]) => users.forEach(this.addUser.bind(this)));
-    this.realtime.users.added.subscribe(this.addUser.bind(this));
-    this.realtime.users.removed.subscribe(this.removeUser.bind(this));
+    this.realtime.users.all.subscribe((users: User[]) => {
+      users.forEach(this.onUserOnline.bind(this));
+      const alreadySigned = users.map(user => user.id).includes(this.user.id);
+      if (!alreadySigned) {
+        this.realtime.users.add(this.user);
+        window.addEventListener('beforeunload', () => this.realtime.users.remove(this.user.id));
+      }
+    });
+    this.realtime.users.added.subscribe(this.onUserOnline.bind(this));
+    this.realtime.users.removed.subscribe(this.onUserOffline.bind(this));
     this.realtime.messages.createGame.subscribe(this.handleCreateGameMessage.bind(this));
     this.realtime.messages.accept.subscribe(this.handleAcceptMessage.bind(this));
     this.realtime.messages.reject.subscribe(this.handleRejectMessage.bind(this));
@@ -57,20 +62,18 @@ export class PanelPlayersComponent implements OnInit {
     }
   }
 
-  private addUser(user: User) {
+  private onUserOnline(user: User) {
     if (user.id !== this.user.id) {
       this.users.set(user.id, Object.assign(user, { index: this.ascendingIntegers.next().value }));
-      this.realtime.users.onUserStatusChange(user.id, this.onUserStatusChanged, this);
+      this.realtime.users.onUserStatusChange(user.id, this.onUpdateUserStatus, this);
     }
   }
 
-  private removeUser(userId: string) {
-    if (userId !== this.user.id) {
-      this.users.delete(userId);
-    }
+  private onUserOffline(userId: string) {
+    this.users.delete(userId);
   }
 
-  private onUserStatusChanged(userId: string, status: 'Online' | 'Busy' | 'In game') {
+  private onUpdateUserStatus(userId: string, status: 'Online' | 'Busy' | 'In game') {
     const user = this.users.get(userId);
     if (user) {
       user.status = status;

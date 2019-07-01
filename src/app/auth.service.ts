@@ -2,7 +2,6 @@ import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
 import { User } from './util/models';
-import { UIDGenerator } from './util/generators';
 import { environment } from '../environments/environment';
 import { LocalStorageService } from './local-storage.service';
 
@@ -55,7 +54,6 @@ declare const FB: any;
 
 class GoogleAuth implements AuthProvider {
   private GoogleAuth: any;
-  private uid = UIDGenerator();
 
   getUser(): Observable<User> {
     const user = new Subject<User>();
@@ -82,7 +80,7 @@ class GoogleAuth implements AuthProvider {
   private createUser(googleUser: any): User {
     const profile = googleUser.getBasicProfile();
     return {
-      id: this.uid.next().value,
+      id: profile.getId(),
       name: profile.getName(),
       imgUrl: profile.getImageUrl(),
       status: 'Online'
@@ -91,7 +89,6 @@ class GoogleAuth implements AuthProvider {
 }
 
 class FacebookAuth implements AuthProvider {
-  private uid = UIDGenerator();
   private user = new Subject<User>();
 
   getUser(): Observable<User> {
@@ -119,7 +116,7 @@ class FacebookAuth implements AuthProvider {
 
   private createUser(profile: any): User {
     return {
-      id: this.uid.next().value,
+      id: profile.id,
       name: profile.name,
       imgUrl: profile.picture.data.url,
       status: 'Online'
@@ -128,13 +125,12 @@ class FacebookAuth implements AuthProvider {
 }
 
 class MockUserAuth implements AuthProvider {
-  private uid = UIDGenerator();
 
   getUser(): Observable<User> {
     return new Observable(subscriber => {
       if (!environment.production) {
         subscriber.next(<User>{
-          id: this.uid.next().value,
+          id: localStorage.getItem('id'),
           name: localStorage.getItem('username'),
           imgUrl: 'assets/img/user.png',
           status: 'Online'

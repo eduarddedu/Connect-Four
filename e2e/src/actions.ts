@@ -2,7 +2,12 @@ import { by, ProtractorBrowser } from 'protractor';
 
 export async function signIn(browserInstance: ProtractorBrowser, username: string) {
     await browserInstance.get('/login');
-    const id = Math.floor(Math.random() * 1000000);
+    let id: string;
+    switch (username) {
+        case 'Spectator': id = '1'; break;
+        case 'John': id = '2'; break;
+        case 'Jane': id = '3';
+    }
     await browserInstance.executeScript(function () {
         const uid = arguments[0];
         const name = arguments[1];
