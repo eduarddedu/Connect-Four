@@ -98,13 +98,13 @@ export class Game {
                 break;
             case 'in progress':
                 if (this.ourUserPlays) {
-                    this.status = this.isOurTurn ? 'Your turn' : `Waiting for ${firstName(this.activePlayer.name)}...`;
+                    this.status = this.isOurTurn ? 'Your turn' : `Waiting on ${firstName(this.activePlayer.name)}...`;
                 } else {
-                    this.status = `Waiting for ${firstName(this.activePlayer.name)}...`;
+                    this.status = `Waiting on ${firstName(this.activePlayer.name)}...`;
                 }
                 break;
             case 'on hold':
-                this.status = 'Waiting for players...';
+                this.status = 'Waiting on second player...';
 
         }
     }

@@ -55,7 +55,7 @@ export class PanelPlayersComponent implements OnInit {
       modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
         if (typeof option === 'object') {
           this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
-          this.notification.update(`Invitation sent. Waiting for ${user.name}...`, 'success');
+          this.notification.update(`Invitation sent. Waiting on ${user.name}...`, 'success');
         }
         this.realtime.users.setUserStatus(this.user.id, 'Online');
       });
