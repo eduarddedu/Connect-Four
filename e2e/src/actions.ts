@@ -74,7 +74,7 @@ export async function quitGameDuringPlay(browserInstance: ProtractorBrowser) {
 }
 
 export async function quitGameOnGameEnd(browserInstance: ProtractorBrowser) {
-    const modalCloseButton = browserInstance.element(by.css('button.btn-outline-danger'));
+    const modalCloseButton = browserInstance.element(by.css('button#closeModal'));
     expect(modalCloseButton.isPresent()).toBe(true);
     await modalCloseButton.click();
 }
