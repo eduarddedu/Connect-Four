@@ -8,8 +8,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthService } from '../auth.service';
 import { User, Bot } from '../util/models';
-import { CreateGameComponent } from '../modals/create-game/create-game.component';
-import { QuitGameComponent } from '../modals/quit-game/quit-game.component';
+import { GameCreateComponent } from '../modals/game-create.component';
+import { GameQuitComponent } from '../modals/game-quit.component';
 import { Game } from '../game/game';
 import { GameComponent } from '../game/game.component';
 import { RealtimeService } from '../realtime.service';
@@ -57,7 +57,7 @@ export class HomeComponent implements OnInit {
 
   onClickBot() {
     this.realtime.users.setUserStatus(this.user.id, 'Busy');
-    const modal = this.modalService.open(CreateGameComponent, { backdrop: 'static' });
+    const modal = this.modalService.open(GameCreateComponent, { backdrop: 'static' });
     modal.componentInstance.user = this.user;
     modal.componentInstance.opponent = Bot;
     modal.componentInstance.userPlaysRed = true;
@@ -103,7 +103,7 @@ export class HomeComponent implements OnInit {
 
   private quitGameResponse(): Promise<string> {
     return new Promise(resolve => {
-      const modal = this.modalService.open(QuitGameComponent);
+      const modal = this.modalService.open(GameQuitComponent);
       modal.result.then((option: string) => resolve(option));
     });
   }

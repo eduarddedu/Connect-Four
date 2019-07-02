@@ -1,14 +1,14 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { User, Bot } from '../../util/models';
+import { User, Bot } from '../util/models';
 
 @Component({
   selector: 'app-create-game',
-  templateUrl: './create-game.component.html',
-  styleUrls: ['./create-game.component.css']
+  templateUrl: './game-create.component.html',
+  styleUrls: ['./game-create.component.css']
 })
-export class CreateGameComponent {
+export class GameCreateComponent {
   @Input() user: User;
   @Input() opponent: User;
   userPlaysRed = false;

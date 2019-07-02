@@ -3,10 +3,10 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-quit-game',
-  templateUrl: './quit-game.component.html',
+  templateUrl: './game-quit.component.html',
   styles: []
 })
-export class QuitGameComponent {
+export class GameQuitComponent {
 
   constructor(public activeModal: NgbActiveModal) { }
 

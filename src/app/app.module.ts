@@ -10,17 +10,17 @@ import { LoginComponent } from './login/login.component';
 import { PolicyAcceptComponent } from './policy-accept/policy-accept.component';
 import { HomeComponent } from './home/home.component';
 import { GameComponent } from './game/game.component';
-import { BoardComponent } from './game/board/board.component';
+import { BoardComponent } from './game/board.component';
 import { TimerComponent } from './timer/timer.component';
 import { PanelPlayersComponent } from './panels//panel-players.component';
 import { PanelGamesComponent } from './panels/panel-games.component';
-import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
+import { GameInvitationComponent } from './modals/game-invitation.component';
 import { NotificationComponent } from './notification/notification.component';
-import { QuitGameComponent } from './modals/quit-game/quit-game.component';
+import { GameQuitComponent } from './modals/game-quit.component';
 import { SurnamePipe, ReversePipe } from './util/pipes';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
-import { GameOverComponent } from './modals/game-over/game-over.component';
-import { CreateGameComponent } from './modals/create-game/create-game.component';
+import { GameOverComponent } from './modals/game-over.component';
+import { GameCreateComponent } from './modals/game-create.component';
 
 
 @NgModule({
@@ -34,14 +34,14 @@ import { CreateGameComponent } from './modals/create-game/create-game.component'
     TimerComponent,
     PanelPlayersComponent,
     PanelGamesComponent,
-    GameInvitationComponent,
     NotificationComponent,
-    QuitGameComponent,
     PolicyPageComponent,
     SurnamePipe,
     ReversePipe,
     GameOverComponent,
-    CreateGameComponent
+    GameCreateComponent,
+    GameInvitationComponent,
+    GameQuitComponent
   ],
   imports: [
     BrowserModule,
@@ -50,7 +50,7 @@ import { CreateGameComponent } from './modals/create-game/create-game.component'
     AppRoutingModule
   ],
   providers: [],
-  entryComponents: [CreateGameComponent, GameInvitationComponent, QuitGameComponent, GameOverComponent],
+  entryComponents: [GameCreateComponent, GameInvitationComponent, GameQuitComponent, GameOverComponent],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

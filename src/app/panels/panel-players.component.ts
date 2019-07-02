@@ -9,8 +9,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { User } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
 import { NotificationService } from '../notification.service';
-import { CreateGameComponent } from '../modals/create-game/create-game.component';
-import { GameInvitationComponent } from '../modals/game-invitation/game-invitation.component';
+import { GameCreateComponent } from '../modals/game-create.component';
+import { GameInvitationComponent } from '../modals/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
 
 
@@ -49,7 +49,7 @@ export class PanelPlayersComponent implements OnInit {
   onClick(user: User) {
     if (user.status === 'Online') {
       this.realtime.users.setUserStatus(this.user.id, 'Busy');
-      const modal = this.modalService.open(CreateGameComponent);
+      const modal = this.modalService.open(GameCreateComponent);
       modal.componentInstance.user = this.user;
       modal.componentInstance.opponent = user;
       modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {

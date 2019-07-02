@@ -6,11 +6,11 @@ import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { User, Bot } from '../util/models';
-import { BoardComponent } from './board/board.component';
+import { BoardComponent } from './board.component';
 import { Game } from './game';
 import { WatchGameService } from '../watch-game.service';
 import { RealtimeService } from '../realtime.service';
-import { GameOverComponent } from '../modals/game-over/game-over.component';
+import { GameOverComponent } from '../modals/game-over.component';
 import { NotificationService } from '../notification.service';
 import { LocalStorageService } from '../local-storage.service';
 

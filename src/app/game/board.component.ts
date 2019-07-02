@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-import { Game } from '../game';
+import { Game } from './game';
 
 @Component({
   selector: 'app-board',

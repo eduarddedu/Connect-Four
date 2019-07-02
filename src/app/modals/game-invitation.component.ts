@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { User } from '../../util/models';
+import { User } from '../util/models';
 
 @Component({
   selector: 'app-game-invitation',
