@@ -1,13 +1,15 @@
-<div class="modal-header">
-  <h4 class="modal-title">Game invitation</h4>
-  <button type="button" class="close" aria-label="Close" (click)="activeModal.close('Reject')">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<div class="modal-body" *ngIf="user">
-  <img [src]="user.imgUrl" alt="User icon"> 
-  <span class="username"> {{user.name | surname}} </span> invites you to play Connect Four
-</div>
-<div class="modal-footer">
-  <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Accept')" ngbAutofocus>Accept</button>
+<div class="c4-modal-container">
+    <div class="modal-header">
+        <h4 class="modal-title">Game invitation</h4>
+        <button type="button" class="close" aria-label="Close" (click)="activeModal.close('Reject')">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" *ngIf="user">
+        <img [src]="user.imgUrl" alt="User icon"> 
+        <span class="username"> {{user.name | surname}} </span> invites you to play <b>Connect Four</b>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Accept')" ngbAutofocus>Accept</button>
+      </div>
 </div>

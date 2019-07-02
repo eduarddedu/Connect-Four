@@ -60,6 +60,10 @@
     border-radius: 17px;
 }
 
+.c4-modal-container {
+    color: #4f4f4f;
+}
+
 /** Desktop devices **/
 
 @media(min-width: 992px) {
