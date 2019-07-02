@@ -1,7 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({name: 'firstWord'})
-export class FirstWordPipe implements PipeTransform {
+@Pipe({name: 'surname'})
+export class SurnamePipe implements PipeTransform {
   transform(value: string = ''): any {
     return value.replace(/ .*/g, '');
   }

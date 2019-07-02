@@ -9,14 +9,14 @@
     <div class="player">
       <img [src]="user.imgUrl" alt="User icon">
       <div class="details">
-        <div>{{user.name | firstWord}}</div>
+        <div>{{user.name | surname}}</div>
         <div [ngClass]="{ 'red' : userPlaysRed, 'yellow': !userPlaysRed }" title="Switch colors"
           (click)="switchColors()">{{userPlaysRed ? 'Red' : 'Yellow'}}</div>
       </div>
     </div>
     <div class="player">
       <div class="details">
-        <div>{{opponent.name | firstWord}}</div>
+        <div>{{opponent.name | surname}}</div>
         <div [ngClass]="{ 'yellow': userPlaysRed, 'red': !userPlaysRed }" title="Switch colors"
           (click)="switchColors()">{{userPlaysRed ? 'Yellow' : 'Red'}}</div>
       </div>

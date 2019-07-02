@@ -5,7 +5,7 @@
   <div *ngIf="game.winner" class="centered">
     <div>🏆🏆🏆 Winner 🏆🏆🏆</div>
     <img [src]="game.winner.imgUrl" alt="User icon" width="40" height="40" style="border-radius: 20px">
-    <div id="winnername">{{game.winner.name | firstWord}}</div>
+    <div id="winnername">{{game.winner.name | surname}}</div>
   </div>
   <div *ngIf="!game.winner">Game ended in a draw 🤔</div>
 </div>

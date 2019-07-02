@@ -17,7 +17,7 @@ import { PanelGamesComponent } from './panels/panel-games.component';
 import { GameInvitationComponent } from './modals/game-invitation/game-invitation.component';
 import { NotificationComponent } from './notification/notification.component';
 import { QuitGameComponent } from './modals/quit-game/quit-game.component';
-import { FirstWordPipe, ReversePipe } from './util/pipes';
+import { SurnamePipe, ReversePipe } from './util/pipes';
 import { PolicyPageComponent } from './policy-page/policy-page.component';
 import { GameOverComponent } from './modals/game-over/game-over.component';
 import { CreateGameComponent } from './modals/create-game/create-game.component';
@@ -38,7 +38,7 @@ import { CreateGameComponent } from './modals/create-game/create-game.component'
     NotificationComponent,
     QuitGameComponent,
     PolicyPageComponent,
-    FirstWordPipe,
+    SurnamePipe,
     ReversePipe,
     GameOverComponent,
     CreateGameComponent
