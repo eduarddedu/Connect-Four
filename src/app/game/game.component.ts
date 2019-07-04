@@ -30,6 +30,13 @@ export class GameComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.realtime.games.all.subscribe((games: Game[]) => {
+      games.forEach((game: Game) => {
+        if (game.ourUserPlays) {
+          this.setup(game);
+        }
+      });
+    });
     this.realtime.games.added.subscribe((game: Game) => {
       if (game.ourUserPlays) {
         this.setup(game);
@@ -42,7 +49,6 @@ export class GameComponent implements OnInit {
       }
     });
     this.watchGame.selected.subscribe((game: Game) => this.setup(game));
-    window.addEventListener('beforeunload', this.destroyGameOnWindowClose.bind(this));
   }
 
   setup(game: Game) {
@@ -160,15 +166,6 @@ export class GameComponent implements OnInit {
         moves: [],
         redMovesFirst: this.game.redMovesFirst
       });
-    }
-  }
-
-  private destroyGameOnWindowClose() {
-    if (this.game && this.game.ourUserPlays) {
-      if (!this.game.isAgainstAi) {
-        this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
-      }
-      this.realtime.games.remove(this.game.id);
     }
   }
 

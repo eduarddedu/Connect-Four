@@ -13,7 +13,6 @@ import { GameCreateComponent } from '../modals/game-create.component';
 import { GameInvitationComponent } from '../modals/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
 
-
 @Component({
   selector: 'app-panel-players',
   templateUrl: './panel-players.component.html',
@@ -32,34 +31,17 @@ export class PanelPlayersComponent implements OnInit {
 
   ngOnInit() {
     this.realtime.users.all.subscribe((users: User[]) => {
-      users.forEach(this.onUserOnline.bind(this));
-      const alreadySigned = users.map(user => user.id).includes(this.user.id);
-      if (!alreadySigned) {
-        this.realtime.users.add(this.user);
-        window.addEventListener('beforeunload', () => this.realtime.users.remove(this.user.id));
-      }
-    });
-    this.realtime.users.added.subscribe(this.onUserOnline.bind(this));
-    this.realtime.users.removed.subscribe(this.onUserOffline.bind(this));
-    this.realtime.messages.createGame.subscribe(this.handleCreateGameMessage.bind(this));
-    this.realtime.messages.accept.subscribe(this.handleAcceptMessage.bind(this));
-    this.realtime.messages.reject.subscribe(this.handleRejectMessage.bind(this));
-  }
-
-  onClick(user: User) {
-    if (user.status === 'Online') {
-      this.realtime.users.setUserStatus(this.user.id, 'Busy');
-      const modal = this.modalService.open(GameCreateComponent);
-      modal.componentInstance.user = this.user;
-      modal.componentInstance.opponent = user;
-      modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
-        if (typeof option === 'object') {
-          this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
-          this.notification.update(`Invitation sent. Waiting on ${user.name}...`, 'success');
+      users.forEach((user: User) => {
+        if (user.id !== this.user.id) {
+          this.onUserOnline(user);
         }
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
       });
-    }
+      this.realtime.users.added.subscribe(this.onUserOnline.bind(this));
+      this.realtime.users.removed.subscribe(this.onUserOffline.bind(this));
+      this.realtime.messages.createGame.subscribe(this.handleCreateGameMessage.bind(this));
+      this.realtime.messages.accept.subscribe(this.handleAcceptMessage.bind(this));
+      this.realtime.messages.reject.subscribe(this.handleRejectMessage.bind(this));
+    });
   }
 
   private onUserOnline(user: User) {
@@ -126,6 +108,22 @@ export class PanelPlayersComponent implements OnInit {
       modal.componentInstance.user = sender;
       modal.result.then((option: string) => resolve(option));
     });
+  }
+
+  onClick(user: User) {
+    if (user.status === 'Online') {
+      this.realtime.users.setUserStatus(this.user.id, 'Busy');
+      const modal = this.modalService.open(GameCreateComponent);
+      modal.componentInstance.user = this.user;
+      modal.componentInstance.opponent = user;
+      modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
+        if (typeof option === 'object') {
+          this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
+          this.notification.update(`Invitation sent. Waiting on ${user.name}...`, 'success');
+        }
+        this.realtime.users.setUserStatus(this.user.id, 'Online');
+      });
+    }
   }
 
   descendingSort(a: { key: string, value: User & { index: number } }, b: { key: string, value: User & { index: number } }): number {

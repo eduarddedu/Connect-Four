@@ -41,7 +41,7 @@ export function sendGameInvitation(browserInvitor: ProtractorBrowser, usernameIn
     return new Promise(resolve => {
         const list = browserInvitor.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
         list.then(async rows => {
-            expect(rows.length).toBeGreaterThan(1);
+            expect(rows.length).toBeGreaterThanOrEqual(1);
             let userPresent = false;
             for (const row of rows) {
                 const username = await row.all(by.css('.c4-card-row-item>span')).first().getText();

@@ -1,7 +1,7 @@
 import { browser, by, ProtractorBrowser } from 'protractor';
 
 import { signIn, signOut, startAiGame, startGameBetweenUsers, quitGameDuringPlay, quitWatchingGame, quitGameOnGameEnd } from './actions';
-import { assertNoBrowserError } from './assertions';
+import { assertNoBrowserError, assertGameStatusMessageEqualTo as assertGameStatusMessageToEqual } from './assertions';
 
 
 describe('GameComponent', () => {
@@ -23,16 +23,16 @@ describe('GameComponent', () => {
     });
 
     it('should see correct status on first turn', async () => {
-        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
-        expect(await statusMessage(browserJane)).toEqual('Your turn');
-        expect(await statusMessage(browserJohn)).toEqual('Waiting for Jane...');
+        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
+        assertGameStatusMessageToEqual(browserJane, 'Your turn');
+        assertGameStatusMessageToEqual(browserJohn, 'Waiting on Jane...');
     });
 
     it('should see correct status on second turn', async () => {
         await move(browserJane, 67);
-        expect(await statusMessage(browser)).toEqual('Waiting for John...');
-        expect(await statusMessage(browserJane)).toEqual('Waiting for John...');
-        expect(await statusMessage(browserJohn)).toEqual('Your turn');
+        assertGameStatusMessageToEqual(browser, 'Waiting on John...');
+        assertGameStatusMessageToEqual(browserJane, 'Waiting on John...');
+        assertGameStatusMessageToEqual(browserJohn, 'Your turn');
     });
 
     it('should see correct status on game end', async () => {
@@ -47,9 +47,9 @@ describe('GameComponent', () => {
             }
             index++;
         }
-        expect(await statusMessage(browser)).toMatch('Game over');
-        expect(await statusMessage(browserJohn)).toMatch('Game over');
-        expect(await statusMessage(browserJane)).toMatch('Game over');
+        assertGameStatusMessageToEqual(browser, 'Game over');
+        assertGameStatusMessageToEqual(browserJohn, 'Game over');
+        assertGameStatusMessageToEqual(browserJane, 'Game over');
     });
 
     it('should see correct game winner - (1)', async () => {
@@ -65,27 +65,27 @@ describe('GameComponent', () => {
     it('should correctly join and see a finished game', async () => {
         await quitWatchingGame(browser);
         await watchFirstGameInList(browser);
-        expect(await statusMessage(browser)).toMatch('Game over');
+        assertGameStatusMessageToEqual(browser, 'Game over');
     });
 
     it('should see correct status when game is on hold', async () => {
         await playAnotherRoundBtn(browserJane).click();
-        expect(await statusMessage(browser)).toEqual('Waiting for players...');
-        expect(await statusMessage(browserJohn)).toEqual('Waiting for players...');
+        assertGameStatusMessageToEqual(browser, 'Waiting on second player...');
+        assertGameStatusMessageToEqual(browserJohn, 'Waiting on second player...');
         await playAnotherRoundBtn(browserJohn).click();
     });
 
     it('should see correct status on first turn', async () => {
-        expect(await statusMessage(browser)).toEqual('Waiting for John...');
-        expect(await statusMessage(browserJohn)).toEqual('Your turn');
-        expect(await statusMessage(browserJane)).toEqual('Waiting for John...');
+        assertGameStatusMessageToEqual(browser, 'Waiting on John...');
+        assertGameStatusMessageToEqual(browserJohn, 'Your turn');
+        assertGameStatusMessageToEqual(browserJane, 'Waiting on John...');
     });
 
     it('should see correct status on second turn', async () => {
         await move(browserJohn, 67);
-        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
-        expect(await statusMessage(browserJohn)).toEqual('Waiting for Jane...');
-        expect(await statusMessage(browserJane)).toEqual('Your turn');
+        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
+        assertGameStatusMessageToEqual(browserJohn, 'Waiting on Jane...');
+        assertGameStatusMessageToEqual(browserJane, 'Your turn');
     });
 
     it('should be able to quit watching a game without getting errors', async () => {
@@ -148,21 +148,21 @@ describe('GameComponent', () => {
     it('should see correct status during AI game', async () => {
         await startAiGame(browserJane);
         await watchFirstGameInList(browser);
-        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
-        expect(await statusMessage(browserJane)).toEqual('Your turn');
+        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
+        assertGameStatusMessageToEqual(browserJane, 'Your turn');
         [67, 66, 57, 47].forEach(async id => {
             browser.sleep(1100);
             await move(browserJane, id);
         });
         browser.sleep(1100);
-        expect(await statusMessage(browser)).toMatch('Game over');
+        assertGameStatusMessageToEqual(browser, 'Game over');
     });
 
     it('should see correct status during AI game - after game reset', async () => {
         const restartGameButton = browserJane.element(by.css('button.btn-success'));
         await restartGameButton.click();
-        expect(await statusMessage(browser)).toEqual('Waiting for Jane...');
-        expect(await statusMessage(browserJane)).toEqual('Your turn');
+        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
+        assertGameStatusMessageToEqual(browserJane, 'Your turn');
     });
 
     it('sign out', async () => {
@@ -173,9 +173,6 @@ describe('GameComponent', () => {
 });
 
 // convenience methods
-async function statusMessage(browserInstance: ProtractorBrowser) {
-    return await browserInstance.element(by.id('gameStatus')).getText();
-}
 
 async function move(browserInstance: ProtractorBrowser, id: number) {
     await browserInstance.element(by.css(`input[name="${id}"]`)).click();

@@ -35,9 +35,19 @@ export class RealtimeService {
   constructor(private ngZone: NgZone, auth: AuthService) {
     this.user = auth.user;
     this.ds = new DeepstreamService(this.ngZone, this.user);
-    this.users = new ServiceUsers(this.ngZone, this.ds);
-    this.games = new ServiceGames(this.ngZone, this.user, this.ds);
-    this.messages = new ServiceMessages(this.ngZone, this.user, this.ds);
+    this.users = new ServiceUsers(this.ngZone, this.ds, this.user);
+    this.games = new ServiceGames(this.ngZone, this.ds, this.user);
+    this.messages = new ServiceMessages(this.ngZone, this.ds, this.user);
+  }
+
+  emitParallelSessionEvent() {
+    this.ds.client.event.emit(`${this.user.id}/parallel-login`, undefined);
+  }
+
+  onParallelSessionEvent(callback: () => void) {
+    this.ds.client.event.subscribe(`${this.user.id}/parallel-login`, () => {
+      this.ngZone.run(callback);
+    });
   }
 
 }
@@ -109,7 +119,7 @@ class ServiceUsers {
   added: Subject<User> = new Subject();
   removed: Subject<string> = new Subject();
 
-  constructor(private ngZone: NgZone, private ds: DeepstreamService) {
+  constructor(private ngZone: NgZone, private ds: DeepstreamService, private _user: User) {
     this.usersList = this.ds.client.record.getList('users');
     this.usersList.on('entry-added', async userId => {
       const user: User = await this.ds.getRecordData(userId);
@@ -157,12 +167,11 @@ class ServiceGames {
   added: Subject<Game> = new Subject();
   removed: Subject<string> = new Subject();
 
-  constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
+  constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
     this.gamesList = this.ds.client.record.getList('games');
     this.gamesList.on('entry-added', async gameId => {
       const data = await this.ds.getRecordData(gameId);
-      const game: Game = new Game(data, this.user);
-      this.ngZone.run(() => this.added.next(game));
+      this.ngZone.run(() => this.added.next(new Game(data, this.user)));
     });
     this.gamesList.on('entry-removed', (gameId: string) => {
       this.ngZone.run(() => this.removed.next(gameId));
@@ -251,8 +260,7 @@ class ServiceGames {
       this.gamesList.whenReady(async (list: deepstreamIO.List) => {
         for (const gameId of list.getEntries()) {
           const data = await this.ds.getRecordData(gameId);
-          const game = new Game(data, this.user);
-          games.push(game);
+          games.push(new Game(data, this.user));
         }
         this.ngZone.run(() => subscriber.next(games));
       });
@@ -261,28 +269,28 @@ class ServiceGames {
 }
 
 class ServiceMessages {
-  createGame: Subject<{senderId: string, senderPlaysRed: boolean}> = new Subject();
+  createGame: Subject<{ senderId: string, senderPlaysRed: boolean }> = new Subject();
   accept: Subject<string> = new Subject();
   reject: Subject<string> = new Subject();
 
-  constructor(private ngZone: NgZone, private user: User, private ds: DeepstreamService) {
-    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: {senderId: string, senderPlaysRed: boolean}) => {
+  constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
+    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: { senderId: string, senderPlaysRed: boolean }) => {
       this.ngZone.run(() => this.createGame.next(data));
     });
-    this.ds.client.event.subscribe(`${this.user.id}/accept`, (data: {senderId: string}) => {
+    this.ds.client.event.subscribe(`${this.user.id}/accept`, (data: { senderId: string }) => {
       this.ngZone.run(() => this.accept.next(data.senderId));
     });
-    this.ds.client.event.subscribe(`${this.user.id}/reject`, (data: {senderId: string}) => {
+    this.ds.client.event.subscribe(`${this.user.id}/reject`, (data: { senderId: string }) => {
       this.ngZone.run(() => this.reject.next(data.senderId));
     });
   }
 
   private sendMessage(recipientId: string, topic: MessageTopic, data = {}) {
-    this.ds.client.event.emit(`${recipientId}/${topic}`, Object.assign({senderId: this.user.id}, data));
+    this.ds.client.event.emit(`${recipientId}/${topic}`, Object.assign({ senderId: this.user.id }, data));
   }
 
   sendCreateGameMessage(recipientId: string, senderPlaysRed: boolean) {
-    this.sendMessage(recipientId, 'createGame', {senderPlaysRed: senderPlaysRed});
+    this.sendMessage(recipientId, 'createGame', { senderPlaysRed: senderPlaysRed });
   }
 
   sendAcceptMessage(recipientId: string) {

@@ -14,6 +14,7 @@ import { Game } from '../game/game';
 import { GameComponent } from '../game/game.component';
 import { RealtimeService } from '../realtime.service';
 import { WatchGameService } from '../watch-game.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +22,8 @@ import { WatchGameService } from '../watch-game.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+  private noParallelSession: boolean;
+  private beforeUnloadEventListener;
   user: User;
   game: Game;
   Bot: User = Bot;
@@ -29,6 +32,7 @@ export class HomeComponent implements OnInit {
   @ViewChild(GameComponent) gameComponent: GameComponent;
 
   constructor(
+    private router: Router,
     private modalService: NgbModal,
     private auth: AuthService,
     private realtime: RealtimeService,
@@ -37,22 +41,76 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.user = this.auth.user;
+    this.openSession();
+    this.subscribeToGameSources();
+    this.handleGameRemoval();
+  }
+
+  private subscribeToGameSources() {
+    this.realtime.games.all.subscribe((games: Game[]) => {
+      games.forEach((game: Game) => {
+        if (game.ourUserPlays) {
+          this.loadGame(game);
+        }
+      });
+    });
     this.realtime.games.added.subscribe((game: Game) => {
       if (game.ourUserPlays) {
-        this.game = game;
-        this.showPanels = false;
+        this.loadGame(game);
       }
     });
-    this.watchGame.selected.subscribe((game: Game) => {
-      this.game = game;
-      this.showPanels = false;
-    });
+    this.watchGame.selected.subscribe(this.loadGame.bind(this));
+  }
+
+  private handleGameRemoval() {
     this.realtime.games.removed.subscribe(id => {
       if (this.game && this.game.id === id) {
-        this.showPanels = true;
-        this.game = null;
+        this.unloadGame();
       }
     });
+  }
+
+  private openSession() {
+    this.realtime.users.all.subscribe((users: User[]) => {
+      this.noParallelSession = !users.map(user => user.id).includes(this.user.id);
+      this.realtime.onParallelSessionEvent(this.handleParallelSession.bind(this));
+      if (this.noParallelSession) {
+        this.realtime.users.add(this.user);
+      } else {
+        this.realtime.emitParallelSessionEvent();
+      }
+    });
+    this.beforeUnloadEventListener = this.closeSession.bind(this);
+    window.addEventListener('beforeunload', this.beforeUnloadEventListener);
+  }
+
+  private closeSession() {
+    this.realtime.users.remove(this.user.id);
+    if (this.game && this.game.ourUserPlays) {
+      if (!this.game.isAgainstAi) {
+        this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
+      }
+      this.realtime.games.remove(this.game.id);
+    }
+  }
+
+  private handleParallelSession() {
+    if (this.noParallelSession) {
+      window.removeEventListener('beforeunload', this.beforeUnloadEventListener);
+      this.router.navigate(['/login']);
+    } else {
+      this.noParallelSession = true;
+    }
+  }
+
+  private loadGame(game: Game) {
+    this.game = game;
+    this.showPanels = false;
+  }
+
+  private unloadGame() {
+    this.game = null;
+    this.showPanels = true;
   }
 
   onClickBot() {
@@ -85,8 +143,7 @@ export class HomeComponent implements OnInit {
       const option = await this.quitGameResponse();
       if (option === 'Quit') {
         const game = this.game;
-        this.game = null;
-        this.showPanels = true;
+        this.unloadGame();
         this.realtime.users.setUserStatus(this.user.id, 'Online');
         if (!game.isAgainstAi) {
           this.realtime.users.setUserStatus(game.opponent.id, 'Online');
@@ -95,8 +152,7 @@ export class HomeComponent implements OnInit {
         this.realtime.games.remove(game.id);
       }
     } else {
-      this.game = null;
-      this.showPanels = true;
+      this.unloadGame();
       this.gameComponent.quitGame();
     }
   }
