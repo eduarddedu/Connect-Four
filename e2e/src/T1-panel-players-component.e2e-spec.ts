@@ -42,23 +42,53 @@ describe('PanelPlayers', () => {
         await signOut(browser);
     });
 
-    it('should show user status - in game and not disturb user', async () => {
+    it('should see user status as "In game"', async () => {
         await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
         await panelRows(browser).then(async rows => {
             expect(rows.length).toEqual(2);
             expect(status(rows[0])).toEqual('In game');
             expect(status(rows[1])).toEqual('In game');
-            await rows[0].click();
-            expect(status(rows[0])).toEqual('In game');
-            await signOut(browser);
-            await signOut(browserJohn);
-            await signOut(browserJane);
         });
+        await signOut(browser);
+        await signOut(browserJohn);
+        await signOut(browserJane);
+    });
+
+    it('should see user status as "Online" if user drops during game and reconnects (spectator perspective)', async () => {
+        await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
+        // John disconnects during game
+        await signOut(browserJohn);
+        // John comes back online
+        await signIn(browserJohn, 'John');
+        // verify status from Spectator's perspective
+        await panelRows(browser).then(async rows => {
+            expect(rows.length).toEqual(2);
+            expect(status(rows[0])).toEqual('Online');
+            expect(status(rows[1])).toEqual('Online');
+        });
+        await signOut(browser);
+        await signOut(browserJohn);
+        await signOut(browserJane);
+    });
+
+    it('should see user status as "Online" if user drops during game and reconnects (player perspective)', async () => {
+        await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
+        // John disconnects during game
+        await signOut(browserJohn);
+        // John comes back online
+        await signIn(browserJohn, 'John');
+        // verify status from Jane's perspective
+        await panelRows(browserJane).then(async rows => {
+            expect(rows.length).toEqual(2);
+            expect(status(rows[0])).toEqual('Online');
+            expect(status(rows[1])).toEqual('Online');
+        });
+        await signOut(browser);
+        await signOut(browserJohn);
+        await signOut(browserJane);
     });
 
     it('should see "User is unavailable" alert', async () => {
-        await signIn(browserJohn, 'John');
-        await signIn(browserJane, 'Jane');
         const invitationSent = await sendGameInvitation(browserJohn, 'Jane');
         expect(invitationSent).toBe(true);
         await signOut(browserJohn);
@@ -66,6 +96,7 @@ describe('PanelPlayers', () => {
         const html = await browserJane.getPageSource();
         expect(html).toContain('John is not available');
         await signOut(browserJane);
+        await signOut(browser);
     });
 
 

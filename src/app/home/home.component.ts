@@ -75,7 +75,7 @@ export class HomeComponent implements OnInit {
       this.noParallelSession = !users.map(user => user.id).includes(this.user.id);
       this.realtime.onParallelSessionEvent(this.handleParallelSession.bind(this));
       if (this.noParallelSession) {
-        this.realtime.users.add(this.user);
+        this.realtime.users.addUser();
       } else {
         this.realtime.emitParallelSessionEvent();
       }
@@ -85,7 +85,7 @@ export class HomeComponent implements OnInit {
   }
 
   private closeSession() {
-    this.realtime.users.remove(this.user.id);
+    this.realtime.users.removeUser();
     if (this.game && this.game.ourUserPlays) {
       if (!this.game.isAgainstAi) {
         this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');

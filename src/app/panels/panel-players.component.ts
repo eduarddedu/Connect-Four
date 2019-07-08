@@ -46,7 +46,9 @@ export class PanelPlayersComponent implements OnInit {
 
   private onUserOnline(user: User) {
     if (user.id !== this.user.id) {
-      this.users.set(user.id, Object.assign(user, { index: this.ascendingIntegers.next().value }));
+      this.users.set(user.id, Object.assign(user, {
+        index: this.ascendingIntegers.next().value
+      }));
       this.realtime.users.onUserStatusChange(user.id, this.onUpdateUserStatus, this);
     }
   }
