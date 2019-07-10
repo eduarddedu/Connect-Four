@@ -1,7 +1,6 @@
 header {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     padding: 16px 10px;
     user-select: none;
     background-color: #2b3035;
