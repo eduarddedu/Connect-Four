@@ -1,6 +1,6 @@
 /**
- * HomeComponent initates a game against the AI and handles clicks on the (app) logo button,
- * which serves to close the game and navigate back to the home page.
+ * HomeComponent initiates and closes the realtime session of the user and handles navigation.
+ * Navigation occurs when the user clicks on the app/logo button while the view displays a game in progress.
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -22,8 +22,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
-  private noParallelSession: boolean;
-  private beforeUnloadEventListener;
+  private only_self_online: boolean;
   user: User;
   game: Game;
   Bot: User = Bot;
@@ -72,21 +71,24 @@ export class HomeComponent implements OnInit {
 
   private openSession() {
     this.realtime.users.all.subscribe((users: User[]) => {
-      this.noParallelSession = !users.map(user => user.id).includes(this.user.id);
-      this.realtime.onParallelSessionEvent(this.handleParallelSession.bind(this));
-      if (this.noParallelSession) {
-        this.realtime.users.addUser();
-      } else {
-        this.realtime.emitParallelSessionEvent();
+      users.forEach((user: User) => {
+        if (user.id === this.user.id) {
+          this.only_self_online = false;
+          this.user.status = user.status;
+        }
+      });
+      this.realtime.onParallelLoginEvent(this.onParallelLogin.bind(this));
+      this.realtime.users.addUser();
+      if (!this.only_self_online) {
+        this.realtime.emitParallelLoginEvent();
       }
     });
-    this.beforeUnloadEventListener = this.closeSession.bind(this);
-    window.addEventListener('beforeunload', this.beforeUnloadEventListener);
+    window.addEventListener('beforeunload', this.closeRealtimeSession.bind(this));
   }
 
-  private closeSession() {
+  private closeRealtimeSession() {
     this.realtime.users.removeUser();
-    if (this.game && this.game.ourUserPlays) {
+    if (this.game && this.game.ourUserPlays && this.only_self_online) {
       if (!this.game.isAgainstAi) {
         this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
       }
@@ -94,12 +96,13 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  private handleParallelSession() {
-    if (this.noParallelSession) {
-      window.removeEventListener('beforeunload', this.beforeUnloadEventListener);
+  private onParallelLogin() {
+    if (this.only_self_online) {
+      this.only_self_online = false;
+      this.closeRealtimeSession();
       this.router.navigate(['/login']);
     } else {
-      this.noParallelSession = true;
+      this.only_self_online = true;
     }
   }
 
@@ -122,9 +125,10 @@ export class HomeComponent implements OnInit {
     modal.result.then((option: any) => {
       if (typeof option === 'object') {
         this.realtime.users.setUserStatus(this.user.id, 'In game');
-        switch (option.userPlaysRed) {
-          case true: this.realtime.games.createGame(this.user, Bot, true); break;
-          case false: this.realtime.games.createGame(Bot, this.user, false);
+        if (option.userPlaysRed) {
+          this.realtime.games.createGame(this.user, Bot, true);
+        } else {
+          this.realtime.games.createGame(Bot, this.user, false);
         }
       } else if (option === 'Cancel') {
         this.realtime.users.setUserStatus(this.user.id, 'Online');

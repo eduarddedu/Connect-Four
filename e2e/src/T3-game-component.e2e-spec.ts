@@ -1,7 +1,7 @@
 import { browser, by, ProtractorBrowser } from 'protractor';
 
 import { signIn, signOut, startAiGame, startGameBetweenUsers, quitGameDuringPlay, quitWatchingGame, quitGameOnGameEnd } from './actions';
-import { assertNoBrowserError, assertGameStatusMessageEqualTo as assertGameStatusMessageToEqual } from './assertions';
+import { assertNoBrowserError, assertGameStatusIs as assertGameStatusMessageToEqual } from './assertions';
 
 
 describe('GameComponent', () => {

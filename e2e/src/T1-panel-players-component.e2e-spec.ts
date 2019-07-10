@@ -1,5 +1,7 @@
-import { browser, by, ProtractorBrowser, ElementFinder } from 'protractor';
+import { browser, ProtractorBrowser } from 'protractor';
 import { signIn, signOut, startGameBetweenUsers, sendGameInvitation, acceptGameInvitation } from './actions';
+import { fetchPanelPlayersRows } from './fetch-element';
+import { assertPlayerNameIs, assertPlayerStatusIs } from './assertions';
 
 describe('PanelPlayers', () => {
     const browserJohn: ProtractorBrowser = browser.forkNewDriverInstance(false);
@@ -12,20 +14,20 @@ describe('PanelPlayers', () => {
     });
 
     it('should show online users in correct order: last-online-first-in-list', async () => {
-        panelRows(browser).then(rows => {
+        fetchPanelPlayersRows(browser).then(rows => {
             expect(rows.length).toEqual(2);
-            expect(username(rows[0])).toEqual('Jane');
-            expect(username(rows[1])).toEqual('John');
+            assertPlayerNameIs(rows[0], 'Jane');
+            assertPlayerNameIs(rows[1], 'John');
         });
-        panelRows(browserJohn).then(rows => {
+        fetchPanelPlayersRows(browserJohn).then(rows => {
             expect(rows.length).toEqual(2);
-            expect(username(rows[0])).toEqual('Jane');
-            expect(username(rows[1])).toEqual('Spectator');
+            assertPlayerNameIs(rows[0], 'Jane');
+            assertPlayerNameIs(rows[1], 'Spectator');
         });
-        panelRows(browserJane).then(rows => {
+        fetchPanelPlayersRows(browserJane).then(rows => {
             expect(rows.length).toEqual(2);
-            expect(username(rows[0])).toEqual('John');
-            expect(username(rows[1])).toEqual('Spectator');
+            assertPlayerNameIs(rows[0], 'John');
+            assertPlayerNameIs(rows[1], 'Spectator');
         });
         await signOut(browser);
         await signOut(browserJohn);
@@ -34,9 +36,9 @@ describe('PanelPlayers', () => {
 
     it('should remove user when they go offline', async () => {
         await signOut(browserJohn);
-        panelRows(browser).then(rows => {
+        fetchPanelPlayersRows(browser).then(rows => {
             expect(rows.length).toEqual(1);
-            expect(username(rows[0])).toEqual('Jane');
+            assertPlayerNameIs(rows[0], 'Jane');
         });
         await signOut(browserJane);
         await signOut(browser);
@@ -44,10 +46,10 @@ describe('PanelPlayers', () => {
 
     it('should see user status as "In game"', async () => {
         await startGameBetweenUsers(browserJohn, browserJane, 'Jane');
-        await panelRows(browser).then(async rows => {
+        await fetchPanelPlayersRows(browser).then(async rows => {
             expect(rows.length).toEqual(2);
-            expect(status(rows[0])).toEqual('In game');
-            expect(status(rows[1])).toEqual('In game');
+            assertPlayerStatusIs(rows[0], 'In game');
+            assertPlayerStatusIs(rows[1], 'In game');
         });
         await signOut(browser);
         await signOut(browserJohn);
@@ -61,10 +63,10 @@ describe('PanelPlayers', () => {
         // John comes back online
         await signIn(browserJohn, 'John');
         // verify status from Spectator's perspective
-        await panelRows(browser).then(async rows => {
+        await fetchPanelPlayersRows(browser).then(async rows => {
             expect(rows.length).toEqual(2);
-            expect(status(rows[0])).toEqual('Online');
-            expect(status(rows[1])).toEqual('Online');
+            assertPlayerStatusIs(rows[0], 'Online');
+            assertPlayerStatusIs(rows[1], 'Online');
         });
         await signOut(browser);
         await signOut(browserJohn);
@@ -78,10 +80,10 @@ describe('PanelPlayers', () => {
         // John comes back online
         await signIn(browserJohn, 'John');
         // verify status from Jane's perspective
-        await panelRows(browserJane).then(async rows => {
+        await fetchPanelPlayersRows(browserJane).then(async rows => {
             expect(rows.length).toEqual(2);
-            expect(status(rows[0])).toEqual('Online');
-            expect(status(rows[1])).toEqual('Online');
+            assertPlayerStatusIs(rows[0], 'Online');
+            assertPlayerStatusIs(rows[1], 'Online');
         });
         await signOut(browser);
         await signOut(browserJohn);
@@ -98,20 +100,6 @@ describe('PanelPlayers', () => {
         await signOut(browserJane);
         await signOut(browser);
     });
-
-
-    function panelRows(browserInstance: ProtractorBrowser) {
-        return browserInstance.element(by.css('#panelPlayers>.c4-card-body')).all(by.css('.c4-card-row'));
-    }
-
-    async function username(row: ElementFinder): Promise<string> {
-        return await row.all(by.css('.c4-card-row-item>span')).first().getText();
-    }
-
-    async function status(row: ElementFinder): Promise<string> {
-        return await row.all(by.css('.c4-card-row-item')).get(1).getText();
-    }
-
 });
 
 
