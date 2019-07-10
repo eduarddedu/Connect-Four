@@ -62,21 +62,65 @@ class DeepstreamService {
   }
 
   private init() {
-    this.client = deepstream(environment.deepstreamUrl, { maxReconnectAttempts: 5 });
+    const options = {
+      maxReconnectInterval: 30000,
+      reconnectIntervalIncrement: 5000,
+      maxReconnectAttempts: 10
+    };
+    this.client = deepstream(environment.deepstreamUrl, options);
     this.client.login({ username: this.user.name });
     this.client.on('connectionStateChanged', (connectionState: string) => {
       switch (connectionState) {
         case 'OPEN':
+          this.updateConnectionStateIndicator('good');
           console.log('Deepstream connection open');
           break;
         case 'CLOSED':
           console.log('Deepstream connection closed');
+          break;
+        case 'AWAITING_CONNECTION':
+          this.updateConnectionStateIndicator('neutral');
+          break;
+        case 'ERROR':
+          this.updateConnectionStateIndicator('bad');
+          break;
       }
     });
     this.client.on('error', (error: string, event: any, topic: any) => {
       console.log(error, event, topic);
-      throw new Error(`${error}, ${event}, ${topic}`);
     });
+  }
+
+  private updateConnectionStateIndicator(state: 'good' | 'bad' | 'neutral') {
+    const updateIndicatorIfAvailable = (classChange: Function) => {
+      let indicator: Element = document.getElementById('connection-state-indicator');
+      if (indicator) {
+        classChange.call(null, indicator);
+      } else {
+        this.ngZone.onStable.subscribe(() => {
+          indicator = document.getElementById('connection-state-indicator');
+          if (indicator) {
+            classChange.call(null, indicator);
+          }
+        });
+      }
+    };
+    const changeClass = (connectionIndicator: Element) => {
+      switch (state) {
+        case 'good':
+          connectionIndicator.classList.remove('bad', 'neutral');
+          connectionIndicator.classList.add('good');
+          break;
+          case 'bad':
+          connectionIndicator.classList.remove('good', 'neutral');
+          connectionIndicator.classList.add('bad');
+          break;
+          case 'neutral':
+          connectionIndicator.classList.remove('good', 'bad');
+          connectionIndicator.classList.add('neutral');
+      }
+    };
+    updateIndicatorIfAvailable(changeClass);
   }
 
   /**

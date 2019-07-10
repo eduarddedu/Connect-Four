@@ -13,12 +13,6 @@
     background-image: linear-gradient(to bottom, #006994, #fff) !important;
 }
 
-.c4-container>header {
-    padding: 16px 10px;
-    user-select: none;
-    background-color: #2b3035;
-}
-
 .c4-card {
     background-color: var(--gray-dark);
     border-radius: 3px;
@@ -64,13 +58,60 @@
     color: #4f4f4f;
 }
 
-/** Desktop devices **/
+#connection-state-indicator {
+    display: inline-block;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 80%;
+    font-weight: lighter;
+    color: black;
+    opacity: .8;
+    align-self: center;
+}
+
+#connection-state-indicator>.icon {
+    display: inline-block;
+    background-image: url('assets/img/signal.png');
+    background-size: 100% 100%;
+    width: 20px;
+    height: 20px;
+    margin-right: 2px;
+    border-radius: 4px 0 0 4px;
+    vertical-align: top;
+}
+
+.bad {
+    background-color: var(--red);
+}
+
+.bad::after {
+    content: 'Bad connection';
+}
+
+.neutral {
+    background-color: var(--yellow);
+}
+
+.neutral::after {
+    content: 'Poor connection'
+}
+
+.good {
+    background-color: var(--green);
+}
+
+.good::after {
+    content: 'Connection ok'
+}
+
+/** Responsive styles **/
 
 @media(min-width: 992px) {
     .c4-container {
         font-weight: lighter;
     }
 }
+
 
 /* Utils */
 
@@ -80,12 +121,6 @@
 
 .yellow {
     color: #ffd816fb;
-}
-
-.spaceBetween {
-    display: flex;
-    flex-flow: row nowrap;
-    justify-content: space-between;
 }
 
 .hcentered {

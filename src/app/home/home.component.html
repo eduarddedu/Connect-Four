@@ -3,6 +3,9 @@
     <div class="brand" role="navigation" (click)="onClickLogo()">
       <img src="assets/img/app-logo.png" alt="board"> Connect Four
     </div>
+    <div id="connection-state-indicator">
+      <div class="icon"></div>
+    </div>
     <div class="profile">
       <div id="icon" class="icon" (click)="showPopoverMenu = !showPopoverMenu">
         <img [src]="user.imgUrl" alt>
@@ -17,7 +20,7 @@
   </header>
   <main>
     <div class="content">
-      <section style="margin-bottom: -1em;">
+      <section>
         <app-notification></app-notification>
       </section>
       <section>

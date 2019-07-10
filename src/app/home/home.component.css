@@ -2,6 +2,9 @@ header {
     display: flex;
     flex-flow: row nowrap;
     justify-content: space-between;
+    padding: 16px 10px;
+    user-select: none;
+    background-color: #2b3035;
 }
 
 header>.brand,
@@ -80,9 +83,8 @@ main {
     padding: 10px 10px 0;
 }
 
-.content {
-    display: grid;
-    grid-gap: 10px;
+.content>section {
+    margin-bottom: 1em;
 }
 
 .panels {
@@ -94,8 +96,6 @@ main {
 @media (min-width: 992px) {
 
     .content {
-        display: grid;
-        grid-gap: 10px;
         max-width: 50%;
         margin: 0 auto;
     }
