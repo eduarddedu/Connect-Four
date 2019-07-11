@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
       font-size: 16px;
       line-height: normal;
       font-family: 'Nunito', sans-serif;
+      color: #aaa;
     }`
   ]
 })

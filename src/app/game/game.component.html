@@ -1,24 +1,21 @@
 <div id="wrapper" *ngIf="game">
-    <div style="display: flex; justify-content: center">
-        <div class="timer">
+    <div class="c4-card score">
+        <div class="player">
+            <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | surname }}
+        </div>
+        <div class="hcentered">
+            <div class="points">{{game.points.red}} - {{game.points.yellow}}</div>
+            <div class="separator"></div>
             <app-timer [startDate]="game.startDate"></app-timer>
         </div>
-    </div>
-    <div class="c4-card" style="margin-bottom: 10px">
-        <div class="score">
-            <div class="player">
-                <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | surname }}
-            </div>
-            <div class="points">{{game.points.red}} - {{game.points.yellow}}</div>
-            <div class="player">
-                {{game.players.yellow.name | surname }} <img [src]="game.players.yellow.imgUrl">
-            </div>
+        <div class="player">
+            {{game.players.yellow.name | surname }} <img [src]="game.players.yellow.imgUrl">
         </div>
     </div>
     <div class="c4-card">
-        <div class="gameArea">
-            <div style="margin-bottom: 6px">
-                <span id="gameStatus">{{game.status}}</span>
+        <div class="game-area">
+            <div id="gameStatus">
+                {{game.status}}
             </div>
             <app-board [activeColor]="game.activeColor" [allowMove]="game.isOurTurn" (userMoved)="onBoardClick($event)">
             </app-board>

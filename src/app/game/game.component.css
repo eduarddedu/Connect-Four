@@ -1,24 +1,18 @@
-
-.timer {
-    background-color: var(--gray-dark);
-    color: var(--main-text-color);
-    padding: 4px 6px;
-    border-radius: 4px 4px 0 0;
-    margin-bottom: -6px;
-}
-
 .c4-card {
     padding: 12px;
 }
 
-.gameArea {
-    margin-bottom: 48px;
+.game-area {
+    margin-bottom: 40px;
 }
 
 .score {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    line-height: 2;
+    margin-bottom: 12px;
+}
+.score>div {
+    align-self: center;
 }
 
 .score>.player:last-child {
@@ -27,6 +21,20 @@
 
 .score>.player>img {
     display: none;
+}
+
+.separator {
+    margin: 2px auto;
+    box-sizing: border-box;
+    height: 4px;
+    width: 65px;
+    border-style: inset;
+    border-color: rgb(224, 167, 8);
+    border-width: 3px 0 0 0;
+}
+
+#gameStatus {
+    margin-bottom: 6px;
 }
 
 @media(min-width: 992px) {
