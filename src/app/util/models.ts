@@ -11,6 +11,7 @@ export const Bot: User = {
     name: 'Bobiță',
     imgUrl: 'assets/img/robot-dog-head-resize.png',
     email: null,
-    status: 'Online'
+    status: 'Online',
+    points: 0
 };
 

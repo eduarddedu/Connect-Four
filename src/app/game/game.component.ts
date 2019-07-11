@@ -42,13 +42,13 @@ export class GameComponent implements OnInit {
         this.setup(game);
       }
     });
+    this.watchGame.selected.subscribe((game: Game) => this.setup(game));
     this.realtime.games.removed.subscribe(id => {
       if (this.game && this.game.id === id) {
         this.game = null;
         this.notification.update(`Game abandoned by player`, 'warning');
       }
     });
-    this.watchGame.selected.subscribe((game: Game) => this.setup(game));
   }
 
   setup(game: Game) {
@@ -90,7 +90,7 @@ export class GameComponent implements OnInit {
         this.game.state = 'on hold';
         this.game.updateStatus();
     }
-    console.log(state);
+    console.log(`Game ${state}`);
   }
 
   private handleBotMove() {
@@ -102,6 +102,13 @@ export class GameComponent implements OnInit {
   }
 
   private handleGameOver() {
+    if (this.game.winner) {
+      this.game.winner.points += 1;
+      if (this.game.winner.id === this.user.id) {
+        this.user.points += 1;
+        this.localStorageService.setUserPoints(this.user.points);
+      }
+    }
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {
       setTimeout(() => {
         this.realtime.games.updateGameProperties(this.game.id, {
@@ -110,9 +117,6 @@ export class GameComponent implements OnInit {
           winner: this.game.winner
         });
       }, 100);
-    }
-    if (this.game.winner.id === this.user.id) {
-      this.localStorageService.setUserPoints(++this.user.points);
     }
     if (this.game.ourUserPlays) {
       this.handleUserOptionOnGameEnd();
