@@ -7,7 +7,7 @@
       </div>
       <div class="modal-body" *ngIf="user">
         <img [src]="user.imgUrl" alt="User icon"> 
-        <span class="username"> {{user.name | surname}} </span> invites you to play <b>Connect Four</b>
+        <span class="username"> {{user.name | surname}} </span> invites you to play
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline-success" (click)="activeModal.close('Accept')" ngbAutofocus>Accept</button>
