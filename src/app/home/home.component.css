@@ -1,24 +1,37 @@
 header {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr auto 1fr;
+    grid-gap: 10px;
     padding: 12px;
     user-select: none;
     background-color: #2b3035;
+    position: relative;
+}
+
+header>div {
+    padding: 2px;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
 }
 
 header>.brand,
 header>.profile>.icon,
-header>.profile>.c4-popover>.item {
+header>.profile>.popover-menu>.item {
     cursor: pointer;
 }
 
 header>.brand {
-    font-weight: bold;
+    font-weight: 600;
+}
+
+header>.brand>.name {
+    margin-left: 4px; 
+    line-height: 1;
 }
 
 header>.profile {
-    position: relative;
-    min-width: 125px;
+    justify-content: flex-end;
 }
 
 header>.brand>img,
@@ -28,15 +41,11 @@ header>.profile>.icon>img {
     border-radius: 20px;
 }
 
-header>.profile>.icon {
-    position: relative;
-    float: right;
-}
 
-.c4-popover {
+.popover-menu {
     position: absolute;
-    top: 42px;
-    right: 2px;
+    top: 60px;
+    right: 14px;
     z-index: 10000;
     box-sizing: border-box;
     background-color: white;
@@ -44,22 +53,22 @@ header>.profile>.icon {
     box-shadow: 2px 2px 10px black;
 }
 
-.c4-popover>.item {
+.popover-menu>.item {
     font-weight: normal;
     line-height: 2;
     padding: 4px 16px 4px 10px;
     color: #222020;
 }
 
-.c4-popover>.item:hover {
+.popover-menu>.item:hover {
     background-color: #f1f1f1;
 }
 
-.c4-popover>.item>a {
+.popover-menu>.item>a {
     color: inherit;
 }
 
-.c4-popover>.item>a:hover {
+.popover-menu>.item>a:hover {
     text-decoration: none;
     color: #000;
 }
@@ -72,7 +81,7 @@ header>.profile>.icon {
     border-radius: 0 0 3px 3px;
 }
 
-.c4-popover>.divider {
+.popover-menu>.divider {
     box-sizing: border-box;
     border-top: .5px #d0d2d8 solid;
 }

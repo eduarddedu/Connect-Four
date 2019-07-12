@@ -1,7 +1,11 @@
 <div class="c4-container" *ngIf="user">
   <header>
     <div class="brand" role="navigation" (click)="onClickLogo()">
-      <img src="assets/img/app-logo.png" alt="board"> Connect Four
+      <img src="assets/img/app-logo.png" alt>
+      <div class="name">
+        <div>Connect</div>
+        <div>Four</div>
+      </div>
     </div>
     <div id="connection-state-indicator">
       <div class="icon"></div>
@@ -10,11 +14,11 @@
       <div id="icon" class="icon" (click)="showPopoverMenu = !showPopoverMenu">
         <img [src]="user.imgUrl" alt>
       </div>
-      <div class="c4-popover" *ngIf="showPopoverMenu">
+      <div class="popover-menu" *ngIf="showPopoverMenu">
         <div class="item"><a href="https://blog.codecritique.org" target="_blank">About</a></div>
         <div class="item"><a href="https://en.wikipedia.org/wiki/Connect_Four" target="_blank">Help</a></div>
         <div class="divider"></div>
-        <div id="signout-btn" class="item" (click)="signout()">Sign out</div>
+        <div class="item" id="signout-btn" (click)="signout()">Sign out</div>
       </div>
     </div>
   </header>

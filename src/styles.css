@@ -59,15 +59,12 @@
 }
 
 #connection-state-indicator {
-    display: inline-block;
+    margin: auto;
     padding: 2px 4px;
     border-radius: 4px;
     font-size: 80%;
-    font-weight: lighter;
     color: black;
     opacity: .8;
-    align-self: center;
-    margin: auto;
 }
 
 #connection-state-indicator>.icon {
@@ -85,20 +82,20 @@
     background-color: var(--red);
 }
 
-.bad::after {
-    content: 'Bad connection';
-}
-
 .neutral {
     background-color: var(--yellow);
 }
 
-.neutral::after {
-    content: 'Poor connection'
-}
-
 .good {
     background-color: var(--green);
+}
+
+.bad::after {
+    content: 'Bad connection';
+}
+
+.neutral::after {
+    content: 'Poor connection'
 }
 
 .good::after {
@@ -109,6 +106,10 @@
 
 @media(min-width: 992px) {
     .c4-container {
+        font-weight: lighter;
+    }
+
+    #connection-state-indicator>.icon {
         font-weight: lighter;
     }
 }
