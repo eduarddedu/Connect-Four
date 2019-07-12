@@ -91,15 +91,15 @@
 }
 
 .bad::after {
-    content: 'Bad connection';
+    content: 'Bad';
 }
 
 .neutral::after {
-    content: 'Poor connection'
+    content: 'Poor'
 }
 
 .good::after {
-    content: 'Connection ok'
+    content: 'OK'
 }
 
 /** Responsive styles **/
