@@ -58,58 +58,10 @@
     color: #4f4f4f;
 }
 
-#connection-state-indicator {
-    margin: auto;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 80%;
-    color: black;
-    opacity: .8;
-}
-
-#connection-state-indicator>.icon {
-    display: inline-block;
-    background-image: url('assets/img/signal.png');
-    background-size: 100% 100%;
-    width: 20px;
-    height: 20px;
-    margin-right: 2px;
-    border-radius: 4px 0 0 4px;
-    vertical-align: top;
-}
-
-.bad {
-    background-color: var(--red);
-}
-
-.neutral {
-    background-color: var(--yellow);
-}
-
-.good {
-    background-color: var(--green);
-}
-
-.bad::after {
-    content: 'Bad';
-}
-
-.neutral::after {
-    content: 'Poor'
-}
-
-.good::after {
-    content: 'OK'
-}
-
 /** Responsive styles **/
 
 @media(min-width: 992px) {
     .c4-container {
-        font-weight: lighter;
-    }
-
-    #connection-state-indicator>.icon {
         font-weight: lighter;
     }
 }
