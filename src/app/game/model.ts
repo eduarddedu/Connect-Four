@@ -2,7 +2,7 @@ import { ArrayLoopGenerator } from '../util/generators';
 
 export class GameModel {
     private game: Game;
-    private readonly PLIES = 1;
+    private readonly PLIES = 4;
 
     constructor(redMovesFirst: boolean, previousMoves: number[], private aiPlaysRed?: boolean) {
         this.game = new Game(redMovesFirst, previousMoves);

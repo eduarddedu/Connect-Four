@@ -102,6 +102,7 @@ export class GameComponent implements OnInit {
   }
 
   private handleGameOver() {
+    console.log(this.game);
     if (this.game.winner) {
       this.game.winner.points += 1;
       if (this.game.winner.id === this.user.id) {
