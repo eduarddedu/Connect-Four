@@ -74,7 +74,7 @@ class DeepstreamService {
         case 'AWAITING_CONNECTION':
         break;
         case 'ERROR':
-          this.notification.update('Data connection unavailable. 🙁 Please try reloading the page.', 'danger');
+          this.notification.update('Connection error. Please try reloading the page.', 'danger');
           break;
       }
     });
