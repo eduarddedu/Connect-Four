@@ -8,17 +8,17 @@
   <div class="modal-body">
     <div *ngIf="game.winner">
       <div style="text-align: center; font-weight: 600">
-          🏆🏆🏆 Winner 🏆🏆🏆
+        🏆🏆🏆 Winner 🏆🏆🏆
       </div>
-    </div>
-    <div class="grid">
-      <div class="grid-item">
-        <div id="winnername">{{game.winner.name | surname}}</div>
-        <div style="font-size:80%">Points: {{game.winner.points}}</div>
-      </div>
-      <div class="grid-item">
+      <div class="grid">
+        <div class="grid-item">
+          <div id="winnername">{{game.winner.name | surname}}</div>
+          <div style="font-size:80%">Points: {{game.winner.points}}</div>
+        </div>
+        <div class="grid-item">
           <img [src]="game.winner.imgUrl" alt="User icon">
         </div>
+      </div>
     </div>
     <div *ngIf="!game.winner" style="text-align: center">
       Game ended in a draw 🤔

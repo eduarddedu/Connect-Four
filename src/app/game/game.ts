@@ -81,13 +81,13 @@ export class Game {
         const data = {
             moves: [],
             state: 'in progress',
-            redMovesFirst: this.winner.id === this.players.yellow.id,
+            redMovesFirst: this.winner ? this.winner.id === this.players.yellow.id : true,
             winner: undefined
-          };
-          Object.assign(this, data);
-          this.updateStatus();
-          const aiPlaysRed = this.players.red.id === '0';
-          this.model = new GameModel(this.redMovesFirst, this.moves, aiPlaysRed);
+        };
+        Object.assign(this, data);
+        this.updateStatus();
+        const aiPlaysRed = this.players.red.id === '0';
+        this.model = new GameModel(this.redMovesFirst, this.moves, aiPlaysRed);
     }
 
     updateStatus() {

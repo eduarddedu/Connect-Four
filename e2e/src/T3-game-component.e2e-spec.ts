@@ -82,24 +82,47 @@ describe('GameComponent', () => {
     });
 
     it('should see correct status on second turn', async () => {
-        await move(browserJohn, 67);
+        await move(browserJohn, 64);
         assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
         assertGameStatusMessageToEqual(browserJohn, 'Waiting on Jane...');
         assertGameStatusMessageToEqual(browserJane, 'Your turn');
+        await move(browserJane, 65);
     });
 
     it('should be able to quit watching a game without getting errors', async () => {
         await quitWatchingGame(browser);
-        await move(browserJane, 66);
     });
+
+    it('should see "Game ended in a draw"', async () => {
+        const moves = [].concat(
+            [63, 62, 55, 54, 45, 35, 44, 66, 56, 46, 34, 67, 24, 14, 52, 42, 32, 25, 15, 36],
+            [26, 22, 61, 12, 51, 41, 16, 31, 21, 11, 53, 43, 33, 23, 13, 57, 47, 37, 27, 17]);
+        let index = 0;
+        for (const id of moves) {
+            if (index % 2 === 0) {
+                await move(browserJohn, id);
+                browserJane.sleep(100);
+            } else {
+                await move(browserJane, id);
+                browserJohn.sleep(100);
+            }
+            index++;
+        }
+        assertGameStatusMessageToEqual(browserJane, 'Game over');
+        assertGameStatusMessageToEqual(browserJohn, 'Game over');
+        expect(browserJane.getPageSource()).toContain('Game ended in a draw');
+        expect(browserJohn.getPageSource()).toContain('Game ended in a draw');
+        await playAnotherRoundBtn(browserJane).click();
+        await playAnotherRoundBtn(browserJohn).click();
+    });
+
+
 
     it('should see game abandoned notification when player quits a game in progress', async () => {
         await watchFirstGameInList(browser);
         await quitGameDuringPlay(browserJane);
-        let html = await browserJohn.getPageSource();
-        expect(html).toContain('Game abandoned by player');
-        html = await browser.getPageSource();
-        expect(html).toContain('Game abandoned by player');
+        expect(browserJohn.getPageSource()).toContain('Game abandoned by player');
+        expect(browser.getPageSource()).toContain('Game abandoned by player');
     });
 
     it('should see correct game winner - (2)', async () => {

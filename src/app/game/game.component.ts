@@ -89,6 +89,9 @@ export class GameComponent implements OnInit {
       case 'on hold':
         this.game.state = 'on hold';
         this.game.updateStatus();
+        break;
+      case 'over':
+        console.log(this.game);
     }
     console.log(`Game ${state}`);
   }
@@ -102,7 +105,6 @@ export class GameComponent implements OnInit {
   }
 
   private handleGameOver() {
-    console.log(this.game);
     if (this.game.winner) {
       this.game.winner.points += 1;
       if (this.game.winner.id === this.user.id) {
