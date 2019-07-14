@@ -117,7 +117,7 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
-    this.realtime.users.setUserStatus(this.user.id, 'Busy');
+    this.realtime.users.setUserStatus(this.user.id, 'Invited');
     const modal = this.modalService.open(GameCreateComponent, { backdrop: 'static' });
     modal.componentInstance.user = this.user;
     modal.componentInstance.opponent = Bot;

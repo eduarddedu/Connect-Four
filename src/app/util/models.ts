@@ -3,7 +3,7 @@ export interface User {
     name: string;
     imgUrl: string;
     email?: string;
-    status: 'Online' | 'Busy' | 'In game';
+    status: 'Online' | 'Invited' | 'In game';
     points?: number;
 }
 export const Bot: User = {

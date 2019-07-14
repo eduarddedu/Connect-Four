@@ -171,7 +171,7 @@ class ServiceUsers {
     });
   }
 
-  setUserStatus(userId: string, status: 'Online' | 'Busy' | 'In game') {
+  setUserStatus(userId: string, status: 'Online' | 'Invited' | 'In game') {
     const recordName = this.mapUserIdRecordId.get(userId);
     this.ds.client.record.getRecord(recordName).set('status', status);
   }

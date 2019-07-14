@@ -57,7 +57,7 @@ export class PanelPlayersComponent implements OnInit {
     this.users.delete(userId);
   }
 
-  private onUpdateUserStatus(userId: string, status: 'Online' | 'Busy' | 'In game') {
+  private onUpdateUserStatus(userId: string, status: 'Online' | 'Invited' | 'In game') {
     const user = this.users.get(userId);
     if (user) {
       user.status = status;
@@ -104,7 +104,7 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   private getUserResponse(sender: User): Promise<string> {
-    this.realtime.users.setUserStatus(this.user.id, 'Busy');
+    this.realtime.users.setUserStatus(this.user.id, 'Invited');
     return new Promise(resolve => {
       const modal = this.modalService.open(GameInvitationComponent, { backdrop: 'static' });
       modal.componentInstance.user = sender;
@@ -114,7 +114,7 @@ export class PanelPlayersComponent implements OnInit {
 
   onClick(user: User) {
     if (user.status === 'Online') {
-      this.realtime.users.setUserStatus(this.user.id, 'Busy');
+      this.realtime.users.setUserStatus(this.user.id, 'Invited');
       const modal = this.modalService.open(GameCreateComponent);
       modal.componentInstance.user = this.user;
       modal.componentInstance.opponent = user;
