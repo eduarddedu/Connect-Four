@@ -110,6 +110,8 @@ export class GameComponent implements OnInit {
       if (this.game.winner.id === this.user.id) {
         this.user.points += 1;
         this.localStorageService.setUserPoints(this.user.points);
+      } else if (this.game.winner.id === Bot.id) {
+        this.localStorageService.setBotPoints(this.localStorageService.getBotPoints() + 1);
       }
     }
     if (this.user.id === this.game.players.red.id || this.game.ourUserPlays && this.game.isAgainstAi) {

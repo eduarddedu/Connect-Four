@@ -1,15 +1,37 @@
-.grid-item {
-    float: left;
-    width: 50%;
-    height: 60px;
-    display: flex;
-    flex-flow: column;
-    justify-content: center;
-    align-items: center;
+.grid {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap: 2px;
+}
+
+.details {
+    display: inline-block;
+}
+
+.grid-item:nth-of-type(1)>.details {
+   margin-left: 3px;
+}
+
+.grid-item:nth-of-type(2)>.details {
+    margin-right: 3px;
+ }
+
+.grid-item:nth-of-type(2) {
+    justify-self: end;
 }
 
 img {
     width: 40px;
     height: 40px;
     border-radius: 20px;
+    vertical-align: -2px;
+}
+
+.points {
+    line-height: .8;
+    font-size: .8em;
+}
+
+.winner::after {
+    content: '🏆'
 }

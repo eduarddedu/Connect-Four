@@ -1,7 +1,7 @@
 import { browser, by, ProtractorBrowser } from 'protractor';
 
 import { signIn, signOut, startAiGame, startGameBetweenUsers, quitGameDuringPlay, quitWatchingGame, quitGameOnGameEnd } from './actions';
-import { assertNoBrowserError, assertGameStatusIs as assertGameStatusMessageToEqual } from './assertions';
+import { assertNoBrowserError, assertGameStatusIs, assertWinnerNameIs } from './assertions';
 
 
 describe('GameComponent', () => {
@@ -23,16 +23,16 @@ describe('GameComponent', () => {
     });
 
     it('should see correct status on first turn', async () => {
-        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
-        assertGameStatusMessageToEqual(browserJane, 'Your turn');
-        assertGameStatusMessageToEqual(browserJohn, 'Waiting on Jane...');
+        assertGameStatusIs(browser, 'Waiting on Jane...');
+        assertGameStatusIs(browserJane, 'Your turn');
+        assertGameStatusIs(browserJohn, 'Waiting on Jane...');
     });
 
     it('should see correct status on second turn', async () => {
         await move(browserJane, 67);
-        assertGameStatusMessageToEqual(browser, 'Waiting on John...');
-        assertGameStatusMessageToEqual(browserJane, 'Waiting on John...');
-        assertGameStatusMessageToEqual(browserJohn, 'Your turn');
+        assertGameStatusIs(browser, 'Waiting on John...');
+        assertGameStatusIs(browserJane, 'Waiting on John...');
+        assertGameStatusIs(browserJohn, 'Your turn');
     });
 
     it('should see correct status on game end', async () => {
@@ -47,17 +47,15 @@ describe('GameComponent', () => {
             }
             index++;
         }
-        assertGameStatusMessageToEqual(browser, 'Game over');
-        assertGameStatusMessageToEqual(browserJohn, 'Game over');
-        assertGameStatusMessageToEqual(browserJane, 'Game over');
+        assertGameStatusIs(browser, 'Game over');
+        assertGameStatusIs(browserJohn, 'Game over');
+        assertGameStatusIs(browserJane, 'Game over');
     });
 
     it('should see correct game winner - (1)', async () => {
         browser.sleep(1000);
-        let text = await browserJane.element(by.css('#winnername')).getText();
-        expect(text).toContain('Jane');
-        text = await browserJohn.element(by.css('#winnername')).getText();
-        expect(text).toContain('Jane');
+        assertWinnerNameIs(browserJane, 'Jane');
+        assertWinnerNameIs(browserJohn, 'Jane');
         expect((await playAnotherRoundBtn(browserJane)).isPresent()).toBe(true);
         expect((await playAnotherRoundBtn(browserJohn)).isPresent()).toBe(true);
     });
@@ -65,27 +63,27 @@ describe('GameComponent', () => {
     it('should correctly join and see a finished game', async () => {
         await quitWatchingGame(browser);
         await watchFirstGameInList(browser);
-        assertGameStatusMessageToEqual(browser, 'Game over');
+        assertGameStatusIs(browser, 'Game over');
     });
 
     it('should see correct status when game is on hold', async () => {
         await playAnotherRoundBtn(browserJane).click();
-        assertGameStatusMessageToEqual(browser, 'Waiting on second player...');
-        assertGameStatusMessageToEqual(browserJohn, 'Waiting on second player...');
+        assertGameStatusIs(browser, 'Waiting on second player...');
+        assertGameStatusIs(browserJohn, 'Waiting on second player...');
         await playAnotherRoundBtn(browserJohn).click();
     });
 
     it('should see correct status on first turn', async () => {
-        assertGameStatusMessageToEqual(browser, 'Waiting on John...');
-        assertGameStatusMessageToEqual(browserJohn, 'Your turn');
-        assertGameStatusMessageToEqual(browserJane, 'Waiting on John...');
+        assertGameStatusIs(browser, 'Waiting on John...');
+        assertGameStatusIs(browserJohn, 'Your turn');
+        assertGameStatusIs(browserJane, 'Waiting on John...');
     });
 
     it('should see correct status on second turn', async () => {
         await move(browserJohn, 64);
-        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
-        assertGameStatusMessageToEqual(browserJohn, 'Waiting on Jane...');
-        assertGameStatusMessageToEqual(browserJane, 'Your turn');
+        assertGameStatusIs(browser, 'Waiting on Jane...');
+        assertGameStatusIs(browserJohn, 'Waiting on Jane...');
+        assertGameStatusIs(browserJane, 'Your turn');
         await move(browserJane, 65);
     });
 
@@ -108,8 +106,8 @@ describe('GameComponent', () => {
             }
             index++;
         }
-        assertGameStatusMessageToEqual(browserJane, 'Game over');
-        assertGameStatusMessageToEqual(browserJohn, 'Game over');
+        assertGameStatusIs(browserJane, 'Game over');
+        assertGameStatusIs(browserJohn, 'Game over');
         expect(browserJane.getPageSource()).toContain('Game ended in a draw');
         expect(browserJohn.getPageSource()).toContain('Game ended in a draw');
         await playAnotherRoundBtn(browserJane).click();
@@ -140,10 +138,8 @@ describe('GameComponent', () => {
             index++;
         }
         browser.sleep(1000);
-        let text = await browserJane.element(by.css('#winnername')).getText();
-        expect(text).toContain('John');
-        text = await browserJohn.element(by.css('#winnername')).getText();
-        expect(text).toContain('John');
+        assertWinnerNameIs(browserJane, 'John');
+        assertWinnerNameIs(browserJohn, 'John');
         expect((await playAnotherRoundBtn(browserJane)).isPresent()).toBe(true);
         expect((await playAnotherRoundBtn(browserJohn)).isPresent()).toBe(true);
     });
@@ -171,21 +167,21 @@ describe('GameComponent', () => {
     it('should see correct status during AI game', async () => {
         await startAiGame(browserJane);
         await watchFirstGameInList(browser);
-        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
-        assertGameStatusMessageToEqual(browserJane, 'Your turn');
+        assertGameStatusIs(browser, 'Waiting on Jane...');
+        assertGameStatusIs(browserJane, 'Your turn');
         [67, 66, 57, 47].forEach(async id => {
             browser.sleep(1100);
             await move(browserJane, id);
         });
         browser.sleep(1100);
-        assertGameStatusMessageToEqual(browser, 'Game over');
+        assertGameStatusIs(browser, 'Game over');
     });
 
     it('should see correct status during AI game - after game reset', async () => {
         const restartGameButton = browserJane.element(by.css('button.btn-success'));
         await restartGameButton.click();
-        assertGameStatusMessageToEqual(browser, 'Waiting on Jane...');
-        assertGameStatusMessageToEqual(browserJane, 'Your turn');
+        assertGameStatusIs(browser, 'Waiting on Jane...');
+        assertGameStatusIs(browserJane, 'Your turn');
     });
 
     it('sign out', async () => {

@@ -15,6 +15,7 @@ import { GameComponent } from '../game/game.component';
 import { RealtimeService } from '../realtime.service';
 import { WatchGameService } from '../watch-game.service';
 import { Router } from '@angular/router';
+import { LocalStorageService } from '../local-storage.service';
 
 @Component({
   selector: 'app-home',
@@ -35,7 +36,8 @@ export class HomeComponent implements OnInit {
     private modalService: NgbModal,
     private auth: AuthService,
     private realtime: RealtimeService,
-    private watchGame: WatchGameService) {
+    private watchGame: WatchGameService,
+    private localStorageService: LocalStorageService) {
   }
 
   ngOnInit() {
@@ -43,6 +45,7 @@ export class HomeComponent implements OnInit {
     this.openSession();
     this.subscribeToGameSources();
     this.handleGameRemoval();
+    this.Bot.points = this.localStorageService.getBotPoints();
   }
 
   private subscribeToGameSources() {
@@ -117,14 +120,13 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
-    this.realtime.users.setUserStatus(this.user.id, 'Invited');
+    this.realtime.users.setUserStatus(this.user.id, 'In game');
     const modal = this.modalService.open(GameCreateComponent, { backdrop: 'static' });
     modal.componentInstance.user = this.user;
     modal.componentInstance.opponent = Bot;
     modal.componentInstance.userPlaysRed = true;
     modal.result.then((option: any) => {
       if (typeof option === 'object') {
-        this.realtime.users.setUserStatus(this.user.id, 'In game');
         if (option.userPlaysRed) {
           this.realtime.games.createGame(this.user, Bot, true);
         } else {

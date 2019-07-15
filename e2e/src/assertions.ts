@@ -19,6 +19,10 @@ export async function assertPlayerStatusIs(playerRow: ElementFinder, expectedSta
     expect(await playerStatus(playerRow)).toEqual(expectedStatus);
 }
 
+export async function assertWinnerNameIs(browserInstance: ProtractorBrowser, expectedName: string) {
+    expect(browserInstance.element(by.css('.winner')).getText()).toContain(expectedName);
+}
+
 
 // convenience methods
 async function gameStatus(browserInstance: ProtractorBrowser) {
