@@ -1,6 +1,6 @@
 /**
- * RealtimeService wraps around the Deepstream client SDK in order to keep
- * clients in sync and update the view for each client.
+ * RealtimeService wraps around the Deepstream client API.
+ * The goal is provide the app with the ability to sync data across clients.
  *
  * By isolating Deepstream client code we aim to:
  *  - describe more clearly what our app needs to do - our data-sync policy - via dedicated API provided by an internal service
@@ -27,16 +27,16 @@ export class RealtimeService {
   private user: User;
   private ds: DeepstreamService;
 
-  public users: ServiceUsers;
-  public games: ServiceGames;
-  public messages: ServiceMessages;
+  public users: Users;
+  public games: Games;
+  public messages: Messages;
 
   constructor(private ngZone: NgZone, auth: AuthService, private notification: NotificationService) {
     this.user = auth.user;
     this.ds = new DeepstreamService(this.ngZone, this.user, this.notification);
-    this.users = new ServiceUsers(this.ngZone, this.ds, this.user);
-    this.games = new ServiceGames(this.ngZone, this.ds, this.user);
-    this.messages = new ServiceMessages(this.ngZone, this.ds, this.user);
+    this.users = new Users(this.ngZone, this.ds, this.user);
+    this.games = new Games(this.ngZone, this.ds, this.user);
+    this.messages = new Messages(this.ngZone, this.ds, this.user);
   }
 
   emitParallelLoginEvent() {
@@ -60,26 +60,31 @@ class DeepstreamService {
     this.ngZone.runOutsideAngular(this.init.bind(this));
   }
 
+  private log(...items: string[]) {
+    let header = 'Deepstream -';
+    items.forEach(s => header = header.concat(' ', s));
+    console.log(header);
+  }
+
   private init() {
     this.client = deepstream(environment.deepstreamUrl, { maxReconnectAttempts: 1 });
     this.client.login({ username: this.user.name });
     this.client.on('connectionStateChanged', (connectionState: string) => {
       switch (connectionState) {
         case 'OPEN':
-          console.log('Deepstream connection open');
+          this.log('connection open: ' + environment.deepstreamUrl);
           break;
         case 'CLOSED':
-          console.log('Deepstream connection closed');
+          this.log('connection closed: ' + environment.deepstreamUrl);
           break;
         case 'AWAITING_CONNECTION':
-        break;
+          break;
         case 'ERROR':
           this.notification.update('Connection error. Please try reloading the page.', 'danger');
-          break;
       }
     });
     this.client.on('error', (error: string, event: any, topic: any) => {
-      console.log(error, event, topic);
+      this.log(error, event, topic);
     });
   }
 
@@ -118,25 +123,28 @@ class DeepstreamService {
   }
 }
 
-class ServiceUsers {
-  private usersList: deepstreamIO.List;
-  private userRecordId: string;
-  private userRecord: deepstreamIO.Record;
+class Users {
+  private list: deepstreamIO.List;
   private mapUserIdRecordId: Map<string, string> = new Map();
-  added: Subject<User> = new Subject();
-  removed: Subject<string> = new Subject();
+
+  public added: Subject<User> = new Subject();
+  public removed: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
-    this.usersList = this.ds.client.record.getList('users');
-    this.usersList.on('entry-added', async recordId => {
-      const _user: User = await this.ds.getRecordData(recordId);
-      this.mapUserIdRecordId.set(_user.id, recordId);
-      this.ngZone.run(() => this.added.next(_user));
+    this.list = this.ds.client.record.getList('users');
+    this.subscribeToTopics();
+  }
+
+  private subscribeToTopics() {
+    this.list.on('entry-added', async id => {
+      const user: User = await this.ds.getRecordData(id);
+      this.mapUserIdRecordId.set(user.id, id);
+      this.ngZone.run(() => this.added.next(user));
     });
-    this.usersList.on('entry-removed', recordName => {
+    this.list.on('entry-removed', id => {
       let userId: string;
       this.mapUserIdRecordId.forEach((value: string, key: string) => {
-        if (value === recordName) {
+        if (value === id) {
           userId = key;
         }
       });
@@ -146,76 +154,81 @@ class ServiceUsers {
   }
 
   addUser() {
-    this.userRecordId = this.ds.client.getUid();
-    this.userRecord = this.ds.client.record.getRecord(this.userRecordId);
-    this.usersList.addEntry(this.userRecordId);
-    this.userRecord.whenReady((record: deepstreamIO.Record) => record.set(this.user));
+    const recordId = this.ds.client.getUid();
+    const record = this.ds.client.record.getRecord(recordId);
+    this.list.addEntry(recordId);
+    record.whenReady((r: deepstreamIO.Record) => r.set(this.user));
+    this.mapUserIdRecordId.set(this.user.id, recordId);
   }
 
   removeUser() {
-    this.usersList.removeEntry(this.userRecordId);
-    this.userRecord.delete();
+    const recordId = this.mapUserIdRecordId.get(this.user.id);
+    this.list.removeEntry(recordId);
+    this.ds.client.record.getRecord(recordId).delete();
   }
 
   get all(): Observable<User[]> {
     return Observable.create((subscriber: Subscriber<User[]>) => {
-      this.usersList.whenReady(async (list: deepstreamIO.List) => {
-        const users: Array<User> = [];
-        for (const recordName of list.getEntries()) {
-          const user = await this.ds.getRecordData(recordName);
-          users.push(user);
-          this.mapUserIdRecordId.set(user.id, recordName);
-        }
-        this.ngZone.run(() => subscriber.next(users));
+      this.ngZone.run(() => {
+        this.list.whenReady(async (list: deepstreamIO.List) => {
+          const users: Array<User> = [];
+          for (const recordId of list.getEntries()) {
+            const user = await this.ds.getRecordData(recordId);
+            users.push(user);
+            this.mapUserIdRecordId.set(user.id, recordId);
+          }
+          subscriber.next(users);
+        });
       });
     });
   }
 
   setUserStatus(userId: string, status: 'Online' | 'Invited' | 'In game') {
-    const recordName = this.mapUserIdRecordId.get(userId);
-    this.ds.client.record.getRecord(recordName).set('status', status);
+    const recordId = this.mapUserIdRecordId.get(userId);
+    this.ds.client.record.getRecord(recordId).set('status', status);
   }
 
   onUserStatusChange(userId: string, callback: (userId: string, status: string) => void, thisArg: any) {
-    const recordName = this.mapUserIdRecordId.get(userId);
-    this.ds.client.record.getRecord(recordName).subscribe('status', status => {
+    const recordId = this.mapUserIdRecordId.get(userId);
+    this.ds.client.record.getRecord(recordId).subscribe('status', status => {
       this.ngZone.run(callback.bind(thisArg, userId, status));
     });
   }
 
 }
 
-class ServiceGames {
-  private gamesList: deepstreamIO.List;
-  added: Subject<Game> = new Subject();
-  removed: Subject<string> = new Subject();
+class Games {
+  private list: deepstreamIO.List;
+  public added: Subject<Game> = new Subject();
+  public removed: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
-    this.gamesList = this.ds.client.record.getList('games');
-    this.gamesList.on('entry-added', async gameId => {
+    this.list = this.ds.client.record.getList('games');
+    this.subscribeToTopics();
+  }
+
+  private subscribeToTopics() {
+    this.list.on('entry-added', async gameId => {
       const data = await this.ds.getRecordData(gameId);
       this.ngZone.run(() => this.added.next(new Game(data, this.user)));
     });
-    this.gamesList.on('entry-removed', (gameId: string) => {
+    this.list.on('entry-removed', (gameId: string) => {
       this.ngZone.run(() => this.removed.next(gameId));
     });
   }
 
   private createGameRecord(data: any): string {
     const gameId = this.ds.client.getUid();
-    this.ds.client.record.getRecord(gameId).whenReady((record: deepstreamIO.Record) => {
-      record.set(Object.assign(data, { id: gameId }));
-      this.gamesList.addEntry(gameId);
+    this.ds.client.record.getRecord(gameId).whenReady((r: deepstreamIO.Record) => {
+      r.set(Object.assign(data, { id: gameId }));
+      this.list.addEntry(gameId);
     });
     return gameId;
   }
 
-  get(gameId: string): Observable<Game> {
+  fetchGame(gameId: string): Observable<Game> {
     return new Observable((subscriber: Subscriber<Game>) => {
-      this.ds.client.record.getRecord(gameId).whenReady((record: deepstreamIO.Record) => {
-        const game = new Game(record.get(), this.user);
-        this.ngZone.run(() => subscriber.next(game));
-      });
+      this.ngZone.run(async () => subscriber.next(new Game(await this.ds.getRecordData(gameId), this.user)));
     });
   }
 
@@ -232,8 +245,8 @@ class ServiceGames {
     return new Game(data, this.user);
   }
 
-  remove(gameId: string) {
-    this.gamesList.removeEntry(gameId);
+  removeGame(gameId: string) {
+    this.list.removeEntry(gameId);
     this.ds.client.record.getRecord(gameId).delete();
   }
 
@@ -279,19 +292,20 @@ class ServiceGames {
 
   get all(): Observable<Game[]> {
     return Observable.create((subscriber: Subscriber<Game[]>) => {
-      const games: Game[] = [];
-      this.gamesList.whenReady(async (list: deepstreamIO.List) => {
-        for (const gameId of list.getEntries()) {
-          const data = await this.ds.getRecordData(gameId);
-          games.push(new Game(data, this.user));
-        }
-        this.ngZone.run(() => subscriber.next(games));
+      this.ngZone.run(() => {
+        const games: Game[] = [];
+        this.list.whenReady(async (list: deepstreamIO.List) => {
+          for (const gameId of list.getEntries()) {
+            games.push(new Game(await this.ds.getRecordData(gameId), this.user));
+          }
+          subscriber.next(games);
+        });
       });
     });
   }
 }
 
-class ServiceMessages {
+class Messages {
   createGame: Subject<{ senderId: string, senderPlaysRed: boolean }> = new Subject();
   accept: Subject<string> = new Subject();
   reject: Subject<string> = new Subject();

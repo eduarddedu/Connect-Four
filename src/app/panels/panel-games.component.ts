@@ -31,7 +31,7 @@ export class PanelGamesComponent implements OnInit {
   }
 
   onClickGame(gameId: string) {
-    this.realtime.games.get(gameId).subscribe((game: Game) => this.watchGame.push(game));
+    this.realtime.games.fetchGame(gameId).subscribe((game: Game) => this.watchGame.push(game));
   }
 
   private add(game: Game) {

@@ -95,7 +95,7 @@ export class HomeComponent implements OnInit {
       if (!this.game.isAgainstAi) {
         this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
       }
-      this.realtime.games.remove(this.game.id);
+      this.realtime.games.removeGame(this.game.id);
     }
   }
 
@@ -155,7 +155,7 @@ export class HomeComponent implements OnInit {
           this.realtime.users.setUserStatus(game.opponent.id, 'Online');
         }
         this.gameComponent.quitGame();
-        this.realtime.games.remove(game.id);
+        this.realtime.games.removeGame(game.id);
       }
     } else {
       this.unloadGame();

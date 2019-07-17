@@ -152,7 +152,7 @@ export class GameComponent implements OnInit {
           }
           const gameId = this.game.id;
           this.game = null;
-          this.realtime.games.remove(gameId);
+          this.realtime.games.removeGame(gameId);
         }
     }
   }
