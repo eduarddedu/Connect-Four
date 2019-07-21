@@ -53,28 +53,28 @@ declare const gapi: any;
 declare const FB: any;
 
 class GoogleAuth implements AuthProvider {
-  private GoogleAuth: any;
+  private googleAuth: any;
+  private credentials = { client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' };
+  private user = new Subject<User>();
 
   getUser(): Observable<User> {
-    const user = new Subject<User>();
     gapi.load('auth2', () => {
-      this.GoogleAuth = gapi.auth2.init({ client_id: '38363229102-8rv4hrse6uurnnig1lcjj1cpp8ep58da.apps.googleusercontent.com' });
-      this.GoogleAuth.then(() => {
-        if (this.GoogleAuth.isSignedIn.get() === true) {
-          user.next(this.createUser(this.GoogleAuth.currentUser.get()));
+      this.googleAuth = gapi.auth2.init(this.credentials);
+      this.googleAuth.then(() => {
+        if (this.googleAuth.isSignedIn.get() === true) {
+          this.user.next(this.createUser(this.googleAuth.currentUser.get()));
         } else {
-          this.GoogleAuth.attachClickHandler('g-login-btn', {}, (_user: any) => user.next(this.createUser(_user)));
+          this.googleAuth.attachClickHandler('g-login-btn', {}, (_user: any) => this.user.next(this.createUser(_user)));
         }
       }, (error: any) => {
         console.log(`${error.error} ${error.details}`);
       });
     });
-    return user.asObservable();
+    return this.user.asObservable();
   }
 
   signout() {
-    const openLoginPage = () => setTimeout(() => location.assign('/login'), 0);
-    this.GoogleAuth.signOut().then(openLoginPage);
+    this.googleAuth.signOut().then(() => setTimeout(() => location.assign('/login'), 0));
   }
 
   private createUser(googleUser: any): User {
@@ -103,8 +103,7 @@ class FacebookAuth implements AuthProvider {
   }
 
   signout() {
-    const openLoginPage = () => setTimeout(() => location.assign('/login'), 0);
-    FB.logout(openLoginPage);
+    FB.logout(() => setTimeout(() => location.assign('/login'), 0));
   }
 
   private onFacebookUserStatusChange(response: any) {
