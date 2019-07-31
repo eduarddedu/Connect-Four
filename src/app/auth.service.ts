@@ -10,7 +10,7 @@ import { LocalStorageService } from './local-storage.service';
   providedIn: 'root'
 })
 export class AuthService {
-  public userSigned: Subject<undefined> = new Subject();
+  public login$: Subject<undefined> = new Subject();
   private _user: User;
   private authProvider: AuthProvider;
 
@@ -37,7 +37,7 @@ export class AuthService {
         this._user = user;
         this.user.points = this.localStorageService.getUserPoints();
         this.authProvider = authProvider;
-        this.userSigned.next();
+        this.login$.next();
       });
     });
   }
