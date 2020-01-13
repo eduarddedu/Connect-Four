@@ -15,17 +15,17 @@ First install project dependencies.
 
     npm install
 
-If Deepstream server is also installed now you can launch the app. 
+If Deepstream server is also installed we can launch the app via npm script. This starts Deepstream and builds and runs the app using ng.  
 
     npm run serve
 
-To stop both Angular and Deepstream: 
+To stop both Angular and Deepstream 
 
     npm run kill
 
 ## Execute e2e tests
 
-Use npm to install Protractor globally with: 
+First let's install Protractor.
 
     npm install -g protractor
 
@@ -35,14 +35,19 @@ The webdriver-manager is a helper tool to easily get an instance of a Selenium S
 
 ``` 
 webdriver-manager update
-webdriver-manager start
-```	
+```
 
-In a second terminal execute: 
+Note: if the previous command fails to upgrade webdriver to the current version of Chrome installed on your machine, try passing a specific version param: 
+
+```
+webdriver-manager update --versions.chrome=79.0.3945.117
+``` 	
+
+With Chrome updated we can run both Deepstream and the Angular app via an npm script: 
 
     npm run serve
 
-Finally from another terminal execute:
+Finally, to run the e2e tests, execute:
 
     protractor e2e/protractor-ci.conf.js 
 
