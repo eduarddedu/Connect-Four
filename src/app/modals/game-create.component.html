@@ -8,7 +8,7 @@
   <div class="modal-body">
     <div class="grid">
       <div class="player">
-        <img [src]="user.imgUrl" alt="User icon">
+        <img [src]="user.imgUrl">
         <div class="details">
           <div>{{user.name | surname}}</div>
           <div [ngClass]="{ 'red' : userPlaysRed, 'yellow': !userPlaysRed }" title="Switch colors"
@@ -21,7 +21,7 @@
           <div [ngClass]="{ 'yellow': userPlaysRed, 'red': !userPlaysRed }" title="Switch colors"
             (click)="switchColors()">{{userPlaysRed ? 'Yellow' : 'Red'}}</div>
         </div>
-        <img [src]="opponent.imgUrl" alt="User icon">
+        <img [src]="opponent.imgUrl">
       </div>
     </div>
   </div>
