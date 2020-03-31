@@ -1,10 +1,10 @@
 # Connect Four
 
-A Connect Four browser game. 
+A Connect Four game written in Angular. 
 
-Please check a live demo for this [thingy](https://connectfour.codecritique.org). You can also read a review of the app on my [blog](https://blog.codecritique.org/?p=203). 
+You can play it [here](https://connectfour.codecritique.org) and read an article about it [here](https://blog.codecritique.org/?p=203). 
 
-## Requirements 
+## Install requirements 
 
 * Angular
 * [Deepstream Server](https://deepstreamhub.com/open-source/?io)
