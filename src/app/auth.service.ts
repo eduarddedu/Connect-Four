@@ -96,7 +96,7 @@ class FacebookAuth implements AuthProvider {
       appId: '1260178800807045',
       xfbml: true,
       status: true,
-      version: 'v3.2'
+      version: 'v3.3'
     });
     FB.Event.subscribe('auth.authResponseChange', this.onFacebookUserStatusChange.bind(this));
     return this.user.asObservable();
