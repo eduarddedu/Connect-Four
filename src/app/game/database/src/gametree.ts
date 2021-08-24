@@ -1,37 +1,33 @@
-import { Board } from './board';
+import { Status } from './types';
 import { GameNode } from './gamenode';
-
-class Ply extends Array<GameNode> { }
 
 export class GameTree {
     root: GameNode;
-    step = 0;
-    readonly DEPTH: number;
-    constructor(root: GameNode | null, depth: number) {
+    readonly DEPTH = 8;
+
+    constructor(root: GameNode | null) {
         if (root) {
             this.root = root;
         } else {
             this.root = new GameNode(null);
         }
-        this.DEPTH = depth;
         this.makeChildren([this.root]);
     }
 
-    private makeChildren(ply: Ply) {
-        if (++this.step === this.DEPTH) {
-            console.log('Tree complete at level', this.DEPTH);
+    private makeChildren(ply: GameNode[]) {
+        if (ply.length === 0 || ply[0].level === this.DEPTH) {
+            const message = ply.length === 0 ? 'No more children' : 'Tree complete at level ' + this.DEPTH;
+            console.log(message);
             return;
         }
-        if (ply.length === 0) {
-            console.log('Tree complete at level', this.step, 'No more children.');
-            return;
-        }
-        const children = new Ply();
+        const children = [];
         for (const parent of ply) {
-            for (const move of Board.nextLegalMoves(parent)) {
+            for (const move of parent.nextLegalMoves()) {
                 const child = new GameNode(parent);
                 child.takeMove(move);
-                children.push(child);
+                if (child.status === Status.RED_MOVES || child.status === Status.YELLOW_MOVES) {
+                    children.push(child);
+                }
             }
         }
         this.makeChildren(children);

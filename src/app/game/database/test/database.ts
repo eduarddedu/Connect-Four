@@ -1,7 +1,7 @@
-import { GameNode } from '../src/gamenode';
 import { Status, Color } from '../src/types';
 import { Move } from '../src/move';
 import { Database } from '../src/database';
+import { GameNode } from '../src/gamenode';
 
 function printNode(node: GameNode) {
     console.log('NODE');
@@ -47,6 +47,7 @@ console.log('RED_WINS: ', countRedWins);
 console.log('YELLOW_WINS: ', countYellowWins);
 console.log('DRAW: ', countDraw);
 
- // printTerminalNodes(db.tree.root);
+const board = new GameNode(null);
+
 
 

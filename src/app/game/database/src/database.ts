@@ -1,13 +1,12 @@
 import { Status } from './types';
 import { Move } from './move';
-import { Board } from './board';
 import { GameTree } from './gametree';
 import { GameNode } from './gamenode';
 
 export class Database {
     tree: GameTree;
     constructor() {
-        this.tree = new GameTree(null, 8);
+        this.tree = new GameTree(null);
     }
 
     /**
@@ -26,7 +25,7 @@ export class Database {
             const value = Math.max(minimum, this.maximin(child, -1));
             if (minimum <= value) {
                 minimum = value;
-                result.push(child.lastMove);
+                result.push(child.move);
             }
         }
         return result;
@@ -58,7 +57,7 @@ export class Database {
         }
     }
 
-    private evaluateNode(b: Board): number {
+    private evaluateNode(b: GameNode): number {
         switch (b.status) {
             case Status.RED_WINS:
                 return 1;

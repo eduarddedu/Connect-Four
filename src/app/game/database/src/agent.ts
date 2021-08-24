@@ -1,29 +1,26 @@
 import { Status } from './types';
 import { Move } from './move';
-import { Board } from './board';
 import { GameTree } from './gametree';
 import { GameNode } from './gamenode';
 
 export class Agent {
-    private tree: GameTree;
-    private readonly DEPTH = 6;
 
     principalVariation(node: GameNode): Move[] {
-        this.tree = new GameTree(node, this.DEPTH);
-        return this.maximinRoot(this.tree.root);
+        if (node.status !== Status.RED_MOVES) {
+            throw new Error('Illegal state: game status must be RED_MOVES');
+        }
+        const tree = new GameTree(node);
+        return this.maximinRoot(tree);
     }
 
-    private maximinRoot(node: GameNode): Move[] {
-        if (node.status !== Status.RED_MOVES) {
-            throw new Error('Maximin error: game status must be RED_MOVES');
-        }
+    private maximinRoot(tree: GameTree): Move[] {
         const moves = [];
         let minimum = -Infinity;
-        for (const child of node.children) {
+        for (const child of tree.root.children) {
             const value = Math.max(minimum, this.maximin(child, -1));
             if (minimum <= value) {
                 minimum = value;
-                moves.push(child.lastMove);
+                moves.push(child.move);
             }
         }
         return moves;
@@ -55,7 +52,7 @@ export class Agent {
         }
     }
 
-    private evaluateNode(b: Board): number {
+    private evaluateNode(b: GameNode): number {
         switch (b.status) {
             case Status.RED_WINS:
                 return 1;
