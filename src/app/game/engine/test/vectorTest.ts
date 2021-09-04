@@ -1,5 +1,5 @@
 import { GameNode } from '../src/gamenode';
-import { Color, Status } from '../src/types';
+import { Color, State } from '../src/types';
 import { Move } from '../src/move';
 
 testVectorWest();
@@ -18,8 +18,8 @@ function testVectorWest() {
     for (const move of moves) {
         root.takeMove(move);
     }
-    if (root.status !== Status.RED_WINS) {
-        throw new Error('testVectorWest ... status = ' + root.status);
+    if (root.state !== State.RED_WINS) {
+        throw new Error('testVectorWest ... status = ' + root.state);
     }
 }
 function testVectorEast() {
@@ -36,8 +36,8 @@ function testVectorEast() {
     for (const move of moves) {
         root.takeMove(move);
     }
-    if (root.status !== Status.RED_WINS) {
-        throw new Error('testVectorEast ...  status = ' + root.status);
+    if (root.state !== State.RED_WINS) {
+        throw new Error('testVectorEast ...  status = ' + root.state);
     }
 }
 

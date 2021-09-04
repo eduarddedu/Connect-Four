@@ -1,14 +1,14 @@
-import { Color, Status, Vector, RangeX, RangeY } from './types';
+import { Color, State, RangeX, RangeY } from './types';
 import { Move } from './move';
 
 export class GameNode {
-    status: Status;
+    state: State;
     level: number;
     move: Move;
     parent: GameNode;
     children: GameNode[] = [];
 
-    getNodeMoves(): Color[][] {
+    getBoard(): Color[][] {
         const grid = new Array(7);
         for (let i = 0; i < 7; i++) {
             grid[i] = new Array(6);
@@ -29,10 +29,10 @@ export class GameNode {
             this.parent = parent;
             this.parent.children.push(this);
             this.level = this.parent.level;
-            this.status = this.parent.status;
+            this.state = this.parent.state;
         } else {
             this.level = 0;
-            this.status = Status.RED_MOVES;
+            this.state = State.RED_MOVES;
         }
     }
 
@@ -42,12 +42,12 @@ export class GameNode {
     */
 
     nextLegalMoves(): Move[] {
-        if (this.status === Status.DRAW || this.status === Status.RED_WINS || this.status === Status.YELLOW_WINS) {
+        if (this.state === State.DRAW || this.state === State.RED_WINS || this.state === State.YELLOW_WINS) {
             return [];
         }
         const result: Move[] = [];
-        const grid = this.getNodeMoves();
-        const color = this.status === Status.RED_MOVES ? Color.RED : Color.YELLOW;
+        const grid = this.getBoard();
+        const color = this.state === State.RED_MOVES ? Color.RED : Color.YELLOW;
         for (let x = 0; x < 7; x++) {
             for (let y = 0; y < 6; y++) {
                 if (grid[x][y] === undefined && (y === 0 || grid[x][y - 1] !== undefined)) {
@@ -73,18 +73,18 @@ export class GameNode {
     }
 
     private checkVectors() {
-        const grid = this.getNodeMoves();
+        const grid = this.getBoard();
         const kinds: Vector[] = Object.keys(Vector).map(key => Vector[key]);
         for (const v of kinds) {
             if (this.checkVector(v, grid)) {
-                this.status = this.move.color === Color.RED ? Status.RED_WINS : Status.YELLOW_WINS;
+                this.state = this.move.color === Color.RED ? State.RED_WINS : State.YELLOW_WINS;
                 return;
             }
         }
         if (this.level === 42) {
-            this.status = Status.DRAW;
+            this.state = State.DRAW;
         } else {
-            this.status = this.move.color === Color.RED ? Status.YELLOW_MOVES : Status.RED_MOVES;
+            this.state = this.move.color === Color.RED ? State.YELLOW_MOVES : State.RED_MOVES;
         }
     }
 
@@ -188,4 +188,7 @@ export class GameNode {
         }
     }
 }
+
+
+enum Vector { NE, E, SE, S, SW, W, NW }
 

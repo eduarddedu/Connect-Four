@@ -1,6 +1,5 @@
-import { Status, Color } from '../src/types';
-import { Move } from '../src/move';
-import { Database } from '../src/database';
+import { State } from '../src/types';
+import { GameTree } from '../src/gametree';
 import { GameNode } from '../src/gamenode';
 
 function printNode(node: GameNode) {
@@ -9,7 +8,7 @@ function printNode(node: GameNode) {
 }
 
 function printTerminalNodes(node: GameNode) {
-    if (node.status === Status.DRAW || node.status === Status.RED_WINS || node.status === Status.YELLOW_WINS) {
+    if (node.state === State.DRAW || node.state === State.RED_WINS || node.state === State.YELLOW_WINS) {
         printNode(node);
     } else {
         for (const child of node.children) {
@@ -24,11 +23,11 @@ let countDraw = 0;
 let countNonTerminalNodes = 0;
 
 function countNodes(node: GameNode) {
-    if (node.status === Status.RED_WINS) {
+    if (node.state === State.RED_WINS) {
         countRedWins++;
-    } else if (node.status === Status.YELLOW_WINS) {
+    } else if (node.state === State.YELLOW_WINS) {
         countYellowWins++;
-    } else if (node.status === Status.DRAW) {
+    } else if (node.state === State.DRAW) {
         countDraw++;
     } else {
         countNonTerminalNodes++;
@@ -38,16 +37,15 @@ function countNodes(node: GameNode) {
     }
 }
 
-const db = new Database();
+const tree = new GameTree(null, 8);
 
-countNodes(db.tree.root);
+countNodes(tree.root);
 console.log('Total nodes: ', countDraw + countRedWins + countYellowWins + countNonTerminalNodes);
-console.log('Non terminal nodes: ', countNonTerminalNodes);
+console.log('Transitory nodes: ', countNonTerminalNodes);
 console.log('RED_WINS: ', countRedWins);
 console.log('YELLOW_WINS: ', countYellowWins);
 console.log('DRAW: ', countDraw);
 
-const board = new GameNode(null);
 
 
 
