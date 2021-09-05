@@ -10,12 +10,10 @@ export class Agent {
         this.color = color;
     }
 
-    public nextNode(node: GameNode): GameNode {
-        this.checkState(node);
-        const nextNode = new GameNode(node);
-        const move = this.pickMove(node);
-        nextNode.takeMove(move);
-        return nextNode;
+    public nextNode(parent: GameNode): GameNode {
+        this.checkState(parent);
+        const move = this.pickMove(parent);
+        return GameNode.childNode(parent, move);
     }
 
     /** Agent is the maximizing player */

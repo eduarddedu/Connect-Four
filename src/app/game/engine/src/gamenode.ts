@@ -11,10 +11,20 @@ export class GameNode {
     children: GameNode[] = [];
 
     static rootNode(initialState: State.RED_MOVES | State.YELLOW_MOVES) {
-        const root = new GameNode(null);
-        root.level = 0;
-        root.state = initialState;
-        return root;
+        return new GameNode(null, initialState);
+    }
+
+    static childNode(parent: GameNode, move: Move): GameNode {
+        if (parent.state === State.DRAW || parent.state === State.RED_WINS || parent.state === State.YELLOW_WINS) {
+            throw new Error('Illegal state: parent node is terminal');
+        }
+        const childStateAfterMove = move.color === Color.RED ? State.YELLOW_MOVES : State.RED_MOVES;
+        if (parent.state === childStateAfterMove) {
+            throw new Error('Illegal move color');
+        }
+        const child = new GameNode(parent);
+        child.takeMove(move);
+        return child;
     }
 
     getBoard(): Color[][] {
@@ -33,12 +43,15 @@ export class GameNode {
         return grid;
     }
 
-    constructor(parent?: GameNode) {
+    private constructor(parent: GameNode, initialState?: State.RED_MOVES | State.YELLOW_MOVES) {
         if (parent) {
             this.parent = parent;
             this.parent.children.push(this);
             this.level = this.parent.level;
             this.state = this.parent.state;
+        } else {
+            this.level = 0;
+            this.state = initialState;
         }
     }
 
@@ -65,10 +78,7 @@ export class GameNode {
         return result;
     }
 
-    takeMove(move: Move) {
-        if (this.move) {
-            throw new Error('Illegal state: move already set');
-        }
+    private takeMove(move: Move) {
         this.move = move;
         this.level++;
         this.updateStatus();
@@ -146,7 +156,7 @@ export class GameNode {
             case Vector.W:
                 if (x >= 3) {
                     for (let k = x - 1; k >= x - 3; k--) {
-                        const color = [k][y];
+                        const color = grid[k][y];
                         if (!this.isSameColor(color)) {
                             return false;
                         }

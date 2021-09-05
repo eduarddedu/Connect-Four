@@ -33,8 +33,7 @@ export class GameTree {
         const children = [];
         for (const parent of ply) {
             for (const move of parent.nextLegalMoves()) {
-                const child = new GameNode(parent);
-                child.takeMove(move);
+                const child = GameNode.childNode(parent, move);
                 if (child.state === State.RED_MOVES || child.state === State.YELLOW_MOVES) {
                     children.push(child);
                 }

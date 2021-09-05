@@ -5,7 +5,6 @@ import { Move } from '../src/move';
 testVectorWest();
 testVectorEast();
 function testVectorWest() {
-    const root = new GameNode(null);
     const moves = [
         new Move(1, 0, Color.RED),
         new Move(0, 0, Color.YELLOW),
@@ -15,15 +14,9 @@ function testVectorWest() {
         new Move(0, 2, Color.YELLOW),
         new Move(4, 0, Color.RED)
     ];
-    for (const move of moves) {
-        root.takeMove(move);
-    }
-    if (root.state !== State.RED_WINS) {
-        throw new Error('testVectorWest ... status = ' + root.state);
-    }
+    testVector(moves, 'WEST');
 }
 function testVectorEast() {
-    const root = new GameNode(null);
     const moves = [
         new Move(4, 0, Color.RED),
         new Move(0, 0, Color.YELLOW),
@@ -33,11 +26,16 @@ function testVectorEast() {
         new Move(0, 2, Color.YELLOW),
         new Move(1, 0, Color.RED)
     ];
+    testVector(moves, 'EAST');
+}
+
+function testVector(moves: Move[], vectorName: string) {
+    let node = GameNode.rootNode(State.RED_MOVES);
     for (const move of moves) {
-        root.takeMove(move);
+        node = GameNode.childNode(node, move);
     }
-    if (root.state !== State.RED_WINS) {
-        throw new Error('testVectorEast ...  status = ' + root.state);
+    if (node.state !== State.RED_WINS) {
+        throw new Error('test vector: ' + vectorName + ' state = ' + node.state);
     }
 }
 
