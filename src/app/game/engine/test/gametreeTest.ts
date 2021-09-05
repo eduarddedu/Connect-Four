@@ -1,6 +1,5 @@
-import { State } from '../src/types';
 import { GameTree } from '../src/gametree';
-import { GameNode } from '../src/gamenode';
+import { GameNode, State } from '../src/gamenode';
 
 function printNode(node: GameNode) {
     console.log('NODE');
@@ -37,7 +36,7 @@ function countNodes(node: GameNode) {
     }
 }
 
-const tree = new GameTree(null, 8);
+const tree = GameTree.fromRootNode(State.RED_MOVES, 8);
 
 countNodes(tree.root);
 console.log('Total nodes: ', countDraw + countRedWins + countYellowWins + countNonTerminalNodes);

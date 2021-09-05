@@ -1,7 +1,6 @@
-import { Agent } from '../index';
-import { GameNode } from '../index';
+import { Agent, GameNode, Color, State } from '../index';
 
-let node = new GameNode(null);
-const agent = new Agent();
-node = agent.move(node);
+let node = GameNode.rootNode(State.RED_MOVES);
+const agent = new Agent(Color.RED);
+node = agent.nextNode(node);
 console.log(node.move);

@@ -1,5 +1,5 @@
-import { GameNode } from '../src/gamenode';
-import { Color, State } from '../src/types';
+import { GameNode, State } from '../src/gamenode';
+import { Color } from '../src/types';
 import { Move } from '../src/move';
 
 testVectorWest();

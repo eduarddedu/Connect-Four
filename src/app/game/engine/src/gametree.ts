@@ -1,23 +1,26 @@
-import { State } from './types';
-import { GameNode } from './gamenode';
+import { GameNode, State } from './gamenode';
 import { Timer } from './timer';
 
 export class GameTree {
     root: GameNode;
     readonly MAX_DEPTH = 8;
-    readonly depth: number;
+    private readonly depth: number;
     private step: number;
 
-    constructor(root: GameNode | null, depth = 1) {
+    static fromRootNode(initialState: State.RED_MOVES | State.YELLOW_MOVES, depth = 2) {
+        return new GameTree(GameNode.rootNode(initialState), depth);
+    }
+
+    static fromChildNode(node: GameNode, depth = 2) {
+        return new GameTree(node, depth);
+    }
+
+    private constructor(node: GameNode, depth: number) {
         if (!(0 < depth && depth <= this.MAX_DEPTH)) {
             throw new Error('0 < depth <= 8');
         }
+        this.root = node;
         this.depth = depth;
-        if (root) {
-            this.root = root;
-        } else {
-            this.root = new GameNode(null);
-        }
         this.step = depth;
         const millis = Timer.execute(this.makeChildren, this, [[this.root]]);
         this.taskEnd(millis);

@@ -1,30 +1,37 @@
-import { State, Color } from './types';
+import { Color } from './types';
 import { Move } from './move';
 import { GameTree } from './gametree';
-import { GameNode } from './gamenode';
+import { GameNode, State } from './gamenode';
 
 export class Agent {
+    private color: Color;
 
-    public move(parent: GameNode): GameNode {
-        const moves = this.principalVariation(parent);
-        const maxScore = moves[0].score;
-        const optimalMoves = moves.filter(option => option.score === maxScore);
-        const i = this.randomInt(optimalMoves.length);
-        const move = optimalMoves[i].move;
-        const node = new GameNode(parent);
-        node.takeMove(move);
-        return node;
+    constructor(color: Color) {
+        this.color = color;
+    }
+
+    public nextNode(node: GameNode): GameNode {
+        this.checkState(node);
+        const nextNode = new GameNode(node);
+        const move = this.pickMove(node);
+        nextNode.takeMove(move);
+        return nextNode;
+    }
+
+    /** Agent is the maximizing player */
+    private pickMove(node: GameNode) {
+        const scoredMoves = this.principalVariation(node);
+        const maxScore = scoredMoves[scoredMoves.length - 1].score;
+        const optimalMoves = scoredMoves.filter(o => o.score === maxScore).map(o => o.move);
+        return this.pickRandomItem(optimalMoves);
     }
 
     /**
-     * @param node the game in a RED_MOVES state
-     * @returns the next optimal moves for RED, sorted in descending order
+     * @param node the game in a given state
+     * @returns next legal moves with a calculated score value for each move
      */
-    private principalVariation(node: GameNode): { score: number, move: Move }[] {
-        if (node.state !== State.RED_MOVES) {
-            throw new Error('Game status must be RED_MOVES');
-        }
-        const searchTree = new GameTree(node);
+    private principalVariation(node: GameNode): Array<{ score: number, move: Move }> {
+        const searchTree = GameTree.fromChildNode(node);
         return this.maximinRoot(searchTree);
     }
 
@@ -34,7 +41,7 @@ export class Agent {
             const value = this.maximin(child, false, -Infinity, Infinity);
             moves.push({ score: value, move: child.move });
         }
-        return moves.sort((a: any, b: any) => b.score - a.score);
+        return moves.sort((a: any, b: any) => a.score - b.score);
     }
 
     private maximin(node: GameNode, maximizingPlayer: boolean, alpha: number, beta: number) {
@@ -63,9 +70,9 @@ export class Agent {
     private evaluateNode(node: GameNode): number {
         switch (node.state) {
             case State.RED_WINS:
-                return Infinity;
+                return this.color === Color.RED ? Infinity : -Infinity;
             case State.YELLOW_WINS:
-                return -Infinity;
+                return this.color === Color.YELLOW ? Infinity : -Infinity;
             case State.DRAW:
                 return 0;
             default:
@@ -77,7 +84,7 @@ export class Agent {
         const board = node.getBoard();
         const redStrength = this.evaluatePositionStrength(Color.RED, board);
         const yellowStrength = this.evaluatePositionStrength(Color.YELLOW, board);
-        return redStrength - yellowStrength;
+        return this.color === Color.RED ? redStrength - yellowStrength : yellowStrength - redStrength;
     }
 
     private evaluatePositionStrength(color: Color, board: Color[][]): number {
@@ -187,8 +194,30 @@ export class Agent {
         return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
     }
 
+    private pickRandomItem(arr: any[]) {
+        const i = this.randomInt(arr.length);
+        return arr[i];
+    }
+
     private randomInt(bound: number) {
         return Math.floor(Math.random() * bound);
+    }
+
+    private checkState(node: GameNode) {
+        switch (node.state) {
+            case State.RED_MOVES:
+                if (this.color === Color.YELLOW) {
+                    throw new Error('Illegal state: agent plays yellow');
+                }
+                break;
+            case State.YELLOW_MOVES:
+                if (this.color === Color.RED) {
+                    throw new Error('Illegal state: agent plays red');
+                }
+                break;
+            default:
+                throw new Error('Illegal state: game over');
+        }
     }
 }
 

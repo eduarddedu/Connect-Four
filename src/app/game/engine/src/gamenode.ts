@@ -1,5 +1,7 @@
-import { Color, State, RangeX, RangeY } from './types';
+import { Color, RangeX, RangeY } from './types';
 import { Move } from './move';
+
+export enum State { RED_MOVES, YELLOW_MOVES, RED_WINS, YELLOW_WINS, DRAW }
 
 export class GameNode {
     state: State;
@@ -7,6 +9,13 @@ export class GameNode {
     move: Move;
     parent: GameNode;
     children: GameNode[] = [];
+
+    static rootNode(initialState: State.RED_MOVES | State.YELLOW_MOVES) {
+        const root = new GameNode(null);
+        root.level = 0;
+        root.state = initialState;
+        return root;
+    }
 
     getBoard(): Color[][] {
         const grid = new Array(7);
@@ -24,15 +33,12 @@ export class GameNode {
         return grid;
     }
 
-    constructor(parent: GameNode) {
+    constructor(parent?: GameNode) {
         if (parent) {
             this.parent = parent;
             this.parent.children.push(this);
             this.level = this.parent.level;
             this.state = this.parent.state;
-        } else {
-            this.level = 0;
-            this.state = State.RED_MOVES;
         }
     }
 
@@ -61,7 +67,7 @@ export class GameNode {
 
     takeMove(move: Move) {
         if (this.move) {
-            throw new Error('Illegal state: move has already been set for this node');
+            throw new Error('Illegal state: move already set');
         }
         this.move = move;
         this.level++;
