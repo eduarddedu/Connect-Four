@@ -32,7 +32,7 @@ function testVectorEast() {
 function testVector(moves: Move[], vectorName: string) {
     let node = GameNode.rootNode(State.RED_MOVES);
     for (const move of moves) {
-        node = GameNode.childNode(node, move);
+        node = node.childNode(move);
     }
     if (node.state !== State.RED_WINS) {
         throw new Error('test vector: ' + vectorName + ' state = ' + node.state);

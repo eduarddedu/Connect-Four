@@ -5,31 +5,40 @@ import { GameNode, State } from './gamenode';
 
 export class Agent {
     private color: Color;
+    private node: GameNode;
 
-    constructor(color: Color) {
+    constructor(color: Color, initialState: State.RED_MOVES | State.YELLOW_MOVES) {
         this.color = color;
+        this.node = GameNode.rootNode(initialState);
     }
 
-    public nextNode(parent: GameNode): GameNode {
-        this.checkState(parent);
-        const move = this.pickMove(parent);
-        return GameNode.childNode(parent, move);
+    public get move(): Move {
+        this.assertIsAgentTurnToMove();
+        this.updateGame(this.calculateMove());
+        return this.node.move;
     }
 
-    /** Agent is the maximizing player */
-    private pickMove(node: GameNode) {
-        const scoredMoves = this.principalVariation(node);
-        const maxScore = scoredMoves[scoredMoves.length - 1].score;
-        const optimalMoves = scoredMoves.filter(o => o.score === maxScore).map(o => o.move);
+    public takeMove(move: Move) {
+        this.updateGame(move);
+    }
+
+    private updateGame(move: Move) {
+        this.node = this.node.childNode(move);
+    }
+
+    private calculateMove(): Move {
+        /** Being the maximizing player, the agent chooses the move with highest maximin value */
+        const options = this.principalVariation();
+        const maxScore = options[options.length - 1].score;
+        const optimalMoves = options.filter(o => o.score === maxScore).map(o => o.move);
         return this.pickRandomItem(optimalMoves);
     }
 
     /**
-     * @param node the game in a given state
      * @returns next legal moves with a calculated score value for each move
      */
-    private principalVariation(node: GameNode): Array<{ score: number, move: Move }> {
-        const searchTree = GameTree.fromChildNode(node);
+    private principalVariation(): Array<{ score: number, move: Move }> {
+        const searchTree = new GameTree(this.node);
         return this.maximinRoot(searchTree);
     }
 
@@ -109,7 +118,7 @@ export class Agent {
     }
 
     private groupValence(x: number, y: number, v: Vector, grid: Color[][], color: Color): GroupValence {
-        const result: GroupValence = { numColoredCells: 0, numMovesUntilComplete: 0 };
+        const valence: GroupValence = { numColoredCells: 0, numMovesUntilComplete: 0 };
         const opponentColor = color === Color.RED ? Color.YELLOW : Color.RED;
         switch (v) {
             case Vector.NW:
@@ -119,15 +128,15 @@ export class Agent {
                         if (cellColor === opponentColor) {
                             return null;
                         } else if (cellColor === color) {
-                            result.numColoredCells++;
+                            valence.numColoredCells++;
                         } else {
                             let k = y + 1;
                             while (--k >= 0 && grid[x][k] === undefined) {
-                                result.numMovesUntilComplete++;
+                                valence.numMovesUntilComplete++;
                             }
                         }
                     }
-                    return result;
+                    return valence;
                 } else {
                     return null;
                 }
@@ -138,15 +147,15 @@ export class Agent {
                         if (cellColor === opponentColor) {
                             return null;
                         } else if (cellColor === color) {
-                            result.numColoredCells++;
+                            valence.numColoredCells++;
                         } else {
                             let k = y + 1;
                             while (--k >= 0 && grid[x][k] === undefined) {
-                                result.numMovesUntilComplete++;
+                                valence.numMovesUntilComplete++;
                             }
                         }
                     }
-                    return result;
+                    return valence;
                 } else {
                     return null;
                 }
@@ -157,12 +166,12 @@ export class Agent {
                         if (cellColor === opponentColor) {
                             return null;
                         } else if (cellColor === color) {
-                            result.numColoredCells++;
+                            valence.numColoredCells++;
                         } else {
-                            result.numMovesUntilComplete++;
+                            valence.numMovesUntilComplete++;
                         }
                     }
-                    return result;
+                    return valence;
                 } else {
                     return null;
                 }
@@ -173,15 +182,15 @@ export class Agent {
                         if (cellColor === opponentColor) {
                             return null;
                         } else if (cellColor === color) {
-                            result.numColoredCells++;
+                            valence.numColoredCells++;
                         } else {
                             let k = y + 1;
                             while (--k >= 0 && grid[_x][k] === undefined) {
-                                result.numMovesUntilComplete++;
+                                valence.numMovesUntilComplete++;
                             }
                         }
                     }
-                    return result;
+                    return valence;
                 } else {
                     return null;
                 }
@@ -193,6 +202,9 @@ export class Agent {
     }
 
     private pickRandomItem(arr: any[]) {
+        if (arr.length === 0) {
+            throw new Error('Array is empty');
+        }
         const i = this.randomInt(arr.length);
         return arr[i];
     }
@@ -201,20 +213,12 @@ export class Agent {
         return Math.floor(Math.random() * bound);
     }
 
-    private checkState(node: GameNode) {
-        switch (node.state) {
-            case State.RED_MOVES:
-                if (this.color === Color.YELLOW) {
-                    throw new Error('Illegal state: agent plays yellow');
-                }
-                break;
-            case State.YELLOW_MOVES:
-                if (this.color === Color.RED) {
-                    throw new Error('Illegal state: agent plays red');
-                }
-                break;
-            default:
-                throw new Error('Illegal state: game over');
+    private assertIsAgentTurnToMove() {
+        if (!(
+            (this.node.state === State.YELLOW_MOVES && this.color === Color.YELLOW) ||
+            (this.node.state === State.RED_MOVES && this.color === Color.RED))
+        ) {
+            throw new Error('Illegal state: not agent\'s turn to move');
         }
     }
 }
@@ -227,13 +231,15 @@ enum Vector { N, E, NE, NW }
 
 /*
 
-Let's define the concepts for our heuristic evaluation function.
+The following describes the strategy employed by our naive heuristic evaluation function.
 
-A group is a set of 4 adjacent cells which may hold a connect-four combination in the future, as the game evolves.
+The main concepts are "group" and "valence".
 
-Cells should be set with the color of interest or empty.
+A group is a set of 4 adjacent cells which might make a connect-four combination in the future, as the game evolves.
 
-Assuming that "r" refers to a red cell and "e" is an empty cell, let's consider the example position.
+Cells in a group must be set with the color of interest or empty. If a cell has the opponent color, the group is not valid.
+
+Assuming "r" refers to a red cell and "e" is an empty cell, this example position shows a few such groups.
 
 e e e e e e e
 e e e e e e e
@@ -242,16 +248,19 @@ e e e e e e e
 e r e r e e e
 e r r r e e e
 
-Groups can be vertical, horizontal or diagonal, just like connect-four combinations.
+Obviously groups can be vertical, horizontal or diagonal, just like connect-four combinations.
 
-Groups are scored based on how many colored cells they contain
-and how many moves they need to become a full connect-four combination.
+Groups are scored based on how many colored cells they contain and how many moves need to be played
+until the group can become a full connect-four combination.
 
-The two properties are called valence.
+The more colored cells it contains, the more likely it is that the group will become complete.
+On the other hand the more turns need to be played, the less likely it is that the group will become complete.
 
-A 3-group with an empty cell which can be set in the next turn is special.
+To help evaluate groups, we collect the two properties into an object called valence.
 
-A position with two such groups (see bottom row) guarantees victory, because the opponent can't defend against it.
+A group with a single empty cell which can be set in the next move is special.
+
+A position with two such groups guarantees victory, because the opponent can't defend against it (see bottom row).
 Such a position should fetch the highest score.
 
 */

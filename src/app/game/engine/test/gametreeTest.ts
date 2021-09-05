@@ -36,7 +36,7 @@ function countNodes(node: GameNode) {
     }
 }
 
-const tree = GameTree.fromRootNode(State.RED_MOVES, 8);
+const tree = new GameTree(GameNode.rootNode(State.RED_MOVES), 8);
 
 countNodes(tree.root);
 console.log('Total nodes: ', countDraw + countRedWins + countYellowWins + countNonTerminalNodes);

@@ -14,15 +14,21 @@ export class GameNode {
         return new GameNode(null, initialState);
     }
 
-    static childNode(parent: GameNode, move: Move): GameNode {
-        if (parent.state === State.DRAW || parent.state === State.RED_WINS || parent.state === State.YELLOW_WINS) {
-            throw new Error('Illegal state: parent node is terminal');
+    private constructor(parent: GameNode, initialState?: State.RED_MOVES | State.YELLOW_MOVES) {
+        if (parent) {
+            this.parent = parent;
+            this.parent.children.push(this);
+            this.level = this.parent.level;
+            this.state = this.parent.state;
+        } else {
+            this.level = 0;
+            this.state = initialState;
         }
-        const childStateAfterMove = move.color === Color.RED ? State.YELLOW_MOVES : State.RED_MOVES;
-        if (parent.state === childStateAfterMove) {
-            throw new Error('Illegal move color');
-        }
-        const child = new GameNode(parent);
+    }
+
+    childNode(move: Move): GameNode {
+            // assumes this.nextLegalMoves().includes(move)
+        const child = new GameNode(this);
         child.takeMove(move);
         return child;
     }
@@ -41,18 +47,6 @@ export class GameNode {
             _node = _node.parent;
         }
         return grid;
-    }
-
-    private constructor(parent: GameNode, initialState?: State.RED_MOVES | State.YELLOW_MOVES) {
-        if (parent) {
-            this.parent = parent;
-            this.parent.children.push(this);
-            this.level = this.parent.level;
-            this.state = this.parent.state;
-        } else {
-            this.level = 0;
-            this.state = initialState;
-        }
     }
 
 
@@ -81,10 +75,10 @@ export class GameNode {
     private takeMove(move: Move) {
         this.move = move;
         this.level++;
-        this.updateStatus();
+        this.updateState();
     }
 
-    private updateStatus() {
+    private updateState() {
         this.checkVectors();
     }
 
@@ -109,7 +103,7 @@ export class GameNode {
     }
 
     /**
-     * @param vector a check vector, where the initial point is given by the (x, y) of the node move
+     * @param vector a check vector, where the initial point is given by the (x, y) of the move
      * @returns true if there are four connected cells along the check direction and false otherwise
      */
 
