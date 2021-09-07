@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { Game } from './game';
+import { Color } from './engine';
 
 @Component({
   selector: 'app-board',
@@ -8,7 +9,7 @@ import { Game } from './game';
   styleUrls: ['./board.component.css']
 })
 export class BoardComponent {
-  @Input() activeColor: string;
+  @Input() activeColor: Color;
   @Input() allowMove: boolean;
   @Input() connectedCells: number[];
   @Output() userMoved: EventEmitter<string> = new EventEmitter();
@@ -88,7 +89,7 @@ export class BoardComponent {
     const disc = this.disc(id);
     disc.classList.remove('disc-initial');
     disc.classList.add('disc-up');
-    disc.classList.add(this.activeColor);
+    disc.classList.add(this.activeColor === Color.RED ? 'red' : 'yellow');
   }
 
   private dropDisc(id: string) {

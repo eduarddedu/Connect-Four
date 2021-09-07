@@ -26,11 +26,44 @@ export class GameNode {
         }
     }
 
+    /**
+     * @param move a move
+     * @returns the game node resulting from the move
+     */
     childNode(move: Move): GameNode {
-            // assumes this.nextLegalMoves().includes(move)
+        this.assertLegalMove(move);
         const child = new GameNode(this);
         child.takeMove(move);
         return child;
+    }
+
+    private assertLegalMove(m: Move) {
+        const isLegal = this.nextLegalMoves
+            .find(v => v.x === m.x && v.y === m.y && v.color === m.color) !== undefined;
+            if (!isLegal) {
+                throw new Error('Illegal move: {x: ' + m.x + ', y: ' + m.y + ', color: ' + m.color + '}');
+            }
+    }
+
+    /**
+    * @returns an array containing all the legal moves for the current turn
+    */
+    get nextLegalMoves(): Move[] {
+        if (this.state === State.DRAW || this.state === State.RED_WINS || this.state === State.YELLOW_WINS) {
+            return [];
+        }
+        const result: Move[] = [];
+        const grid = this.getBoard();
+        const color = this.state === State.RED_MOVES ? Color.RED : Color.YELLOW;
+        for (let x = 0; x < 7; x++) {
+            for (let y = 0; y < 6; y++) {
+                if (grid[x][y] === undefined && (y === 0 || grid[x][y - 1] !== undefined)) {
+                    result.push(new Move(<RangeX>x, <RangeY>y, color));
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     getBoard(): Color[][] {
@@ -49,29 +82,6 @@ export class GameNode {
         return grid;
     }
 
-
-    /**
-    * @returns an array of all the legal moves for the current turn
-    */
-
-    nextLegalMoves(): Move[] {
-        if (this.state === State.DRAW || this.state === State.RED_WINS || this.state === State.YELLOW_WINS) {
-            return [];
-        }
-        const result: Move[] = [];
-        const grid = this.getBoard();
-        const color = this.state === State.RED_MOVES ? Color.RED : Color.YELLOW;
-        for (let x = 0; x < 7; x++) {
-            for (let y = 0; y < 6; y++) {
-                if (grid[x][y] === undefined && (y === 0 || grid[x][y - 1] !== undefined)) {
-                    result.push(new Move(<RangeX>x, <RangeY>y, color));
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
     private takeMove(move: Move) {
         this.move = move;
         this.level++;
@@ -79,14 +89,10 @@ export class GameNode {
     }
 
     private updateState() {
-        this.checkVectors();
-    }
-
-    private checkVectors() {
         const grid = this.getBoard();
-        const kinds: Vector[] = Object.keys(Vector).map(key => Vector[key]);
-        for (const v of kinds) {
-            if (this.checkVector(v, grid)) {
+        const kinds: Direction[] = Object.keys(Direction).map(key => Direction[key]);
+        for (const direction of kinds) {
+            if (this.isConnectFour(direction, grid)) {
                 this.state = this.move.color === Color.RED ? State.RED_WINS : State.YELLOW_WINS;
                 return;
             }
@@ -98,107 +104,65 @@ export class GameNode {
         }
     }
 
-    private isSameColor(color: Color) {
-        return color === this.move.color;
-    }
-
-    /**
-     * @param vector a check vector, where the initial point is given by the (x, y) of the move
-     * @returns true if there are four connected cells along the check direction and false otherwise
-     */
-
-    private checkVector(v: Vector, grid: Color[][]): boolean {
+    private isConnectFour(d: Direction, grid: Color[][]): boolean {
         const x = this.move.x;
         const y = this.move.y;
-        switch (v) {
-            case Vector.S:
-                if (y >= 3) {
-                    for (let i = y - 1; i >= y - 3; i--) {
-                        const color = grid[x][i];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
+        let i: number, j: number;
+        let numConnectedCells = 0;
+        function checker(color: Color) {
+            if (color === this.move.color) {
+                numConnectedCells++;
+            } else {
+                numConnectedCells = 0;
+            }
+            return numConnectedCells === 4;
+        }
+        const isConnectFour = checker.bind(this);
+        switch (d) {
+            case Direction.VERTICAL:
+                for (j = y; j >= Math.max(0, y - 3); j--) {
+                    if (isConnectFour(grid[x][j])) {
+                        return true;
                     }
-                    return true;
-                } else {
-                    return false;
                 }
-            case Vector.SE:
-                if (x <= 3 && y >= 3) {
-                    for (let k = x + 1, i = y - 1; k <= x + 3; k++, i--) {
-                        const color = grid[k][i];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
+                return false;
+            case Direction.HORIZONTAL:
+                for (i = Math.max(0, x - 3); i <= Math.min(6, x + 3); i++) {
+                    if (isConnectFour(grid[i][y])) {
+                        return true;
                     }
-                    return true;
-                } else {
-                    return false;
                 }
-            case Vector.SW:
-                if (x >= 3 && y >= 3) {
-                    for (let k = x - 1, i = y - 1; k >= 0; k--, i--) {
-                        const color = grid[k][i];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
+                return false;
+            case Direction.TOP_LEFT_DIAGONAL:
+                i = x;
+                j = y;
+                while (i > 0 && j < 5) {
+                    i--;
+                    j++;
+                }
+                for (; i < 7 && j >= 0; i++, j--) {
+                    if (isConnectFour(grid[i][j])) {
+                        return true;
                     }
-                    return true;
-                } else {
-                    return false;
                 }
-            case Vector.W:
-                if (x >= 3) {
-                    for (let k = x - 1; k >= x - 3; k--) {
-                        const color = grid[k][y];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
+                return false;
+            case Direction.TOP_RIGHT_DIAGONAL:
+                i = x;
+                j = y;
+                while (i < 6 && j < 5) {
+                    i++;
+                    j++;
+                }
+                for (; i >= 0 && j >= 0; i--, j--) {
+                    if (isConnectFour(grid[i][j])) {
+                        return true;
                     }
-                    return true;
-                } else {
-                    return false;
                 }
-            case Vector.NW:
-                if (x >= 3 && y <= 2) {
-                    for (let k = x - 1, i = y + 1; k >= x - 3; k--, i++) {
-                        const color = grid[k][i];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
-            case Vector.NE:
-                if (x <= 3 && y <= 2) {
-                    for (let k = x + 1, i = y + 1; k <= x + 3; k++, i++) {
-                        const color = grid[k][i];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
-            case Vector.E:
-                if (x <= 3) {
-                    for (let k = x + 1; k <= x + 3; k++) {
-                        const color = grid[k][y];
-                        if (!this.isSameColor(color)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
+                return false;
         }
     }
 }
 
 
-enum Vector { NE, E, SE, S, SW, W, NW }
+enum Direction { HORIZONTAL, TOP_RIGHT_DIAGONAL, TOP_LEFT_DIAGONAL, VERTICAL }
 

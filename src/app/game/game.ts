@@ -4,11 +4,13 @@
  * The more complicated methods are delegated to the GameModel helper class.
  */
 
+import { Agent, State, Color, GameNode, RangeX, RangeY } from './engine';
 import { User } from '../util/models';
-import { GameModel } from './model';
+import { Move } from './engine/src/move';
 
 export class Game {
-    private model: GameModel;
+    private agent: Agent = new Agent();
+    private gameNode: GameNode;
     private user: User;
     id: string;
     startDate: Date;
@@ -17,6 +19,7 @@ export class Game {
         yellow: User;
     };
     state: 'in progress' | 'over' | 'on hold';
+    initialGameState: State.RED_MOVES | State.YELLOW_MOVES;
     points: {
         red: number;
         yellow: number;
@@ -28,6 +31,19 @@ export class Game {
     isAgainstAi: boolean;
     opponent: User;
     status = '';
+
+    public static moveIdToMove(moveId: number, color: Color) {
+        const x = (moveId % 10) - 1;
+        const y = Math.abs(Math.floor(moveId / 10) - 6);
+        return new Move(<RangeX>x, <RangeY>y, color);
+    }
+
+    public static moveToMoveId(move: Move) {
+        const _x = move.x + 1;
+        const _y = Math.abs(move.y - 6) * 10;
+        const moveId = _x + _y;
+        return moveId.toString();
+    }
 
     constructor(data: any, user: User) {
         this.user = user;
@@ -43,17 +59,17 @@ export class Game {
         this.isAgainstAi = ids.includes('0');
         this.ourUserPlays = ids.includes(user.id);
         this.opponent = this.players.red.id === user.id ? this.players.yellow : this.players.red;
-        const aiPlaysRed = this.players.red.id === '0';
-        this.model = new GameModel(this.redMovesFirst, data.moves, aiPlaysRed);
+        this.initialGameState = this.redMovesFirst ? State.RED_MOVES : State.YELLOW_MOVES;
+        this.gameNode = GameNode.rootNode(this.initialGameState);
         this.updateStatus();
     }
 
     get activeColor() {
-        return this.activePlayer === this.players.red ? 'red' : 'yellow';
+        return this.activePlayer === this.players.red ? Color.RED : Color.YELLOW;
     }
 
     get inactiveColor() {
-        return this.activeColor === 'red' ? 'yellow' : 'red';
+        return this.activeColor === Color.RED ? Color.YELLOW : Color.RED;
     }
 
     get activePlayer() {
@@ -73,7 +89,9 @@ export class Game {
 
     update(moveId: string) {
         this.moves.push(+moveId);
-        this.model.move(+moveId);
+        const color = this.inactiveColor;
+        const move = Game.moveIdToMove(+moveId, color);
+        this.gameNode = this.gameNode.childNode(move);
         this.checkGame();
     }
 
@@ -86,8 +104,7 @@ export class Game {
         };
         Object.assign(this, data);
         this.updateStatus();
-        const aiPlaysRed = this.players.red.id === '0';
-        this.model = new GameModel(this.redMovesFirst, this.moves, aiPlaysRed);
+        this.gameNode = GameNode.rootNode(this.initialGameState);
     }
 
     updateStatus() {
@@ -110,18 +127,14 @@ export class Game {
     }
 
     nextBestMove() {
-        return this.model.nextBestMove();
-    }
-
-    randomMove() {
-        return this.model.randomMove();
+        return Game.moveToMoveId(this.agent.move(this.gameNode));
     }
 
     private checkGame() {
-        if (this.model.win || this.model.draw) {
+        if (this.gameNode.state === State.RED_WINS || this.gameNode.state === State.YELLOW_WINS || this.gameNode.state === State.DRAW) {
             this.state = 'over';
         }
-        if (this.model.win) {
+        if (this.gameNode.state === State.RED_WINS || this.gameNode.state === State.YELLOW_WINS) {
             this.winner = this.inactivePlayer;
             if (this.winner.id === this.players.red.id) {
                 this.points.red += 1;

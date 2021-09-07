@@ -4,30 +4,34 @@ import { GameTree } from './gametree';
 import { GameNode, State } from './gamenode';
 
 export class Agent {
-    private color: Color;
     private node: GameNode;
+    private readonly SEARCH_TREE_DEPTH = 5;
+    private color: Color;
 
-    constructor(color: Color, initialState: State.RED_MOVES | State.YELLOW_MOVES) {
-        this.color = color;
-        this.node = GameNode.rootNode(initialState);
+    /**
+     * @param node the game in a transitory state
+     * @returns the move that the agent chooses to play.
+     *
+     * The agent is the maximizing player, so it selects the move with the highest maximin value.
+     * If the highest value is shared by multiple moves, the agent picks one of them at random.
+     */
+    public move(node: GameNode): Move {
+        this.init(node);
+        return this.calculateMove();
     }
 
-    public get move(): Move {
-        this.assertIsAgentTurnToMove();
-        this.updateGame(this.calculateMove());
-        return this.node.move;
-    }
-
-    public takeMove(move: Move) {
-        this.updateGame(move);
-    }
-
-    private updateGame(move: Move) {
-        this.node = this.node.childNode(move);
+    private init(node: GameNode) {
+        switch (node.state) {
+            case State.RED_MOVES: this.color = Color.RED;
+                break;
+            case State.YELLOW_MOVES: this.color = Color.YELLOW;
+                break;
+            default: throw new Error('Agent cannot move: game over');
+        }
+        this.node = node;
     }
 
     private calculateMove(): Move {
-        /** Being the maximizing player, the agent chooses the move with highest maximin value */
         const options = this.principalVariation();
         const maxScore = options[options.length - 1].score;
         const optimalMoves = options.filter(o => o.score === maxScore).map(o => o.move);
@@ -35,10 +39,10 @@ export class Agent {
     }
 
     /**
-     * @returns next legal moves with a calculated score value for each move
+     * @returns next move options with a calculated score value for each move
      */
     private principalVariation(): Array<{ score: number, move: Move }> {
-        const searchTree = new GameTree(this.node);
+        const searchTree = new GameTree(this.node, this.SEARCH_TREE_DEPTH);
         return this.maximinRoot(searchTree);
     }
 
@@ -91,7 +95,7 @@ export class Agent {
         const board = node.getBoard();
         const redStrength = this.evaluatePositionStrength(Color.RED, board);
         const yellowStrength = this.evaluatePositionStrength(Color.YELLOW, board);
-        return this.color === Color.RED ? redStrength - yellowStrength : yellowStrength - redStrength;
+        return redStrength + yellowStrength;
     }
 
     private evaluatePositionStrength(color: Color, board: Color[][]): number {
@@ -99,7 +103,7 @@ export class Agent {
         let foundDegreeOneGroup = false;
         for (let y = 0; y < 3; y++) {
             for (let x = 0; x < 7; x++) {
-                for (const v of [Vector.N, Vector.E, Vector.NE, Vector.NW]) {
+                for (const v of [Vector.NW, Vector.N,  Vector.NE, Vector.E]) {
                     const valence = this.groupValence(x, y, v, board, color);
                     if (valence) {
                         if (valence.numColoredCells === 3 && valence.numMovesUntilComplete === 1) {
@@ -114,7 +118,15 @@ export class Agent {
                 }
             }
         }
-        return score;
+        return this.isMaximizingPlayer(color) ? score : -score;
+    }
+
+    private isMaximizingPlayer(color: Color) {
+        return color === this.color;
+    }
+
+    private groupValue(val: GroupValence) {
+        return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
     }
 
     private groupValence(x: number, y: number, v: Vector, grid: Color[][], color: Color): GroupValence {
@@ -141,7 +153,7 @@ export class Agent {
                     return null;
                 }
             case Vector.NE:
-                if (x <= 2 && y <= 2) {
+                if (x <= 3 && y <= 2) {
                     for (let i = 0; i <= 3; i++) {
                         const cellColor = grid[x + i][y + i];
                         if (cellColor === opponentColor) {
@@ -197,10 +209,6 @@ export class Agent {
         }
     }
 
-    private groupValue(val: GroupValence) {
-        return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
-    }
-
     private pickRandomItem(arr: any[]) {
         if (arr.length === 0) {
             throw new Error('Array is empty');
@@ -211,15 +219,6 @@ export class Agent {
 
     private randomInt(bound: number) {
         return Math.floor(Math.random() * bound);
-    }
-
-    private assertIsAgentTurnToMove() {
-        if (!(
-            (this.node.state === State.YELLOW_MOVES && this.color === Color.YELLOW) ||
-            (this.node.state === State.RED_MOVES && this.color === Color.RED))
-        ) {
-            throw new Error('Illegal state: not agent\'s turn to move');
-        }
     }
 }
 

@@ -58,6 +58,7 @@ export class GameComponent implements OnInit {
     if (this.game.moves.length > 0) {
       setTimeout(() => this.board.replayGame(this.game));
     }
+    this.handleBotMove();
   }
 
   quitGame() {

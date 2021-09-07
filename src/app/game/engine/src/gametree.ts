@@ -6,8 +6,9 @@ export class GameTree {
     readonly root: GameNode;
     readonly depth: number;
     private level = 0;
+    private readonly debug = false;
 
-    constructor(node: GameNode, depth = 3) {
+    constructor(node: GameNode, depth = 6) {
         if (!(0 < depth && depth <= GameTree.MAX_DEPTH)) {
             throw new Error('0 < depth <= 8');
         }
@@ -23,7 +24,7 @@ export class GameTree {
         }
         const children = [];
         for (const parent of ply) {
-            for (const move of parent.nextLegalMoves()) {
+            for (const move of parent.nextLegalMoves) {
                 const child = parent.childNode(move);
                 if (child.state === State.RED_MOVES || child.state === State.YELLOW_MOVES) {
                     children.push(child);
@@ -34,6 +35,8 @@ export class GameTree {
     }
 
     private taskEnd(millis: number) {
-        console.log('Tree [level = ' + this.depth + '] complete in ' + millis + ' millis');
+        if (this.debug) {
+            console.log('Tree [depth = ' + this.depth + '] complete in ' + millis + ' millis');
+        }
     }
 }
