@@ -16,6 +16,7 @@ import { RealtimeService } from '../realtime.service';
 import { WatchGameService } from '../watch-game.service';
 import { Router } from '@angular/router';
 import { LocalStorageService } from '../local-storage.service';
+import { State } from '../game/engine';
 
 @Component({
   selector: 'app-home',
@@ -37,7 +38,7 @@ export class HomeComponent implements OnInit {
     private auth: AuthService,
     private realtime: RealtimeService,
     private watchGame: WatchGameService,
-    private localStorageService: LocalStorageService) {
+    private localStorage: LocalStorageService) {
   }
 
   ngOnInit() {
@@ -45,19 +46,19 @@ export class HomeComponent implements OnInit {
     this.openSession();
     this.subscribeToGameSources();
     this.handleGameRemoval();
-    this.Bot.points = this.localStorageService.getBotPoints();
+    this.Bot.points = this.localStorage.getPoints(Bot);
   }
 
   private subscribeToGameSources() {
     this.realtime.games.all.subscribe((games: Game[]) => {
       games.forEach((game: Game) => {
-        if (game.ourUserPlays) {
+        if (game.isPlayer(this.user)) {
           this.loadGame(game);
         }
       });
     });
     this.realtime.games.added.subscribe((game: Game) => {
-      if (game.ourUserPlays) {
+      if (game.isPlayer(this.user)) {
         this.loadGame(game);
       }
     });
@@ -91,9 +92,9 @@ export class HomeComponent implements OnInit {
 
   private closeRealtimeSession() {
     this.realtime.users.removeUser();
-    if (this.game && this.game.ourUserPlays && this.only_self_online) {
+    if (this.game && this.game.isPlayer(this.user) && this.only_self_online) {
       if (!this.game.isAgainstAi) {
-        this.realtime.users.setUserStatus(this.game.opponent.id, 'Online');
+        this.realtime.users.setUserStatus(this.game.opponent(this.user).id, 'Online');
       }
       this.realtime.games.removeGame(this.game.id);
     }
@@ -128,9 +129,9 @@ export class HomeComponent implements OnInit {
     modal.result.then((option: any) => {
       if (typeof option === 'object') {
         if (option.userPlaysRed) {
-          this.realtime.games.createGame(this.user, Bot, true);
+          this.realtime.games.createGame(this.user, Bot, State.RED_MOVES);
         } else {
-          this.realtime.games.createGame(Bot, this.user, false);
+          this.realtime.games.createGame(Bot, this.user, State.YELLOW_MOVES);
         }
       } else if (option === 'Cancel') {
         this.realtime.users.setUserStatus(this.user.id, 'Online');
@@ -145,14 +146,14 @@ export class HomeComponent implements OnInit {
   }
 
   private async closeGameView() {
-    if (this.game.ourUserPlays) {
+    if (this.game.isPlayer(this.user)) {
       const option = await this.quitGameResponse();
       if (option === 'Quit') {
         const game = this.game;
         this.unloadGame();
         this.realtime.users.setUserStatus(this.user.id, 'Online');
         if (!game.isAgainstAi) {
-          this.realtime.users.setUserStatus(game.opponent.id, 'Online');
+          this.realtime.users.setUserStatus(game.opponent(this.user).id, 'Online');
         }
         this.gameComponent.quitGame();
         this.realtime.games.removeGame(game.id);

@@ -53,7 +53,7 @@ export class GameNode {
             return [];
         }
         const result: Move[] = [];
-        const grid = this.getBoard();
+        const grid = this.board;
         const color = this.state === State.RED_MOVES ? Color.RED : Color.YELLOW;
         for (let x = 0; x < 7; x++) {
             for (let y = 0; y < 6; y++) {
@@ -66,7 +66,7 @@ export class GameNode {
         return result;
     }
 
-    getBoard(): Color[][] {
+    get board(): Color[][] {
         const grid = new Array(7);
         for (let i = 0; i < 7; i++) {
             grid[i] = new Array(6);
@@ -89,7 +89,7 @@ export class GameNode {
     }
 
     private updateState() {
-        const grid = this.getBoard();
+        const grid = this.board;
         const kinds: Direction[] = Object.keys(Direction).map(key => Direction[key]);
         for (const direction of kinds) {
             if (this.isConnectFour(direction, grid)) {

@@ -4,7 +4,7 @@
 
 import { Component, OnInit } from '@angular/core';
 
-import { Game } from '../game/game';
+import { Game as GameContext } from '../game/game';
 import { RealtimeService } from '../realtime.service';
 import { WatchGameService } from '../watch-game.service';
 import { IntegerSequenceGenerator } from '../util/generators';
@@ -16,14 +16,14 @@ import { IntegerSequenceGenerator } from '../util/generators';
 })
 export class PanelGamesComponent implements OnInit {
   private ascendingIntegers: Generator;
-  games: Map<string, Game> = new Map();
+  games: Map<string, GameContext> = new Map();
 
   constructor(private watchGame: WatchGameService, private realtime: RealtimeService) {
     this.ascendingIntegers = IntegerSequenceGenerator(0);
   }
 
   ngOnInit() {
-    this.realtime.games.all.subscribe((games: Game[]) => {
+    this.realtime.games.all.subscribe((games: GameContext[]) => {
       games.forEach(this.add.bind(this));
     });
     this.realtime.games.added.subscribe(this.add.bind(this));
@@ -31,26 +31,20 @@ export class PanelGamesComponent implements OnInit {
   }
 
   onClickGame(gameId: string) {
-    this.realtime.games.fetchGame(gameId).subscribe((game: Game) => this.watchGame.push(game));
+    this.realtime.games.fetchGame(gameId).subscribe((game: GameContext) => this.watchGame.push(game));
   }
 
-  private add(game: Game) {
-    this.games.set(game.id, Object.assign(game, { index: this.ascendingIntegers.next().value }));
-    this.realtime.games.onGamePointsUpdate(game.id, this.onGamePointsChanged, this);
+  private add(context: GameContext) {
+    console.log('Panel games added');
+    this.games.set(context.id, Object.assign(context, { index: this.ascendingIntegers.next().value }));
   }
 
   private remove(gameId: any) {
     this.games.delete(gameId);
   }
 
-  private onGamePointsChanged(gameId: string, points: {red: number, yellow: number}) {
-    const game = this.games.get(gameId);
-    if (game) {
-      game.points = points;
-    }
-  }
-
-  descendingSort(a: { key: string, value: Game & { index: number } }, b: { key: string, value: Game & { index: number } }): number {
+  descendingSort(a: { key: string, value: GameContext & { index: number } },
+    b: { key: string, value: GameContext & { index: number } }): number {
     return a.value.index < b.value.index ? 1 : -1;
   }
 

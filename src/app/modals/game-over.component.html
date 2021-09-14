@@ -36,7 +36,7 @@
       Game ended in a draw 🤔
     </div>
   </div>
-  <div class="modal-footer" *ngIf="game.ourUserPlays">
+  <div class="modal-footer" *ngIf="game.isPlayer(user)">
     <button type="button" class="btn btn-success" aria-label="Close" (click)="activeModal.close('Rematch')"
       ngbAutofocus>
       Play another round

@@ -4,7 +4,6 @@
             <img [src]="game.players.red.imgUrl"> {{game.players.red.name  | surname }}
         </div>
         <div class="hcentered">
-            <div class="points">{{game.points.red}} - {{game.points.yellow}}</div>
             <div class="separator"></div>
             <app-timer [startDate]="game.startDate"></app-timer>
         </div>
@@ -17,7 +16,7 @@
             <div id="gameStatus">
                 {{game.status}}
             </div>
-            <app-board [activeColor]="game.activeColor" [allowMove]="game.isOurTurn" (userMoved)="onBoardClick($event)">
+            <app-board [game]="game" [user]="user" (userMoved)="onBoardClick($event)">
             </app-board>
         </div>
     </div>

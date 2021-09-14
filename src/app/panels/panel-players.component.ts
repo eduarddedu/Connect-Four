@@ -12,6 +12,7 @@ import { NotificationService } from '../notification.service';
 import { GameCreateComponent } from '../modals/game-create.component';
 import { GameInvitationComponent } from '../modals/game-invitation.component';
 import { RealtimeService } from '../realtime.service';
+import { State } from '../game/engine';
 
 @Component({
   selector: 'app-panel-players',
@@ -76,9 +77,9 @@ export class PanelPlayersComponent implements OnInit {
           this.realtime.users.setUserStatus(this.user.id, 'In game');
           this.realtime.users.setUserStatus(sender.id, 'In game');
           if (data.senderPlaysRed) {
-            this.realtime.games.createGame(sender, this.user, false);
+            this.realtime.games.createGame(sender, this.user, State.RED_MOVES); // TODO
           } else {
-            this.realtime.games.createGame(this.user, sender, true);
+            this.realtime.games.createGame(this.user, sender, State.RED_MOVES);
           }
         } else {
           this.realtime.users.setUserStatus(this.user.id, 'Online');

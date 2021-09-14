@@ -1,148 +1,111 @@
-/**
- * The Game class contains the game as a whole and
- * performs all of the dynamic computations which determine the game state as seen by both players and watchers.
- * The more complicated methods are delegated to the GameModel helper class.
- */
-
-import { Agent, State, Color, GameNode, RangeX, RangeY } from './engine';
-import { User } from '../util/models';
+import { State, GameNode, Color, Agent } from './engine';
 import { Move } from './engine/src/move';
+import { GameContext } from './gameContext';
+import { User } from '../util/models';
 
 export class Game {
-    private agent: Agent = new Agent();
-    private gameNode: GameNode;
-    private user: User;
-    id: string;
-    startDate: Date;
-    players: {
-        red: User;
-        yellow: User;
-    };
-    state: 'in progress' | 'over' | 'on hold';
-    initialGameState: State.RED_MOVES | State.YELLOW_MOVES;
-    points: {
-        red: number;
-        yellow: number;
-    };
-    moves: number[];
-    redMovesFirst: boolean;
-    winner?: User;
-    ourUserPlays: boolean;
-    isAgainstAi: boolean;
-    opponent: User;
+    private node: GameNode;
+    private agent = new Agent();
+    private _lastMove: Move;
+    readonly context: GameContext;
+    readonly startDate = new Date();
+    readonly moves: Move[];
+    readonly isAgainstAi: boolean;
     status = '';
 
-    public static moveIdToMove(moveId: number, color: Color) {
-        const x = (moveId % 10) - 1;
-        const y = Math.abs(Math.floor(moveId / 10) - 6);
-        return new Move(<RangeX>x, <RangeY>y, color);
+    constructor(ctx: GameContext) {
+        this.context = ctx;
+        this.moves = ctx.moves;
+        this.node = GameNode.rootNode(ctx.initialState);
+        this.isAgainstAi = [this.players.red.id, this.players.yellow.id].includes('0');
+        this.setStatus();
     }
 
-    public static moveToMoveId(move: Move) {
-        const _x = move.x + 1;
-        const _y = Math.abs(move.y - 6) * 10;
-        const moveId = _x + _y;
-        return moveId.toString();
+    get id() {
+        return this.context.id;
     }
 
-    constructor(data: any, user: User) {
-        this.user = user;
-        this.id = data.id;
-        this.startDate = new Date(data.startDate);
-        this.players = data.players;
-        this.state = data.state;
-        this.points = data.points;
-        this.winner = data.winner;
-        this.redMovesFirst = data.redMovesFirst;
-        this.moves = data.moves;
-        const ids = [this.players.red, this.players.yellow].map(player => player.id);
-        this.isAgainstAi = ids.includes('0');
-        this.ourUserPlays = ids.includes(user.id);
-        this.opponent = this.players.red.id === user.id ? this.players.yellow : this.players.red;
-        this.initialGameState = this.redMovesFirst ? State.RED_MOVES : State.YELLOW_MOVES;
-        this.gameNode = GameNode.rootNode(this.initialGameState);
-        this.updateStatus();
+    get isAgentTurn() {
+        return this.isAgainstAi &&
+            this.state === State.RED_MOVES && this.players.red.id === '0' ||
+            this.state === State.YELLOW_MOVES && this.players.yellow.id === '0';
     }
 
-    get activeColor() {
-        return this.activePlayer === this.players.red ? Color.RED : Color.YELLOW;
+    get state(): State {
+        return this.node.state;
     }
 
-    get inactiveColor() {
-        return this.activeColor === Color.RED ? Color.YELLOW : Color.RED;
+    get players() {
+        return Object.assign({}, this.context.players);
     }
 
-    get activePlayer() {
-        return this.moves.length % 2 === 0 ?
-            this.redMovesFirst ? this.players.red : this.players.yellow
-            :
-            this.redMovesFirst ? this.players.yellow : this.players.red;
+    get winner() {
+        if (this.state === State.RED_WINS) {
+            return this.players.red;
+        } else if (this.state === State.YELLOW_WINS) {
+            return this.players.yellow;
+        }
     }
 
-    get inactivePlayer() {
-        return this.activePlayer === this.players.red ? this.players.yellow : this.players.red;
+    get lastMove(): Move {
+        return Object.assign({}, this._lastMove);
     }
 
-    get isOurTurn() {
-        return this.ourUserPlays && this.state === 'in progress' && this.activePlayer.id === this.user.id;
+    computeAgentMove(): Move {
+        return this.agent.move(this.node);
     }
 
-    update(moveId: string) {
-        this.moves.push(+moveId);
-        const color = this.inactiveColor;
-        const move = Game.moveIdToMove(+moveId, color);
-        this.gameNode = this.gameNode.childNode(move);
-        this.checkGame();
+    isPlayer(user: User) {
+        return Object.keys(this.players).map(k => this.players[k].id).includes(user.id);
     }
 
-    reset() {
-        const data = {
-            moves: [],
-            state: 'in progress',
-            redMovesFirst: this.winner ? this.winner.id === this.players.yellow.id : true,
-            winner: undefined
-        };
-        Object.assign(this, data);
-        this.updateStatus();
-        this.gameNode = GameNode.rootNode(this.initialGameState);
+    getPlayerColor(user: User): Color {
+        if (this.isPlayer(user)) {
+            return this.players.red.id === user.id ? Color.RED : Color.YELLOW;
+        }
     }
 
-    updateStatus() {
+    isActivePlayer(user: User) {
+        const color = this.getPlayerColor(user);
+        return color !== undefined && color === this.currentTurnColor;
+    }
+
+    opponent(user: User): User {
+        if (this.isPlayer(user)) {
+            return this.players.red.id === user.id ? this.players.yellow : this.players.red;
+        }
+    }
+
+    update(move: Move) {
+        this.moves.push(move);
+        this._lastMove = move;
+        this.node = this.node.childNode(move);
+        this.setStatus();
+    }
+
+    private get currentTurnColor() {
+        if (this.state === State.RED_MOVES) {
+            return Color.RED;
+        } else if (this.state === State.YELLOW_MOVES) {
+            return Color.YELLOW;
+        }
+    }
+
+    private setStatus() {
         const firstName = (str: string) => str.replace(/ .*/, '');
-        switch (this.state) {
-            case 'over':
+        switch (this.node.state) {
+            case State.RED_WINS:
+            case State.YELLOW_WINS:
+            case State.DRAW:
                 this.status = `Game over`;
                 break;
-            case 'in progress':
-                if (this.ourUserPlays) {
-                    this.status = this.isOurTurn ? 'Your turn' : `Waiting on ${firstName(this.activePlayer.name)}...`;
-                } else {
-                    this.status = `Waiting on ${firstName(this.activePlayer.name)}...`;
-                }
+            case State.RED_MOVES:
+                this.status = `Waiting on ${firstName(this.context.players.red.name)}...`;
                 break;
-            case 'on hold':
-                this.status = 'Waiting on second player...';
+            case State.YELLOW_MOVES:
+                this.status = `Waiting on ${firstName(this.context.players.yellow.name)}...`;
 
         }
-    }
-
-    nextBestMove() {
-        return Game.moveToMoveId(this.agent.move(this.gameNode));
-    }
-
-    private checkGame() {
-        if (this.gameNode.state === State.RED_WINS || this.gameNode.state === State.YELLOW_WINS || this.gameNode.state === State.DRAW) {
-            this.state = 'over';
-        }
-        if (this.gameNode.state === State.RED_WINS || this.gameNode.state === State.YELLOW_WINS) {
-            this.winner = this.inactivePlayer;
-            if (this.winner.id === this.players.red.id) {
-                this.points.red += 1;
-            } else {
-                this.points.yellow += 1;
-            }
-        }
-        this.updateStatus();
     }
 
 }

@@ -18,6 +18,8 @@ import { AuthService } from './auth.service';
 import { User } from './util/models';
 import { Game } from './game/game';
 import { NotificationService } from './notification.service';
+import { Move, State } from './game/engine';
+import { GameContext } from './game/gameContext';
 
 
 @Injectable({
@@ -209,40 +211,28 @@ class Games {
 
   private subscribeToTopics() {
     this.list.on('entry-added', async gameId => {
-      const data = await this.ds.getRecordData(gameId);
-      this.ngZone.run(() => this.added.next(new Game(data, this.user)));
+      const ctx = await this.ds.getRecordData(gameId);
+      this.ngZone.run(() => this.added.next(new Game(ctx)));
     });
     this.list.on('entry-removed', (gameId: string) => {
       this.ngZone.run(() => this.removed.next(gameId));
     });
   }
 
-  private createGameRecord(data: any): string {
-    const gameId = this.ds.client.getUid();
-    this.ds.client.record.getRecord(gameId).whenReady((r: deepstreamIO.Record) => {
-      r.set(Object.assign(data, { id: gameId }));
-      this.list.addEntry(gameId);
-    });
-    return gameId;
-  }
-
   fetchGame(gameId: string): Observable<Game> {
     return new Observable((subscriber: Subscriber<Game>) => {
-      this.ngZone.run(async () => subscriber.next(new Game(await this.ds.getRecordData(gameId), this.user)));
+      this.ngZone.run(async () => subscriber.next(new Game(await this.ds.getRecordData(gameId))));
     });
   }
 
-  createGame(red: User, yellow: User, redMovesFirst: boolean): Game {
-    const data = {
-      startDate: Date.now(),
-      players: { red: red, yellow: yellow },
-      redMovesFirst: redMovesFirst,
-      state: 'in progress',
-      moves: [],
-      points: { red: 0, yellow: 0 }
-    } as any;
-    data.id = this.createGameRecord(data);
-    return new Game(data, this.user);
+  createGame(red: User, yellow: User, initialState: State.RED_MOVES | State.YELLOW_MOVES): Game {
+    const id = this.ds.client.getUid();
+    const ctx = new GameContext(id, red, yellow, initialState);
+    this.ds.client.record.getRecord(id).whenReady((record: deepstreamIO.Record) => {
+      record.set(ctx);
+      this.list.addEntry(id);
+    });
+    return new Game(ctx);
   }
 
   removeGame(gameId: string) {
@@ -258,23 +248,17 @@ class Games {
     this.ds.client.record.getRecord(gameId).set('state', state);
   }
 
-  updateGameMoves(gameId: string, moveId: string) {
-    this.ds.client.event.emit(`moves/${gameId}`, moveId);
+  updateGameMoves(gameId: string, move: Move) {
+    this.ds.client.event.emit(`moves/${gameId}`, move);
     const record = this.ds.client.record.getRecord(gameId);
-    const moves: string[] = record.get('moves');
-    moves.push(moveId);
+    const moves: Move[] = record.get('moves');
+    moves.push(move);
     record.set('moves', moves);
   }
 
-  onGameMovesUpdate(gameId: string, callback: (moveId: string) => void, thisArg: any) {
-    this.ds.client.event.subscribe(`moves/${gameId}`, moveId => {
-      this.ngZone.run(callback.bind(thisArg, moveId));
-    });
-  }
-
-  onGameStateUpdate(gameId: string, callback: (status: string) => void, thisArg: any) {
-    this.ds.client.record.getRecord(gameId).subscribe('state', state => {
-      this.ngZone.run(callback.bind(thisArg, state));
+  onGameMovesUpdate(gameId: string, callback: (move: Move) => void, thisArg: any) {
+    this.ds.client.event.subscribe(`moves/${gameId}`, move => {
+      this.ngZone.run(callback.bind(thisArg, move));
     });
   }
 
@@ -296,7 +280,7 @@ class Games {
         const games: Game[] = [];
         this.list.whenReady(async (list: deepstreamIO.List) => {
           for (const gameId of list.getEntries()) {
-            games.push(new Game(await this.ds.getRecordData(gameId), this.user));
+            games.push(new Game(await this.ds.getRecordData(gameId)));
           }
           subscriber.next(games);
         });

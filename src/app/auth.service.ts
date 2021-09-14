@@ -14,7 +14,7 @@ export class AuthService {
   private _user: User;
   private authProvider: AuthProvider;
 
-  constructor(private zone: NgZone, private localStorageService: LocalStorageService) {
+  constructor(private zone: NgZone, private localStorage: LocalStorageService) {
     if (environment.production) {
       this.registerProvider(new FacebookAuth());
       this.registerProvider(new GoogleAuth());
@@ -35,7 +35,7 @@ export class AuthService {
     authProvider.getUser().subscribe((user: User) => {
       this.zone.run(() => {
         this._user = user;
-        this.user.points = this.localStorageService.getUserPoints();
+        this.user.points = this.localStorage.getPoints(this.user);
         this.authProvider = authProvider;
         this.login$.next();
       });

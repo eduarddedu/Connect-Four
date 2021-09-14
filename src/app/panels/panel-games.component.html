@@ -4,7 +4,6 @@
     <div class="placeholder" *ngIf="games.size == 0">No games</div>
     <div class="c4-card-row" *ngFor="let item of games | keyvalue: descendingSort" (click)="onClickGame(item.value.id)">
       <div> {{item.value.players.red.name | surname}} </div>
-      <div> {{item.value.points.red}} - {{item.value.points.yellow}} </div>
       <div> {{item.value.players.yellow.name | surname}} </div>
     </div>
   </div>

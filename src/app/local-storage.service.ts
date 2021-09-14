@@ -1,33 +1,16 @@
 import { Injectable } from '@angular/core';
+import { User } from './util/models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocalStorageService {
 
-  getUserPoints(): number {
-    const points = localStorage.getItem('points');
-    if (points) {
-      return +points;
-    } else {
-      return 0;
-    }
+  getPoints(user: User): number {
+   return +localStorage.getItem(user.id) || 0;
   }
 
-  setUserPoints(points: number) {
-    localStorage.setItem('points', `${points}`);
-  }
-
-  getBotPoints(): number {
-    const points = localStorage.getItem('aipoints');
-    if (points) {
-      return +points;
-    } else {
-      return 0;
-    }
-  }
-
-  setBotPoints(points: number) {
-    localStorage.setItem('aipoints', `${points}`);
+  setPoints(user: User, points: number) {
+    localStorage.setItem(user.id, `${points}`);
   }
 }

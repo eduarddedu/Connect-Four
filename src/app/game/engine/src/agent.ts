@@ -9,11 +9,8 @@ export class Agent {
     private color: Color;
 
     /**
-     * @param node the game in a transitory state
-     * @returns the move that the agent chooses to play.
-     *
-     * The agent is the maximizing player, so it selects the move with the highest maximin value.
-     * If the highest value is shared by multiple moves, the agent picks one of them at random.
+     * @param node a non-terminal game state
+     * @returns the move the agent chooses to play
      */
     public move(node: GameNode): Move {
         this.init(node);
@@ -33,35 +30,29 @@ export class Agent {
 
     private calculateMove(): Move {
         const options = this.principalVariation();
-        const maxScore = options[options.length - 1].score;
-        const optimalMoves = options.filter(o => o.score === maxScore).map(o => o.move);
-        return this.pickRandomItem(optimalMoves);
+        return this.pickRandomMove(options);
     }
 
     /**
-     * @returns next move options with a calculated score value for each move
+     * @returns a score value for each of the next possible moves
      */
     private principalVariation(): Array<{ score: number, move: Move }> {
-        const searchTree = new GameTree(this.node, this.SEARCH_TREE_DEPTH);
-        return this.maximinRoot(searchTree);
-    }
-
-    private maximinRoot(tree: GameTree): { score: number, move: Move }[] {
         const moves = [];
+        const tree = new GameTree(this.node, this.SEARCH_TREE_DEPTH);
         for (const child of tree.root.children) {
-            const value = this.maximin(child, false, -Infinity, Infinity);
+            const value = this.minimax(child, false, -Infinity, Infinity);
             moves.push({ score: value, move: child.move });
         }
         return moves.sort((a: any, b: any) => a.score - b.score);
     }
 
-    private maximin(node: GameNode, maximizingPlayer: boolean, alpha: number, beta: number) {
+    private minimax(node: GameNode, maximizingPlayer: boolean, alpha: number, beta: number) {
         if (node.children.length === 0) {
             return this.evaluateNode(node);
         }
         if (maximizingPlayer) {
             for (const child of node.children) {
-                alpha = Math.max(alpha, this.maximin(child, false, alpha, beta));
+                alpha = Math.max(alpha, this.minimax(child, false, alpha, beta));
                 if (alpha >= beta) {
                     return alpha;
                 }
@@ -69,7 +60,7 @@ export class Agent {
             return alpha;
         } else {
             for (const child of node.children) {
-                beta = Math.min(beta, this.maximin(child, true, alpha, beta));
+                beta = Math.min(beta, this.minimax(child, true, alpha, beta));
                 if (beta <= alpha) {
                     return beta;
                 }
@@ -81,18 +72,23 @@ export class Agent {
     private evaluateNode(node: GameNode): number {
         switch (node.state) {
             case State.RED_WINS:
-                return this.color === Color.RED ? Infinity : -Infinity;
             case State.YELLOW_WINS:
-                return this.color === Color.YELLOW ? Infinity : -Infinity;
+                return this.agentWins(node) ? Infinity : -Infinity;
             case State.DRAW:
                 return 0;
             default:
-                return this.evaluateNodeInTransitoryState(node);
+                return this.getHeuristicValue(node);
         }
     }
 
-    private evaluateNodeInTransitoryState(node: GameNode) {
-        const board = node.getBoard();
+    private agentWins(node: GameNode) {
+        return node.state === State.RED_WINS && this.color === Color.RED ||
+            node.state === State.YELLOW_WINS && this.color === Color.YELLOW;
+    }
+
+
+    private getHeuristicValue(node: GameNode) {
+        const board = node.board;
         const redStrength = this.evaluatePositionStrength(Color.RED, board);
         const yellowStrength = this.evaluatePositionStrength(Color.YELLOW, board);
         return redStrength + yellowStrength;
@@ -100,17 +96,18 @@ export class Agent {
 
     private evaluatePositionStrength(color: Color, board: Color[][]): number {
         let score = 0;
-        let foundDegreeOneGroup = false;
+        let foundGroup3 = false;
         for (let y = 0; y < 3; y++) {
             for (let x = 0; x < 7; x++) {
-                for (const v of [Vector.NW, Vector.N,  Vector.NE, Vector.E]) {
+                for (const v of [Vector.NW, Vector.N, Vector.NE, Vector.E]) {
                     const valence = this.groupValence(x, y, v, board, color);
                     if (valence) {
                         if (valence.numColoredCells === 3 && valence.numMovesUntilComplete === 1) {
-                            if (foundDegreeOneGroup) {
-                                return Math.pow(10, 9);
+                            if (foundGroup3) {
+                                const highScore = Math.pow(10, 9);
+                                return color === this.color ? highScore : -highScore;
                             } else {
-                                foundDegreeOneGroup = true;
+                                foundGroup3 = true;
                             }
                         }
                         score += this.groupValue(valence);
@@ -118,15 +115,7 @@ export class Agent {
                 }
             }
         }
-        return this.isMaximizingPlayer(color) ? score : -score;
-    }
-
-    private isMaximizingPlayer(color: Color) {
-        return color === this.color;
-    }
-
-    private groupValue(val: GroupValence) {
-        return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
+        return color === this.color ? score : -score;
     }
 
     private groupValence(x: number, y: number, v: Vector, grid: Color[][], color: Color): GroupValence {
@@ -209,16 +198,19 @@ export class Agent {
         }
     }
 
-    private pickRandomItem(arr: any[]) {
-        if (arr.length === 0) {
-            throw new Error('Array is empty');
-        }
-        const i = this.randomInt(arr.length);
-        return arr[i];
+    private groupValue(val: GroupValence) {
+        return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
     }
 
-    private randomInt(bound: number) {
-        return Math.floor(Math.random() * bound);
+    private pickRandomMove(options: Array<{ score: number, move: Move }>) {
+        if (options.length === 0) {
+            throw new Error('No move options');
+        }
+        const maxScore = options[options.length - 1].score;
+        const moves = options.filter(o => o.score === maxScore).map(o => o.move);
+        const randomInt = (bound: number) => Math.floor(Math.random() * bound);
+        const i = randomInt(moves.length);
+        return moves[i];
     }
 }
 
@@ -230,13 +222,14 @@ enum Vector { N, E, NE, NW }
 
 /*
 
-The following describes the strategy employed by our naive heuristic evaluation function.
+The following describes the strategy behind the heuristic evaluation function.
 
 The main concepts are "group" and "valence".
 
-A group is a set of 4 adjacent cells which might make a connect-four combination in the future, as the game evolves.
+A group is a set of 4 adjacent cells which may hold a connect-four combination - in future - i.e. in a game state whose
+ancestor is the current state.
 
-Cells in a group must be set with the color of interest or empty. If a cell has the opponent color, the group is not valid.
+Cells in a group must be set with the color of interest or be empty. If a cell has the opponent color, the group is not valid.
 
 Assuming "r" refers to a red cell and "e" is an empty cell, this example position shows a few such groups.
 
@@ -247,17 +240,17 @@ e e e e e e e
 e r e r e e e
 e r r r e e e
 
-Obviously groups can be vertical, horizontal or diagonal, just like connect-four combinations.
+Groups can be vertical, horizontal or diagonal, just like connect-four combinations.
 
 Groups are scored based on how many colored cells they contain and how many moves need to be played
-until the group can become a full connect-four combination.
+until the group becomes a full connect-four combination.
 
 The more colored cells it contains, the more likely it is that the group will become complete.
-On the other hand the more turns need to be played, the less likely it is that the group will become complete.
+On the other hand the more moves need to be played, the less likely it is that the group will become complete.
 
 To help evaluate groups, we collect the two properties into an object called valence.
 
-A group with a single empty cell which can be set in the next move is special.
+A group with three cells, which can become a connect-four combination in the next move, is special.
 
 A position with two such groups guarantees victory, because the opponent can't defend against it (see bottom row).
 Such a position should fetch the highest score.

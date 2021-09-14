@@ -1,7 +1,5 @@
-import { Color, State, Move, GameNode, Agent } from '../index';
+import { RangeX, RangeY, Color, State, Move, GameNode, Agent } from '../index';
 import { GameModel } from '../../model';
-
-import { Game } from '../../game';
 
 let moves: Move[];
 
@@ -10,6 +8,19 @@ const stats = {
     yellowWins: { playsFirst: 0, playsSecond: 0 },
     draws: 0
 };
+
+function moveIdToMove(moveId: number, color: Color) {
+    const x = (moveId % 10) - 1;
+    const y = Math.abs(Math.floor(moveId / 10) - 6);
+    return new Move(<RangeX>x, <RangeY>y, color);
+}
+
+function moveToMoveId(move: Move) {
+    const _x = move.x + 1;
+    const _y = Math.abs(move.y - 6) * 10;
+    const moveId = _x + _y;
+    return moveId.toString();
+}
 
 function assertModelInTerminalState(model: GameModel) {
     if (!(model.win || model.draw)) {
@@ -41,7 +52,7 @@ function playModelBasedVsStatelessAgentGame(redMovesFirst: boolean): State {
             move = sAgent.move(node);
             moves.push(move);
             node = node.childNode(move);
-            moveId = +Game.moveToMoveId(move);
+            moveId = +moveToMoveId(move);
             mAgent.move(moveId);
         } catch (e) {
             console.log(moves);
@@ -52,7 +63,7 @@ function playModelBasedVsStatelessAgentGame(redMovesFirst: boolean): State {
         try {
             moveId = mAgent.nextBestMove();
             mAgent.move(moveId);
-            move = Game.moveIdToMove(moveId, Color.YELLOW);
+            move = moveIdToMove(moveId, Color.YELLOW);
             moves.push(move);
             node = node.childNode(move);
         } catch (e) {
@@ -119,6 +130,26 @@ function createStatistic() {
 }
 
 createStatistic();
+
+function assessAgentMove() {
+    let node = GameNode.rootNode(State.RED_MOVES);
+    const _moves = [
+        new Move(0, 0, 0),
+        new Move(3, 0, 1),
+        new Move(0, 1, 0),
+        new Move(4, 0, 1),
+        new Move(1, 0, 0),
+        new Move(5, 0, 1),
+        new Move(1, 1, 0)
+    ];
+    for (const move of _moves) {
+        node = node.childNode(move);
+    }
+    const agent = new Agent();
+    console.log(agent.move(node));
+}
+
+// assessAgentMove();
 
 
 
