@@ -5,14 +5,14 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Game as GameContext } from '../game/game';
-import { RealtimeService } from '../realtime.service';
-import { WatchGameService } from '../watch-game.service';
+import { RealtimeService } from '../services/realtime.service';
+import { WatchGameService } from '../services/watch-game.service';
 import { IntegerSequenceGenerator } from '../util/generators';
 
 @Component({
   selector: 'app-panel-games',
   templateUrl: './panel-games.component.html',
-  styleUrls: ['./panel-games.component.css', './styles.component.css']
+  styleUrls: ['./panel-games.component.css']
 })
 export class PanelGamesComponent implements OnInit {
   private ascendingIntegers: Generator;

@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
-import { Game } from './game';
-import { RangeX, RangeY, Color, Move, State } from './engine';
+import { Game } from '../game/game';
+import { RangeX, RangeY, Color, Move, State } from '../game/engine';
 import { User } from '../util/models';
 
 @Component({

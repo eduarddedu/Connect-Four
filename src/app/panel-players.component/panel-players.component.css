@@ -1,3 +1,12 @@
+.userPoints {
+    position: absolute;
+    top: 23px;
+    left: 38px;
+    font-size: 65%;
+    color: #f0ece7d2;
+    min-width: 50px;
+}
+
 .c4-card-body {
     height: 150px;
     overflow: scroll;
@@ -10,4 +19,3 @@
     height: 50px;
     padding: 0 10px;
 }
-

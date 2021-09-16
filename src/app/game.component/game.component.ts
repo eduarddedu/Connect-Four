@@ -6,14 +6,14 @@ import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { User } from '../util/models';
-import { BoardComponent } from './board.component';
-import { Game } from './game';
-import { WatchGameService } from '../watch-game.service';
-import { RealtimeService } from '../realtime.service';
-import { GameOverComponent } from '../modals/game-over.component';
-import { NotificationService } from '../notification.service';
-import { LocalStorageService } from '../local-storage.service';
-import { Move, State } from './engine';
+import { BoardComponent } from '../board.component/board.component';
+import { Game } from '../game/game';
+import { WatchGameService } from '../services/watch-game.service';
+import { RealtimeService } from '../services/realtime.service';
+import { GameOverComponent } from '../game-over.component/game-over.component';
+import { NotificationService } from '../services/notification.service';
+import { LocalStorageService } from '../services/local-storage.service';
+import { Move, State } from '../game/engine';
 
 @Component({
   selector: 'app-game',

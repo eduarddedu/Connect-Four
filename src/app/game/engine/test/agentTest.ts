@@ -1,5 +1,5 @@
 import { RangeX, RangeY, Color, State, Move, GameNode, Agent } from '../index';
-import { GameModel } from '../../model';
+import { GameModel } from './model-based-agent';
 
 let moves: Move[];
 

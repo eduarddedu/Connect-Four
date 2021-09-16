@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { CookieService } from '../cookie.service';
+import { CookieService } from '../services/cookie.service';
 
 @Component({
   selector: 'app-policy-accept',

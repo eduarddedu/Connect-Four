@@ -13,13 +13,13 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Observable, Subscriber, Subject } from 'rxjs';
 
-import { environment } from '../environments/environment';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { User } from './util/models';
-import { Game } from './game/game';
+import { User } from '../util/models';
+import { Game } from '../game/game';
 import { NotificationService } from './notification.service';
-import { Move, State } from './game/engine';
-import { GameContext } from './game/gameContext';
+import { Move, State } from '../game/engine';
+import { GameContext } from '../game/game.context';
 
 
 @Injectable({

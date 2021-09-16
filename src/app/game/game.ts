@@ -1,6 +1,6 @@
 import { State, GameNode, Color, Agent } from './engine';
 import { Move } from './engine/src/move';
-import { GameContext } from './gameContext';
+import { GameContext } from './game.context';
 import { User } from '../util/models';
 
 export class Game {

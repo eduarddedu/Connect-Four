@@ -1,0 +1,23 @@
+.c4-card-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+.c4-card-row :nth-of-type(2) {
+    text-align: center;
+}
+.c4-card-row :nth-of-type(3) {
+    text-align: right;
+}
+
+.c4-card-body {
+    height: 150px;
+    overflow: scroll;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 50px;
+    padding: 0 10px;
+}

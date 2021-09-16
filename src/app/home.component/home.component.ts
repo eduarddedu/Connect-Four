@@ -5,17 +5,18 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-
-import { AuthService } from '../auth.service';
-import { User, Bot } from '../util/models';
-import { GameCreateComponent } from '../modals/game-create.component';
-import { GameQuitComponent } from '../modals/game-quit.component';
-import { Game } from '../game/game';
-import { GameComponent } from '../game/game.component';
-import { RealtimeService } from '../realtime.service';
-import { WatchGameService } from '../watch-game.service';
 import { Router } from '@angular/router';
-import { LocalStorageService } from '../local-storage.service';
+
+
+import { AuthService } from '../services/auth.service';
+import { User, Bot } from '../util/models';
+import { GameCreateComponent } from '../game-create.component/game-create.component';
+import { GameQuitComponent } from '../game-quit.component/game-quit.component';
+import { Game } from '../game/game';
+import { GameComponent } from '../game.component/game.component';
+import { RealtimeService } from '../services/realtime.service';
+import { WatchGameService } from '../services/watch-game.service';
+import { LocalStorageService } from '../services/local-storage.service';
 import { State } from '../game/engine';
 
 @Component({

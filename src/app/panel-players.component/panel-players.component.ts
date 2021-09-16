@@ -8,16 +8,16 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { User } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
-import { NotificationService } from '../notification.service';
-import { GameCreateComponent } from '../modals/game-create.component';
-import { GameInvitationComponent } from '../modals/game-invitation.component';
-import { RealtimeService } from '../realtime.service';
+import { NotificationService } from '../services/notification.service';
+import { GameCreateComponent } from '../game-create.component/game-create.component';
+import { GameInvitationComponent } from '../game-invitation.component/game-invitation.component';
+import { RealtimeService } from '../services/realtime.service';
 import { State } from '../game/engine';
 
 @Component({
   selector: 'app-panel-players',
   templateUrl: './panel-players.component.html',
-  styleUrls: ['./panel-players.component.css', './styles.component.css'],
+  styleUrls: ['./panel-players.component.css'],
 })
 
 export class PanelPlayersComponent implements OnInit {

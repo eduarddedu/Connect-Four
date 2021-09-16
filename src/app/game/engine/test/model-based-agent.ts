@@ -1,4 +1,4 @@
-import { ArrayLoopGenerator } from '../util/generators';
+import { ArrayLoopGenerator } from '../../..//util/generators';
 
 export class GameModel {
     private game: Game;

@@ -1,8 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-import { User } from './util/models';
-import { environment } from '../environments/environment';
+import { User } from '../util/models';
+import { environment } from '../../environments/environment';
 import { LocalStorageService } from './local-storage.service';
 
 
