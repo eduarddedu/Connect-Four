@@ -21,6 +21,7 @@ import { GameQuitComponent } from './game-quit.component/game-quit.component';
 import { NotificationComponent } from './notification.component/notification.component';
 import { SurnamePipe, ReversePipe } from './util/pipes';
 import { PolicyPageComponent } from './policy-page.component/policy-page.component';
+import { DropdownSelectorComponent } from './dropdown-selector.component/dropdown-selector.component';
 
 
 @NgModule({
@@ -41,7 +42,8 @@ import { PolicyPageComponent } from './policy-page.component/policy-page.compone
     GameOverComponent,
     GameCreateComponent,
     GameInvitationComponent,
-    GameQuitComponent
+    GameQuitComponent,
+    DropdownSelectorComponent
   ],
   imports: [
     BrowserModule,

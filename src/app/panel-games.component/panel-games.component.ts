@@ -35,7 +35,6 @@ export class PanelGamesComponent implements OnInit {
   }
 
   private add(context: GameContext) {
-    console.log('Panel games added');
     this.games.set(context.id, Object.assign(context, { index: this.ascendingIntegers.next().value }));
   }
 

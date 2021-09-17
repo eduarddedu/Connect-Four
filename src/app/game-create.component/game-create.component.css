@@ -1,13 +1,14 @@
 .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 0.5fr;
 }
 
-.grid>div:nth-child(1) {
+.grid>div:nth-child(odd) {
     justify-self: start;
 }
 
-.grid>div:nth-child(2) {
+.grid>div:nth-child(even) {
     justify-self: end;
 }
 
@@ -28,5 +29,9 @@
 .details>div:last-child {
     font-size: 80%;
     cursor: pointer;
+}
+
+input[type=radio] {
+    margin-right: 4px;
 }
 

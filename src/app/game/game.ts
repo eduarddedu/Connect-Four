@@ -47,11 +47,19 @@ export class Game {
         }
     }
 
+    get looser() {
+        if (this.state === State.RED_WINS) {
+            return this.players.yellow;
+        } else if (this.state === State.YELLOW_WINS) {
+            return this.players.red;
+        }
+    }
+
     get lastMove(): Move {
         return Object.assign({}, this._lastMove);
     }
 
-    computeAgentMove(): Move {
+    getAgentMove(): Move {
         return this.agent.move(this.node);
     }
 
@@ -83,6 +91,18 @@ export class Game {
         this.setStatus();
     }
 
+    replayGame() {
+        if (this.moves.length < 1) {
+            return;
+        }
+        this.node = GameNode.rootNode(this.moves[0].color === Color.RED ? State.RED_MOVES : State.YELLOW_MOVES);
+        for (let i = 0; i < this.moves.length; i++) {
+            const move = this.moves[i];
+            this.node = this.node.childNode(move);
+        }
+        this.setStatus();
+    }
+
     private get currentTurnColor() {
         if (this.state === State.RED_MOVES) {
             return Color.RED;
@@ -94,17 +114,20 @@ export class Game {
     private setStatus() {
         const firstName = (str: string) => str.replace(/ .*/, '');
         switch (this.node.state) {
-            case State.RED_WINS:
-            case State.YELLOW_WINS:
-            case State.DRAW:
-                this.status = `Game over`;
-                break;
             case State.RED_MOVES:
-                this.status = `Waiting on ${firstName(this.context.players.red.name)}...`;
+                this.status = `Waiting on ${firstName(this.players.red.name)}...`;
                 break;
             case State.YELLOW_MOVES:
-                this.status = `Waiting on ${firstName(this.context.players.yellow.name)}...`;
-
+                this.status = `Waiting on ${firstName(this.players.yellow.name)}...`;
+                break;
+            case State.RED_WINS:
+                this.status = 'Red wins.';
+                break;
+            case State.YELLOW_WINS:
+                this.status = 'Yellow wins.';
+                break;
+            case State.DRAW:
+                this.status = `Game draw.`;
         }
     }
 

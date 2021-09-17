@@ -1,0 +1,5 @@
+<select (change)="onSelectItem($event.target.selectedIndex)">
+  <option *ngFor="let item of items" [selected]="item.selected">
+    {{ item.key }}
+  </option>
+</select>

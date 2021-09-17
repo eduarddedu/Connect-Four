@@ -290,12 +290,15 @@ class Games {
 }
 
 class Messages {
-  createGame: Subject<{ senderId: string, senderPlaysRed: boolean }> = new Subject();
+  createGame: Subject<{ senderId: string, senderPlaysRed: boolean, redMovesFirst: boolean }> = new Subject();
   accept: Subject<string> = new Subject();
   reject: Subject<string> = new Subject();
 
   constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
-    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: { senderId: string, senderPlaysRed: boolean }) => {
+    this.ds.client.event.subscribe(`${this.user.id}/createGame`, (data: {
+      senderId: string,
+      senderPlaysRed: boolean, redMovesFirst: boolean
+    }) => {
       this.ngZone.run(() => this.createGame.next(data));
     });
     this.ds.client.event.subscribe(`${this.user.id}/accept`, (data: { senderId: string }) => {
@@ -310,8 +313,8 @@ class Messages {
     this.ds.client.event.emit(`${recipientId}/${topic}`, Object.assign({ senderId: this.user.id }, data));
   }
 
-  sendCreateGameMessage(recipientId: string, senderPlaysRed: boolean) {
-    this.sendMessage(recipientId, 'createGame', { senderPlaysRed: senderPlaysRed });
+  sendCreateGameMessage(recipientId: string, senderPlaysRed: boolean, redMovesFirst: boolean) {
+    this.sendMessage(recipientId, 'createGame', { senderPlaysRed: senderPlaysRed, redMovesFirst: redMovesFirst });
   }
 
   sendAcceptMessage(recipientId: string) {

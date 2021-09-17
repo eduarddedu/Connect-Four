@@ -1,6 +1,6 @@
 <div class="c4-modal-container">
   <div class="modal-header">
-    <h4 class="modal-title"> Game over </h4>
+    <h4 class="modal-title"> {{status}}</h4>
     <button type="button" id="closeModal" class="close" aria-label="Close" (click)="activeModal.close('Quit')">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -9,26 +9,26 @@
     <div *ngIf="game.winner">
       <div class="grid">
         <div class="grid-item">
-          <img [src]="game.players.red.imgUrl" alt>
+          <img [src]="game.winner.imgUrl" alt>
           <div class="details">
             <div>
-              <span [ngClass]="{'winner' : game.winner.id === game.players.red.id}">
-                  {{game.players.red.name | surname}}
+              <span class="winner">
+                  {{game.winner.name | surname}}
               </span>
             </div>
-            <div class="points">Points: {{game.players.red.points}}</div>
+            <div class="points">Points: {{game.winner.points}}</div>
           </div>
         </div>
         <div class="grid-item">
           <div class="details">
             <div>
-              <span [ngClass]="{'winner' : game.winner.id === game.players.yellow.id}">
-                {{game.players.yellow.name | surname}}
+              <span>
+                {{game.looser.name | surname}}
               </span>
             </div>
-            <div class="points">Points: {{game.players.yellow.points}}</div>
+            <div class="points">Points: {{game.looser.points}}</div>
           </div>
-          <img [src]="game.players.yellow.imgUrl" alt>
+          <img [src]="game.looser.imgUrl" alt>
         </div>
       </div>
     </div>

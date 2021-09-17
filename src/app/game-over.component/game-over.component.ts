@@ -14,4 +14,8 @@ export class GameOverComponent {
 
   constructor(public activeModal: NgbActiveModal) { }
 
+  get status() {
+    return this.game.status.replace('\.', '!');
+  }
+
 }

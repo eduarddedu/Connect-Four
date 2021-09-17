@@ -1,8 +1,3 @@
-/**
- * PanelPlayers shows online users, updating details such as the status and
- * provides the mechanism to initiate a game, by clicking on a user in list.
- */
-
 import { Component, OnInit, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -65,7 +60,7 @@ export class PanelPlayersComponent implements OnInit {
     }
   }
 
-  private async handleCreateGameMessage(data: { senderId: string, senderPlaysRed: boolean }) {
+  private async handleCreateGameMessage(data: { senderId: string, senderPlaysRed: boolean, redMovesFirst: boolean }) {
     let sender: User = this.users.get(data.senderId);
     const senderName = sender.name;
     const option = await this.getUserResponse(sender);
@@ -76,11 +71,10 @@ export class PanelPlayersComponent implements OnInit {
           this.realtime.messages.sendAcceptMessage(sender.id);
           this.realtime.users.setUserStatus(this.user.id, 'In game');
           this.realtime.users.setUserStatus(sender.id, 'In game');
-          if (data.senderPlaysRed) {
-            this.realtime.games.createGame(sender, this.user, State.RED_MOVES); // TODO
-          } else {
-            this.realtime.games.createGame(this.user, sender, State.RED_MOVES);
-          }
+          const initialState = data.redMovesFirst ? State.RED_MOVES : State.YELLOW_MOVES;
+          const redPlayer: User = data.senderPlaysRed ? sender : this.user;
+          const yellowPlayer: User = data.senderPlaysRed ? this.user : sender;
+          this.realtime.games.createGame(redPlayer, yellowPlayer, initialState);
         } else {
           this.realtime.users.setUserStatus(this.user.id, 'Online');
           this.notification.update(`${senderName} is not available`, 'warning');
@@ -119,10 +113,10 @@ export class PanelPlayersComponent implements OnInit {
       const modal = this.modalService.open(GameCreateComponent);
       modal.componentInstance.user = this.user;
       modal.componentInstance.opponent = user;
-      modal.result.then((option: 'Cancel' | { userPlaysRed: boolean }) => {
+      modal.result.then((option: 'Cancel' | { userPlaysRed: boolean, redMovesFirst: boolean }) => {
         if (typeof option === 'object') {
-          this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed);
-          this.notification.update(`Invitation sent. Waiting on ${user.name}...`, 'success');
+          this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed, option.redMovesFirst);
+          this.notification.update(`${user.name} has been invited.`, 'success');
         }
         this.realtime.users.setUserStatus(this.user.id, 'Online');
       });

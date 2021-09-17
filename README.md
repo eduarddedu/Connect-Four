@@ -15,13 +15,14 @@ First install project dependencies.
 
     npm install
 
-If Deepstream server is also installed we can launch the app via npm script. This starts Deepstream and builds and runs the app using ng.  
+Deepstream is an external dependency which is currently freely available to download, as a binary. Visit deepstream.io. After installing Deepstream, start the realtime server. 
 
-    npm run serve
+    /usr/local/bin/deepstream
 
-To stop both Angular and Deepstream 
+Now we can build and launch the app.
+    
+    ng serve
 
-    npm run kill
 
 ## Execute e2e tests
 
@@ -43,9 +44,7 @@ Note: if the previous command fails to upgrade webdriver to the current version 
 webdriver-manager update --versions.chrome=79.0.3945.117
 ``` 	
 
-With Chrome updated we can run both Deepstream and the Angular app via an npm script: 
-
-    npm run serve
+Start Deepstream server and launch the Angular app. 
 
 Finally, to run the e2e tests, execute:
 

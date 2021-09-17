@@ -65,17 +65,16 @@ export class BoardComponent {
 
   replayGame() {
     this.clear();
-    let colorClass = this.game.context.initialState === State.RED_MOVES ? 'red' : 'yellow';
-    const moves = this.game.moves.map(id => `${id}`);
-    for (let i = 0; i < moves.length; i++) {
-      const id = moves[i];
+    for (let i = 0; i < this.game.moves.length; i++) {
+      const move: Move = this.game.moves[i];
+      const id = this.moveToMoveId(move);
       const input = this.input(id);
       input.checked = true;
       const disc = this.disc(id);
       disc.classList.remove('disc-initial');
       disc.classList.add('disc-down');
+      const colorClass = move.color === Color.RED ? 'red' : 'yellow';
       disc.classList.add(colorClass);
-      colorClass = colorClass === 'red' ? 'yellow' : 'red';
     }
   }
 

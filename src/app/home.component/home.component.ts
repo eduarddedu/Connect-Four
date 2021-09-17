@@ -17,7 +17,7 @@ import { GameComponent } from '../game.component/game.component';
 import { RealtimeService } from '../services/realtime.service';
 import { WatchGameService } from '../services/watch-game.service';
 import { LocalStorageService } from '../services/local-storage.service';
-import { State } from '../game/engine';
+import { Color, State } from '../game/engine';
 
 @Component({
   selector: 'app-home',
@@ -127,14 +127,16 @@ export class HomeComponent implements OnInit {
     modal.componentInstance.user = this.user;
     modal.componentInstance.opponent = Bot;
     modal.componentInstance.userPlaysRed = true;
-    modal.result.then((option: any) => {
-      if (typeof option === 'object') {
-        if (option.userPlaysRed) {
-          this.realtime.games.createGame(this.user, Bot, State.RED_MOVES);
-        } else {
-          this.realtime.games.createGame(Bot, this.user, State.YELLOW_MOVES);
-        }
-      } else if (option === 'Cancel') {
+    modal.componentInstance.items = [
+      { key: 'Red moves first', selected: true, value: Color.RED },
+      { key: 'Yellow moves first', selected: false, value: Color.YELLOW }];
+    modal.result.then((options: any) => {
+      if (typeof options === 'object') {
+        const initialState = options.redMovesFirst ? State.RED_MOVES : State.YELLOW_MOVES;
+        const redPlayer = options.userPlaysRed ? this.user : Bot;
+        const yellowPlayer = options.userPlaysRed ? Bot : this.user;
+        this.realtime.games.createGame(redPlayer, yellowPlayer, initialState);
+      } else if (options === 'Cancel') {
         this.realtime.users.setUserStatus(this.user.id, 'Online');
       }
     });

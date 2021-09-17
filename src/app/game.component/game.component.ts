@@ -13,7 +13,7 @@ import { RealtimeService } from '../services/realtime.service';
 import { GameOverComponent } from '../game-over.component/game-over.component';
 import { NotificationService } from '../services/notification.service';
 import { LocalStorageService } from '../services/local-storage.service';
-import { Move, State } from '../game/engine';
+import { Color, Move, State } from '../game/engine';
 
 @Component({
   selector: 'app-game',
@@ -23,7 +23,7 @@ import { Move, State } from '../game/engine';
 export class GameComponent implements OnInit {
   @ViewChild(BoardComponent) board: BoardComponent;
   @Input() user: User;
-  private game: Game;
+  game: Game;
 
   constructor(private ngbModal: NgbModal,
     private notification: NotificationService, private localStorage: LocalStorageService,
@@ -59,9 +59,31 @@ export class GameComponent implements OnInit {
     this.game = game;
     this.realtime.games.onGameMovesUpdate(game.id, this.onMoveUpdate, this);
     if (game.moves.length > 0) {
-      setTimeout(() => this.board.replayGame());
+      this.game.replayGame();
+      setTimeout(() => this.board.replayGame(), 500);
     }
     this.pushAgentMove();
+    if (game.state === State.DRAW || game.state === State.RED_WINS || game.state === State.YELLOW_WINS) {
+      console.log(game.status, game.moves);
+    }
+  }
+
+  players(side: 'left' | 'right'): User {
+    switch (side) {
+      case 'left':
+        if (this.game.isPlayer(this.user)) {
+          return this.user;
+        } else {
+          return this.game.players.red;
+        }
+      default:
+        if (this.game.isPlayer(this.user)) {
+          return this.game.opponent(this.user);
+        } else {
+          return this.game.players.yellow;
+        }
+
+    }
   }
 
   quitGame() {
@@ -88,13 +110,13 @@ export class GameComponent implements OnInit {
   private pushAgentMove() {
     if (this.game.isAgentTurn) {
       setTimeout(() => {
-        const move = this.game.computeAgentMove();
-        this.realtime.games.updateGameMoves(this.game.id, move);
+        this.realtime.games.updateGameMoves(this.game.id, this.game.getAgentMove());
       }, 500);
     }
   }
 
   private handleGameEnd() {
+    console.log(this.game);
     if (this.game.winner) {
       this.game.winner.points++;
       this.localStorage.setPoints(this.game.winner, this.game.winner.points);
@@ -120,9 +142,8 @@ export class GameComponent implements OnInit {
             const opponent = this.game.opponent(this.user);
             this.realtime.users.setUserStatus(opponent.id, 'Online');
           }
-          const gameId = this.game.context.id;
           this.game = null;
-          this.realtime.games.removeGame(gameId);
+          this.realtime.games.removeGame(this.game.id);
         }
     }
   }

@@ -1,12 +1,10 @@
 {
   "name": "connectfour",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "serve": "deepstream & ng serve 1>/dev/null &",
-    "kill": "killall deepstream && killall 'ng serve'",
     "test": "jasmine",
     "lint": "ng lint",
     "e2e": "ng e2e"
