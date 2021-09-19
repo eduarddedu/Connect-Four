@@ -25,12 +25,10 @@
       </div>
     </div>
     <div class="modal-footer">
-      <div id="dropdown" style="margin-right: auto">
-        <app-dropdown [items]="dropdownOptions" (select$)="onChangeInitialGameState($event)"></app-dropdown>
-      </div>
+      <app-dropdown [items]="dropdownOptions" (select$)="onChangeInitialGameState($event)"></app-dropdown>
       <button type="button" class="btn btn-outline-success"
         (click)="activeModal.close({userPlaysRed: userPlaysRed, redMovesFirst: redMovesFirst})" ngbAutofocus>
-        {{opponent.id === Bot.id ? 'OK' : 'Send invitation'}}
+        {{opponent.id === Bot.id ? 'Start game' : 'Send invitation'}}
       </button>
     </div>
   </div>
