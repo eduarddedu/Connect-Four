@@ -18,8 +18,7 @@ export class Game {
         this.moves = ctx.moves;
         this.node = GameNode.rootNode(ctx.initialState);
         if (ctx.moves.length > 0) {
-            for (let i = 0; i < this.moves.length; i++) {
-                const move = this.moves[i];
+            for (const move of this.moves) {
                 this.node = this.node.childNode(move);
             }
         }
