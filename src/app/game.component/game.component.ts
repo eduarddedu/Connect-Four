@@ -59,7 +59,6 @@ export class GameComponent implements OnInit {
     this.game = game;
     this.realtime.games.onGameMovesUpdate(game.id, this.onMoveUpdate, this);
     if (game.moves.length > 0) {
-      this.game.replayGame();
       setTimeout(() => this.board.replayGame(), 500);
     }
     this.pushAgentMove();

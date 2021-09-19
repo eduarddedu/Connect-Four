@@ -17,8 +17,14 @@ export class Game {
         this.context = ctx;
         this.moves = ctx.moves;
         this.node = GameNode.rootNode(ctx.initialState);
-        this.isAgainstAi = [this.players.red.id, this.players.yellow.id].includes('0');
+        if (ctx.moves.length > 0) {
+            for (let i = 0; i < this.moves.length; i++) {
+                const move = this.moves[i];
+                this.node = this.node.childNode(move);
+            }
+        }
         this.setStatus();
+        this.isAgainstAi = [this.players.red.id, this.players.yellow.id].includes('0');
     }
 
     get id() {
@@ -88,18 +94,6 @@ export class Game {
         this.moves.push(move);
         this._lastMove = move;
         this.node = this.node.childNode(move);
-        this.setStatus();
-    }
-
-    replayGame() {
-        if (this.moves.length < 1) {
-            return;
-        }
-        this.node = GameNode.rootNode(this.moves[0].color === Color.RED ? State.RED_MOVES : State.YELLOW_MOVES);
-        for (let i = 0; i < this.moves.length; i++) {
-            const move = this.moves[i];
-            this.node = this.node.childNode(move);
-        }
         this.setStatus();
     }
 
