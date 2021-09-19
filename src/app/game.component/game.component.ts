@@ -141,8 +141,8 @@ export class GameComponent implements OnInit {
             const opponent = this.game.opponent(this.user);
             this.realtime.users.setUserStatus(opponent.id, 'Online');
           }
-          this.game = null;
           this.realtime.games.removeGame(this.game.id);
+          this.game = null;
         }
     }
   }
