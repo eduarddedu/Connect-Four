@@ -1,7 +1,7 @@
 import { State, GameNode, Color, Agent } from './engine';
 import { Move } from './engine/src/move';
 import { GameContext } from './game.context';
-import { User } from '../util/models';
+import { Bot, User } from '../util/models';
 
 export class Game {
     private node: GameNode;
@@ -23,7 +23,7 @@ export class Game {
             }
         }
         this.setStatus();
-        this.isAgainstAi = [this.players.red.id, this.players.yellow.id].includes('0');
+        this.isAgainstAi = this.isPlayer(Bot);
     }
 
     get id() {
@@ -32,8 +32,8 @@ export class Game {
 
     get isAgentTurn() {
         return this.isAgainstAi &&
-            this.state === State.RED_MOVES && this.players.red.id === '0' ||
-            this.state === State.YELLOW_MOVES && this.players.yellow.id === '0';
+            this.state === State.RED_MOVES && this.players.red.id === Bot.id ||
+            this.state === State.YELLOW_MOVES && this.players.yellow.id === Bot.id;
     }
 
     get state(): State {
