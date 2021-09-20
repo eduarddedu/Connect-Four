@@ -3,20 +3,11 @@
     <img src="assets/img/app-logo.png" alt="Board game" width="40" height="40"> Connect Four
   </header>
   <main>
-    <div class="c4-card login-box">
-      <h5>Welcome, stranger!</h5>
-      <div id="g-login-btn" class="social-login-btn g-login-btn">
-        <span class="icon"></span>
-        <span class="buttonText">Continue with Google</span>
-      </div>
-      <div class="social-login-btn fb-login-btn" (click)="onClickFacebookLogin()">
-        <span class="icon"></span>
-        <span class="buttonText">Continue with Facebook</span>
-      </div>
-      <div class="notice">
-        <p>To login with social media account on <b>Firefox</b></p>
-        <p>you may need to turn <a href="https://support.mozilla.org/en-US/kb/content-blocking?as=u&utm_source=inproduct" target="_blank">content blocking</a>  off.</p>
-      </div>
+    <div class="jumbotron">
+      <h3 class="display-4">Welcome!</h3>
+      <p class="lead">Here you can play the <a href="https://en.wikipedia.org/wiki/Connect_Four" target="_blank">Connect Four</a> game online.</p>
+      <hr class="my-4">
+      <p>To continue, please sign into your Google account. If you use an add-blocker, please disable it for this site.</p>
     </div>
   </main>
   <app-policy-accept></app-policy-accept>

@@ -45,7 +45,7 @@ export class GameComponent implements OnInit {
     });
     this.watchGame.selected.subscribe((game: Game) => this.setup(game));
     this.realtime.games.removed.subscribe(id => {
-      if (this.game && this.game.id === id) {
+      if (this.game && this.game.id === id && this.game.isPlayer(this.user)) {
         this.game = null;
         this.notification.update(`Game abandoned by player`, 'warning');
       }
@@ -131,7 +131,10 @@ export class GameComponent implements OnInit {
       case 'Rematch':
         if (this.game) {
           const initialState = this.game.state === State.RED_WINS ? State.YELLOW_MOVES : State.RED_MOVES;
-          this.realtime.games.createGame(this.game.context.players.red, this.game.context.players.yellow, initialState);
+          const game = this.game;
+          this.game = null;
+          this.realtime.games.removeGame(game.id);
+          this.realtime.games.createGame(game.context.players.red, game.context.players.yellow, initialState);
         }
         break;
       case 'Quit':
@@ -154,6 +157,12 @@ export class GameComponent implements OnInit {
       modal.componentInstance.user = this.user;
       modal.result.then((option: string) => resolve(option));
     });
+  }
+
+  private borderStyle(side: 'left' | 'right') {
+    const color = this.game.getPlayerColor(this.players(side)) === Color.RED ? 'red' : 'yellow';
+    const css = '4px solid ' + color;
+    return css;
   }
 
 }

@@ -1,10 +1,9 @@
 <div id="wrapper" *ngIf="game">
-    <div class="c4-card score">
+    <div class="c4-card game-info" [style.border-left]="borderStyle('left')" [style.border-right]="borderStyle('right')">
         <div class="player">
             <img [src]="players('left').imgUrl"> {{players('left').name  | surname }}
         </div>
-        <div class="hcentered">
-            <div class="separator"></div>
+        <div>
             <app-timer [startDate]="game.startDate"></app-timer>
         </div>
         <div class="player">
@@ -13,7 +12,7 @@
     </div>
     <div class="c4-card">
         <div class="game-area">
-            <div id="gameStatus">
+            <div class="game-status">
                 {{game.status}}
             </div>
             <app-board [game]="game" [user]="user" (userMoved)="onBoardClick($event)">

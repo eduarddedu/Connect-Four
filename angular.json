@@ -27,7 +27,8 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],
             "scripts": [
-              "node_modules/deepstream.io-client-js/dist/deepstream.js"
+              "node_modules/deepstream.io-client-js/dist/deepstream.js", 
+              "node_modules/jwt-decode/build/jwt-decode.js"
             ]
           },
           "configurations": {

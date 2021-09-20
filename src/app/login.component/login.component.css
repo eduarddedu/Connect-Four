@@ -11,6 +11,7 @@ main {
     flex-flow: column nowrap;
     align-items: center;
     padding-top: 100px;
+    color: black;
 }
 
 .login-box {
@@ -71,4 +72,8 @@ main {
 }
 .notice p {
     margin: 2px auto;
+}
+
+a {
+    color: rgba(226, 14, 25, 0.664);
 }

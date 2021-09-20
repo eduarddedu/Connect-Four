@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 
-declare const FB: any;
-
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -10,8 +8,5 @@ declare const FB: any;
 
 export class LoginComponent {
 
-  onClickFacebookLogin() {
-    FB.login();
-  }
 }
 
