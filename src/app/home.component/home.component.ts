@@ -68,7 +68,7 @@ export class HomeComponent implements OnInit {
 
   private handleGameRemoval() {
     this.realtime.games.removed.subscribe(id => {
-      if (this.game && this.game.id === id) {
+      if (this.game && this.game.id === id && this.game.isPlayer(this.user)) {
         this.unloadGame();
       }
     });
@@ -172,9 +172,5 @@ export class HomeComponent implements OnInit {
       const modal = this.modalService.open(GameQuitComponent);
       modal.result.then((option: string) => resolve(option));
     });
-  }
-
-  signout() {
-    this.auth.signout();
   }
 }

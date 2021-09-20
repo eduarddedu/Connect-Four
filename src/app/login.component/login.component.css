@@ -11,64 +11,9 @@ main {
     flex-flow: column nowrap;
     align-items: center;
     padding-top: 100px;
+    color: black;
 }
 
-.login-box {
-    display: flex;
-    flex-flow: column nowrap;
-    align-items: center;
-    padding: 16px;
-}
-
-.social-login-btn {
-    height: 40px;
-    width: 250px;
-    border-radius: 2px;
-    margin-top: 12px;
-}
-
-.social-login-btn:hover {
-    cursor: pointer;
-}
-
-.social-login-btn>span.icon {
-    --icon-size: 24px;
-    display: inline-block;
-    width: var(--icon-size);
-    height: var(--icon-size);
-    vertical-align: middle;
-    background-color: white;
-    background-size: var(--icon-size);
-    margin: calc((40px - var(--icon-size)) / 2) 8px;
-    border-radius: 2px;
-}
-
-.social-login-btn>span.buttonText {
-    padding-left: 16px;
-    color: white;
-}
-
-.g-login-btn {
-    background-color: #4285F4;
-}
-
-.g-login-btn>span.icon {
-    background-image: url("/assets/img/google-logo.png");
-}
-
-.fb-login-btn {
-    background-color: #4267b2;
-}
-
-.fb-login-btn>span.icon {
-    background-image: url("/assets/img/facebook-logo.jpg");
-}
-
-.notice {
-    margin-top: 8px;
-    font-size: .75em;
-    text-align: center;
-}
-.notice p {
-    margin: 2px auto;
+a {
+    color: coral;
 }

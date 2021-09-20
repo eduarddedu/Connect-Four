@@ -76,9 +76,3 @@
 .yellow {
     color: #ffd816fb;
 }
-
-.hcentered {
-    display: flex;
-    flex-flow: column;
-    align-items: center;
-}

@@ -2,27 +2,16 @@ import { Component, Input, OnDestroy, NgZone, AfterViewInit } from '@angular/cor
 import { Observable } from 'rxjs';
 @Component({
   selector: 'app-timer',
-  template: `<span id="hourMinSec">00:00:00</span>`,
-  styles: [`
-    span {
-      display: inline-block;
-      width: 67px;
-      font-size: 16px;
-      line-height: normal;
-      font-family: 'Nunito', sans-serif;
-      color: #aaa;
-    }`
-  ]
+  templateUrl: 'timer.component.html',
+  styleUrls: ['timer.component.css']
 })
 export class TimerComponent implements AfterViewInit, OnDestroy {
   @Input() startDate: Date;
   updates: Observable<string>;
   updateInterval: any;
   formatter = new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
-    hour12: false,
     timeZone: 'UTC'
   });
 
@@ -30,7 +19,6 @@ export class TimerComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.updates = new Observable(subscriber => {
-      subscriber.next(this.getHourMinuteSecondStr());
       this.updateInterval = setInterval(() => subscriber.next(this.getHourMinuteSecondStr()), 1000);
     });
     this.ngZone.runOutsideAngular(() => {
@@ -45,7 +33,8 @@ export class TimerComponent implements AfterViewInit, OnDestroy {
   }
 
   getHourMinuteSecondStr() {
-    const since = new Date(Date.now() - this.startDate.getTime());
+    const elapsed = Date.now() - this.startDate.getTime();
+    const since = new Date(elapsed);
     return this.formatter.format(since);
   }
 

@@ -2,43 +2,39 @@
     padding: 12px;
 }
 
+.game-area, .game-info {
+    color: rgb(194, 194, 194);
+}
+
 .game-area {
     margin-bottom: 40px;
 }
 
-.score {
+.game-info {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     margin-bottom: 12px;
+    padding: 20px;
 }
-.score>div {
+
+.game-info>div {
     align-self: center;
 }
 
-.score>.player:last-child {
+.game-info>.player:last-child {
     text-align: right;
 }
 
-.score>.player>img {
+.game-info>.player>img {
     display: none;
 }
 
-.separator {
-    margin: 2px auto;
-    box-sizing: border-box;
-    height: 4px;
-    width: 65px;
-    border-style: inset;
-    border-color: rgb(224, 167, 8);
-    border-width: 3px 0 0 0;
-}
-
-#gameStatus {
+.game-status {
     margin-bottom: 6px;
 }
 
 @media(min-width: 992px) {
-    .score>.player>img {
+    .game-info>.player>img {
         display: initial;
         width: 30px;
         height: 30px;
