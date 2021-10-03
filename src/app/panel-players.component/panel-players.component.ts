@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { User } from '../util/models';
+import { User, UserStatus } from '../util/models';
 import { IntegerSequenceGenerator } from '../util/generators';
 import { NotificationService } from '../services/notification.service';
 import { GameCreateComponent } from '../game-create.component/game-create.component';
@@ -27,11 +27,7 @@ export class PanelPlayersComponent implements OnInit {
 
   ngOnInit() {
     this.realtime.users.all.subscribe((users: User[]) => {
-      users.forEach((user: User) => {
-        if (user.id !== this.user.id) {
-          this.onUserOnline(user);
-        }
-      });
+      users.filter(u => u.id !== this.user.id).forEach(user => this.onUserOnline(user));
       this.realtime.users.added.subscribe(this.onUserOnline.bind(this));
       this.realtime.users.removed.subscribe(this.onUserOffline.bind(this));
       this.realtime.messages.createGame.subscribe(this.handleCreateGameMessage.bind(this));
@@ -53,7 +49,7 @@ export class PanelPlayersComponent implements OnInit {
     this.users.delete(userId);
   }
 
-  private onUpdateUserStatus(userId: string, status: 'Online' | 'Invited' | 'In game') {
+  private onUpdateUserStatus(userId: string, status: UserStatus) {
     const user = this.users.get(userId);
     if (user) {
       user.status = status;
@@ -67,23 +63,23 @@ export class PanelPlayersComponent implements OnInit {
     sender = this.users.get(data.senderId);
     switch (option) {
       case 'Accept':
-        if (sender && sender.status === 'Online') {
+        if (sender && sender.status === UserStatus.Idle) {
           this.realtime.messages.sendAcceptMessage(sender.id);
-          this.realtime.users.setUserStatus(this.user.id, 'In game');
-          this.realtime.users.setUserStatus(sender.id, 'In game');
+          this.realtime.users.setUserStatus(this.user.id, UserStatus.Playing);
+          this.realtime.users.setUserStatus(sender.id, UserStatus.Playing);
           const initialState = data.redMovesFirst ? State.RED_MOVES : State.YELLOW_MOVES;
           const redPlayer: User = data.senderPlaysRed ? sender : this.user;
           const yellowPlayer: User = data.senderPlaysRed ? this.user : sender;
           this.realtime.games.createGame(redPlayer, yellowPlayer, initialState);
         } else {
-          this.realtime.users.setUserStatus(this.user.id, 'Online');
+          this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
           this.notification.update(`${senderName} is not available`, 'warning');
         }
         break;
       case 'Reject':
-        if (sender && sender.status === 'Online') {
+        if (sender && sender.status === UserStatus.Idle) {
           this.realtime.messages.sendRejectMessage(data.senderId);
-          this.realtime.users.setUserStatus(this.user.id, 'Online');
+          this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
         }
     }
   }
@@ -99,7 +95,7 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   private getUserResponse(sender: User): Promise<string> {
-    this.realtime.users.setUserStatus(this.user.id, 'Invited');
+    this.realtime.users.setUserStatus(this.user.id, UserStatus.Invited);
     return new Promise(resolve => {
       const modal = this.modalService.open(GameInvitationComponent, { backdrop: 'static' });
       modal.componentInstance.user = sender;
@@ -108,8 +104,8 @@ export class PanelPlayersComponent implements OnInit {
   }
 
   onClick(user: User) {
-    if (user.status === 'Online') {
-      this.realtime.users.setUserStatus(this.user.id, 'Invited');
+    if (user.status === UserStatus.Idle) {
+      this.realtime.users.setUserStatus(this.user.id, UserStatus.Invited);
       const modal = this.modalService.open(GameCreateComponent);
       modal.componentInstance.user = this.user;
       modal.componentInstance.opponent = user;
@@ -118,13 +114,13 @@ export class PanelPlayersComponent implements OnInit {
           this.realtime.messages.sendCreateGameMessage(user.id, option.userPlaysRed, option.redMovesFirst);
           this.notification.update(`${user.name} has been invited.`, 'success');
         }
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
       });
     }
   }
 
-  descendingSort(a: { key: string, value: User & { index: number } }, b: { key: string, value: User & { index: number } }): number {
-    return a.value.index < b.value.index ? 1 : -1;
+  descendingSort(a: { value: { index: number } }, b: { value: { index: number } }): number {
+    return b.value.index - a.value.index;
   }
 
 }

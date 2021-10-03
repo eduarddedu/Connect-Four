@@ -1,6 +1,6 @@
 /**
  * HomeComponent initiates and closes the realtime session of the user and handles navigation.
- * Navigation occurs when the user clicks on the app/logo button while the view displays a game in progress.
+ * Navigation occurs when the user clicks on the logo button while the view displays a game in progress.
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 
 
 import { AuthService } from '../services/auth.service';
-import { User, Bot } from '../util/models';
+import { User, Bot, UserStatus } from '../util/models';
 import { GameCreateComponent } from '../game-create.component/game-create.component';
 import { GameQuitComponent } from '../game-quit.component/game-quit.component';
 import { Game } from '../game/game';
@@ -95,7 +95,7 @@ export class HomeComponent implements OnInit {
     this.realtime.users.removeUser();
     if (this.game && this.game.isPlayer(this.user) && this.only_self_online) {
       if (!this.game.isAgainstAi) {
-        this.realtime.users.setUserStatus(this.game.opponent(this.user).id, 'Online');
+        this.realtime.users.setUserStatus(this.game.opponent(this.user).id, UserStatus.Idle);
       }
       this.realtime.games.removeGame(this.game.id);
     }
@@ -122,7 +122,7 @@ export class HomeComponent implements OnInit {
   }
 
   onClickBot() {
-    this.realtime.users.setUserStatus(this.user.id, 'In game');
+    this.realtime.users.setUserStatus(this.user.id, UserStatus.Playing);
     const modal = this.modalService.open(GameCreateComponent, { backdrop: 'static' });
     modal.componentInstance.user = this.user;
     modal.componentInstance.opponent = Bot;
@@ -137,7 +137,7 @@ export class HomeComponent implements OnInit {
         const yellowPlayer = options.userPlaysRed ? Bot : this.user;
         this.realtime.games.createGame(redPlayer, yellowPlayer, initialState);
       } else if (options === 'Cancel') {
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
       }
     });
   }
@@ -154,9 +154,9 @@ export class HomeComponent implements OnInit {
       if (option === 'Quit') {
         const game = this.game;
         this.unloadGame();
-        this.realtime.users.setUserStatus(this.user.id, 'Online');
+        this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
         if (!game.isAgainstAi) {
-          this.realtime.users.setUserStatus(game.opponent(this.user).id, 'Online');
+          this.realtime.users.setUserStatus(game.opponent(this.user).id, UserStatus.Idle);
         }
         this.gameComponent.quitGame();
         this.realtime.games.removeGame(game.id);

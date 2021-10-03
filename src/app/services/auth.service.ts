@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-import { User } from '../util/models';
+import { User, UserStatus } from '../util/models';
 import { environment } from '../../environments/environment';
 import { LocalStorageService } from './local-storage.service';
 
@@ -73,12 +73,12 @@ class GoogleAuth implements AuthProvider {
   }
 
   private createUser(credential: any): User {
-    return {
+    return new User({
       id: credential.sub,
       name: credential.name,
       imgUrl: credential.picture,
-      status: 'Online'
-    };
+      status: UserStatus.Idle
+    });
   }
 }
 
@@ -87,12 +87,12 @@ class MockUserAuth implements AuthProvider {
   getUser(): Observable<User> {
     return new Observable(subscriber => {
       if (!environment.production) {
-        subscriber.next(<User>{
+        subscriber.next(new User({
           id: localStorage.getItem('id'),
           name: localStorage.getItem('username'),
           imgUrl: 'assets/img/user.png',
-          status: 'Online'
-        });
+          status: UserStatus.Idle
+        }));
       }
     });
   }

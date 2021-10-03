@@ -15,7 +15,7 @@ import { Observable, Subscriber, Subject } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { User } from '../util/models';
+import { User, UserData, UserStatus } from '../util/models';
 import { Game } from '../game/game';
 import { NotificationService } from './notification.service';
 import { Move, State } from '../game/engine';
@@ -37,7 +37,7 @@ export class RealtimeService {
     this.user = auth.user;
     this.ds = new DeepstreamService(this.ngZone, this.user, this.notification);
     this.users = new Users(this.ngZone, this.ds, this.user);
-    this.games = new Games(this.ngZone, this.ds, this.user);
+    this.games = new Games(this.ngZone, this.ds);
     this.messages = new Messages(this.ngZone, this.ds, this.user);
   }
 
@@ -139,7 +139,8 @@ class Users {
 
   private subscribeToTopics() {
     this.list.on('entry-added', async id => {
-      const user: User = await this.ds.getRecordData(id);
+      const userData: UserData = await this.ds.getRecordData(id);
+      const user = new User(userData);
       this.mapUserIdRecordId.set(user.id, id);
       this.ngZone.run(() => this.added.next(user));
     });
@@ -175,7 +176,8 @@ class Users {
         this.list.whenReady(async (list: deepstreamIO.List) => {
           const users: Array<User> = [];
           for (const recordId of list.getEntries()) {
-            const user = await this.ds.getRecordData(recordId);
+            const userData = await this.ds.getRecordData(recordId);
+            const user = new User(userData);
             users.push(user);
             this.mapUserIdRecordId.set(user.id, recordId);
           }
@@ -185,12 +187,12 @@ class Users {
     });
   }
 
-  setUserStatus(userId: string, status: 'Online' | 'Invited' | 'In game') {
+  setUserStatus(userId: string, status: UserStatus) {
     const recordId = this.mapUserIdRecordId.get(userId);
     this.ds.client.record.getRecord(recordId).set('status', status);
   }
 
-  onUserStatusChange(userId: string, callback: (userId: string, status: string) => void, thisArg: any) {
+  onUserStatusChange(userId: string, callback: (userId: string, status: UserStatus) => void, thisArg: any) {
     const recordId = this.mapUserIdRecordId.get(userId);
     this.ds.client.record.getRecord(recordId).subscribe('status', status => {
       this.ngZone.run(callback.bind(thisArg, userId, status));
@@ -204,7 +206,7 @@ class Games {
   public added: Subject<Game> = new Subject();
   public removed: Subject<string> = new Subject();
 
-  constructor(private ngZone: NgZone, private ds: DeepstreamService, private user: User) {
+  constructor(private ngZone: NgZone, private ds: DeepstreamService) {
     this.list = this.ds.client.record.getList('games');
     this.subscribeToTopics();
   }
@@ -242,10 +244,6 @@ class Games {
 
   updateGameProperties(gameId: string, properties: { [key: string]: any }) {
     this.ds.setRecordKeys(gameId, properties);
-  }
-
-  updateGameState(gameId: string, state: 'in progress' | 'over' | 'on hold') {
-    this.ds.client.record.getRecord(gameId).set('state', state);
   }
 
   updateGameMoves(gameId: string, move: Move) {

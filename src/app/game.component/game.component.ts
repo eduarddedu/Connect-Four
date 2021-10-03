@@ -5,7 +5,7 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
-import { User } from '../util/models';
+import { User, UserStatus } from '../util/models';
 import { BoardComponent } from '../board.component/board.component';
 import { Game } from '../game/game';
 import { WatchGameService } from '../services/watch-game.service';
@@ -134,15 +134,15 @@ export class GameComponent implements OnInit {
           const game = this.game;
           this.game = null;
           this.realtime.games.removeGame(game.id);
-          this.realtime.games.createGame(game.context.players.red, game.context.players.yellow, initialState);
+          this.realtime.games.createGame(game.players.red, game.players.yellow, initialState);
         }
         break;
       case 'Quit':
         if (this.game) {
-          this.realtime.users.setUserStatus(this.user.id, 'Online');
+          this.realtime.users.setUserStatus(this.user.id, UserStatus.Idle);
           if (!this.game.isAgainstAi) {
             const opponent = this.game.opponent(this.user);
-            this.realtime.users.setUserStatus(opponent.id, 'Online');
+            this.realtime.users.setUserStatus(opponent.id, UserStatus.Idle);
           }
           this.realtime.games.removeGame(this.game.id);
           this.game = null;
