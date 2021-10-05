@@ -6,12 +6,10 @@ import { Bot, User } from '../util/models';
 export class Game {
     private node: GameNode;
     private agent = new Agent();
-    private _lastMove: Move;
     readonly context: GameContext;
     readonly startDate = new Date();
     readonly moves: Move[];
     readonly isAgainstAi: boolean;
-    status = '';
 
     constructor(ctx: GameContext) {
         this.context = ctx;
@@ -22,7 +20,6 @@ export class Game {
                 this.node = this.node.childNode(move);
             }
         }
-        this.setStatus();
         this.isAgainstAi = this.isPlayer(Bot);
     }
 
@@ -41,7 +38,7 @@ export class Game {
     }
 
     get players() {
-        return Object.assign({}, this.context.players);
+        return this.context.players;
     }
 
     get winner() {
@@ -61,7 +58,28 @@ export class Game {
     }
 
     get lastMove(): Move {
-        return Object.assign({}, this._lastMove);
+        return this.node.move;
+    }
+
+    get status() {
+        const firstName = (str: string) => str.replace(/ .*/, '');
+        switch (this.node.state) {
+            case State.RED_MOVES:
+                return `Waiting on ${firstName(this.players.red.name)}...`;
+            case State.YELLOW_MOVES:
+                return `Waiting on ${firstName(this.players.yellow.name)}...`;
+            case State.RED_WINS:
+                return 'Red wins.';
+            case State.YELLOW_WINS:
+                return 'Yellow wins.';
+            case State.DRAW:
+                return `Game draw.`;
+        }
+    }
+
+    update(move: Move) {
+        this.moves.push(move);
+        this.node = this.node.childNode(move);
     }
 
     getAgentMove(): Move {
@@ -89,11 +107,14 @@ export class Game {
         }
     }
 
-    update(move: Move) {
-        this.moves.push(move);
-        this._lastMove = move;
-        this.node = this.node.childNode(move);
-        this.setStatus();
+    isGameOver(): boolean {
+        switch (this.state) {
+            case State.RED_WINS:
+            case State.YELLOW_WINS:
+            case State.DRAW:
+                return true;
+            default: return false;
+        }
     }
 
     private get currentTurnColor() {
@@ -101,26 +122,6 @@ export class Game {
             return Color.RED;
         } else if (this.state === State.YELLOW_MOVES) {
             return Color.YELLOW;
-        }
-    }
-
-    private setStatus() {
-        const firstName = (str: string) => str.replace(/ .*/, '');
-        switch (this.node.state) {
-            case State.RED_MOVES:
-                this.status = `Waiting on ${firstName(this.players.red.name)}...`;
-                break;
-            case State.YELLOW_MOVES:
-                this.status = `Waiting on ${firstName(this.players.yellow.name)}...`;
-                break;
-            case State.RED_WINS:
-                this.status = 'Red wins.';
-                break;
-            case State.YELLOW_WINS:
-                this.status = 'Yellow wins.';
-                break;
-            case State.DRAW:
-                this.status = `Game draw.`;
         }
     }
 

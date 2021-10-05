@@ -1,7 +1,3 @@
-/**
- * GameComponent updates the Game object and the GUI throughout the game loop.
- */
-
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -62,9 +58,6 @@ export class GameComponent implements OnInit {
       setTimeout(() => this.board.replayGame(), 500);
     }
     this.pushAgentMove();
-    if (game.state === State.DRAW || game.state === State.RED_WINS || game.state === State.YELLOW_WINS) {
-      console.log(game.status, game.moves);
-    }
   }
 
   players(side: 'left' | 'right'): User {
@@ -81,7 +74,6 @@ export class GameComponent implements OnInit {
         } else {
           return this.game.players.yellow;
         }
-
     }
   }
 
@@ -98,11 +90,8 @@ export class GameComponent implements OnInit {
   onMoveUpdate(move: Move) {
     this.game.update(move);
     this.board.update();
-    switch (this.game.state) {
-      case State.RED_WINS:
-      case State.YELLOW_WINS:
-      case State.DRAW:
-        this.handleGameEnd();
+    if (this.game.isGameOver()) {
+      this.handleGameEnd();
     }
   }
 
