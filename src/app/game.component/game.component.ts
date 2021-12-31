@@ -150,7 +150,7 @@ export class GameComponent implements OnInit {
 
   private borderStyle(side: 'left' | 'right') {
     const color = this.game.getPlayerColor(this.players(side)) === Color.RED ? 'red' : 'yellow';
-    const css = '4px solid ' + color;
+    const css = '5px solid ' + color;
     return css;
   }
 
