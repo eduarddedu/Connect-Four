@@ -30,7 +30,7 @@ export class Agent {
 
     private calculateMove(): Move {
         const options = this.principalVariation();
-        return this.pickRandomMove(options);
+        return this.pickRandomMaxScoreMove(options);
     }
 
     /**
@@ -202,15 +202,12 @@ export class Agent {
         return Math.pow(10, val.numColoredCells) * (20 - val.numMovesUntilComplete);
     }
 
-    private pickRandomMove(options: Array<{ score: number, move: Move }>) {
-        if (options.length === 0) {
-            throw new Error('No move options');
-        }
-        const maxScore = options[options.length - 1].score;
-        const moves = options.filter(o => o.score === maxScore).map(o => o.move);
+    private pickRandomMaxScoreMove(moves: Array<{ score: number, move: Move }>) {
+        const maxScore = moves[moves.length - 1].score;
+        const bestMoves = moves.filter(o => o.score === maxScore).map(o => o.move);
         const randomInt = (bound: number) => Math.floor(Math.random() * bound);
-        const i = randomInt(moves.length);
-        return moves[i];
+        const i = randomInt(bestMoves.length);
+        return bestMoves[i];
     }
 }
 
